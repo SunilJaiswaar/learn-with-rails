@@ -1,0 +1,115 @@
+<% content_for :title, "CI/CD Pipeline Repair Game" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">World 15</span>
+        <span class="text-xs text-muted">DevOps Mountain</span>
+      </div>
+      <h1 class="page-title">CI/CD Pipeline Game</h1>
+      <p class="page-lead">
+        Your production deployment has failed! Inspect the live build logs, identify why the security and testing gates blocked the Docker release, patch the code, and trigger a green rollout.
+      </p>
+    </div>
+  </header>
+
+  <%# Pipeline Status Progress Bar %>
+  <div class="card" style="padding: 1.5rem;">
+    <div class="row row--between" style="align-items: center; margin-bottom: 1.2rem;">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span style="font-size: 1.4rem;"><%= @pipeline['status'] == 'passed' ? '🎉' : '❌' %></span>
+        <h2 class="text-base" style="margin: 0;">Deployment Pipeline: GitHub Actions #491</h2>
+      </div>
+      <div class="row" style="gap: 0.6rem; align-items: center;">
+        <span class="badge <%= @pipeline['status'] == 'passed' ? 'badge--success' : 'badge--danger' %>">
+          <%= @pipeline['status'].upcase %>
+        </span>
+        <%= button_to "Reset Pipeline", cicd_game_reset_path, method: :post, class: "btn btn--sm text-xs" %>
+      </div>
+    </div>
+
+    <%# Visual Stages Flow %>
+    <div style="display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.5rem; align-items: center;">
+      <% @pipeline["stages"].each_with_index do |stage, idx| %>
+        <%
+          badge_class = case stage["status"]
+                        when "passed" then "border-success bg-surface-success"
+                        when "failed" then "border-danger bg-surface-danger"
+                        else "border-subtle"
+                        end
+          icon = case stage["status"]
+                 when "passed" then "✔"
+                 when "failed" then "✖"
+                 else "—"
+                 end
+        %>
+        <div class="card <%= badge_class %>" style="min-width: 140px; padding: 0.8rem; text-align: center; flex: 1;">
+          <div style="font-size: 1.2rem; margin-bottom: 0.2rem;">
+            <%= icon %>
+          </div>
+          <strong class="text-xs" style="display: block;"><%= stage["name"] %></strong>
+          <span class="mono text-xs text-faint"><%= stage["duration"] %></span>
+        </div>
+        <% if idx < @pipeline["stages"].size - 1 %>
+          <span class="flow__arrow" style="color: var(--accent); font-size: 1.2rem;">➔</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid--3">
+    <%# Column 1 & 2: Pipeline Terminal Output %>
+    <div class="stack stack--loose" style="grid-column: span 2;">
+      <div class="code-panel">
+        <div class="code-panel__bar row row--between">
+          <span>Build &amp; Security Runner Console (stdout/stderr)</span>
+          <span class="mono text-xs">runner-ubuntu-24.04</span>
+        </div>
+        <pre class="mono" style="margin: 0; padding: 1.2rem; font-size: 0.8rem; line-height: 1.6; max-height: 400px; overflow-y: auto; color: <%= @pipeline['status'] == 'passed' ? 'var(--success)' : '#f87171' %>;"><%= @pipeline["logs"] %></pre>
+      </div>
+    </div>
+
+    <%# Column 3: Repair Console & Submission %>
+    <div class="stack stack--loose">
+      <div class="card border-accent" style="padding: 1.5rem;">
+        <h3 class="text-sm uppercase text-accent" style="margin-top: 0; margin-bottom: 0.8rem;">Repair &amp; Patch Vulnerability</h3>
+        <p class="text-xs text-muted mb-2">
+          Brakeman reported a High-Confidence SQL Injection in <code>app/controllers/users_controller.rb</code>:
+        </p>
+
+        <div class="code-panel mb-2" style="font-size: 0.75rem;">
+          <pre class="mono" style="padding: 0.6rem; margin: 0; color: #f87171;"># VULNERABLE CODE:
+User.where("name = '#{params[:name]}'")</pre>
+        </div>
+
+        <%= form_with url: cicd_game_run_path, method: :post do |f| %>
+          <div class="stack stack--tight text-xs mb-3">
+            <strong class="text-xs uppercase text-muted">Choose Safe Remediation:</strong>
+            <label style="cursor: pointer;">
+              <input type="radio" name="security_fix" value="ignore_warning">
+              Disable Brakeman in CI config with <code>--no-fail-on-warn</code> (Risky: Ship vulnerability to prod!)
+            </label>
+            <label style="cursor: pointer;">
+              <input type="radio" name="security_fix" value="parameterized_query" checked>
+              <strong>Use Parameterized ActiveRecord Query: <code>User.where(name: params[:name])</code></strong>
+            </label>
+          </div>
+
+          <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center;">
+            🚀 Patch Code &amp; Re-run Pipeline
+          </button>
+        <% end %>
+      </div>
+
+      <div class="card" style="padding: 1.2rem;">
+        <h3 class="text-xs uppercase text-muted" style="margin-top: 0; margin-bottom: 0.6rem;">CI/CD Best Practices</h3>
+        <ul class="text-xs text-muted" style="margin: 0; padding-left: 1.2rem;">
+          <li>Never deploy when security gates fail</li>
+          <li>Fail fast: run linters and unit tests before long Docker builds</li>
+          <li>Pin dependency versions to prevent supply-chain attacks</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

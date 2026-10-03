@@ -155,6 +155,96 @@
         <% end %>
       </div>
     </section>
+
+    <section class="card card--flush mt-2">
+      <div class="card__header">
+        <h2>Engineering Laboratories &amp; Simulators</h2>
+        <span class="text-xs text-faint" style="margin-left: auto;">Interactive Engineering Playgrounds</span>
+      </div>
+      <div class="card__body">
+        <div class="grid grid--2" style="gap: 0.6rem;">
+          <%= link_to system_design_index_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🌐</span>
+              <div>
+                <strong class="text-xs" style="display: block;">System Design Simulator</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">High-scale traffic &amp; failure injection</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to network_lab_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🧭</span>
+              <div>
+                <strong class="text-xs" style="display: block;">Networking Lab</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">DNS, TCP 3-way, TLS 1.3 &amp; packet inspection</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to redis_vault_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🧠</span>
+              <div>
+                <strong class="text-xs" style="display: block;">Redis Vault</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">In-memory structures &amp; token bucket limiter</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to sidekiq_factory_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">⚙</span>
+              <div>
+                <strong class="text-xs" style="display: block;">Sidekiq Factory</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">Concurrency, queues &amp; retry storm fix</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to git_lab_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🌲</span>
+              <div>
+                <strong class="text-xs" style="display: block;">Git Time Machine</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">Visual DAG &amp; merge conflict challenge</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to cicd_game_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🚀</span>
+              <div>
+                <strong class="text-xs" style="display: block;">CI/CD Pipeline Game</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">Repair broken production build pipeline</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to security_lab_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">🔒</span>
+              <div>
+                <strong class="text-xs" style="display: block;">Security Fortress</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">SQLi, XSS, IDOR &amp; mass assignment labs</span>
+              </div>
+            </div>
+          <% end %>
+
+          <%= link_to cpu_scheduler_path, class: "card card--interactive", style: "padding: 0.8rem; text-decoration: none;" do %>
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.4rem;">💻</span>
+              <div>
+                <strong class="text-xs" style="display: block;">CPU Scheduler Game</strong>
+                <span class="text-xs text-muted" style="font-size: 0.7rem;">Round Robin, SJF &amp; Gantt chart timeline</span>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </section>
   </div>
 
   <aside class="stack">

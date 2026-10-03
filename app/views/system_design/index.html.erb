@@ -1,0 +1,73 @@
+<% content_for :title, "System Design Universe" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">World 8</span>
+        <span class="text-xs text-muted">Engineering Laboratory</span>
+      </div>
+      <h1 class="page-title">System Design Universe</h1>
+      <p class="page-lead">
+        Move beyond static architecture diagrams. Drag and connect building blocks, dial up traffic to 1,000,000 requests, inject production failures, and prove your system can survive.
+      </p>
+    </div>
+  </header>
+
+  <%# Principles / Building Blocks summary banner %>
+  <div class="card" style="padding: 1.2rem; border-left: 4px solid var(--accent);">
+    <div class="row row--between" style="align-items: center;">
+      <div class="stack stack--tight">
+        <strong class="text-sm">Core Engineering Foundations</strong>
+        <p class="text-xs text-muted" style="margin: 0;">
+          Scalability · High Availability (99.99%) · Eventual vs Strong Consistency · P99 Latency SLA · Circuit Breakers · Sharding & Replicas
+        </p>
+      </div>
+      <div class="mono text-xs text-faint">P99 SLA GUARANTEES</div>
+    </div>
+  </div>
+
+  <%# Challenges Grid %>
+  <div class="grid grid--2">
+    <% @challenges.each do |challenge| %>
+      <div class="card" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem;">
+        <div class="stack stack--tight">
+          <div class="row row--between" style="align-items: center;">
+            <div class="row" style="align-items: center; gap: 0.6rem;">
+              <span style="font-size: 1.8rem;" aria-hidden="true"><%= challenge[:icon] %></span>
+              <h2 class="text-lg" style="margin: 0;"><%= challenge[:title] %></h2>
+            </div>
+            <span class="badge badge--<%= challenge[:difficulty] == 'Master' ? 'danger' : 'accent' %>">
+              <%= challenge[:difficulty] %>
+            </span>
+          </div>
+
+          <p class="text-sm text-muted mt-1"><%= challenge[:tagline] %></p>
+
+          <div class="mt-2">
+            <strong class="text-xs text-faint uppercase">Functional Requirements:</strong>
+            <ul class="text-xs text-muted" style="margin: 0.3rem 0 0.8rem; padding-left: 1.2rem;">
+              <% challenge[:functional_requirements].each do |req| %>
+                <li><%= req %></li>
+              <% end %>
+            </ul>
+          </div>
+
+          <div>
+            <strong class="text-xs text-faint uppercase">Target SLA:</strong>
+            <div class="row" style="gap: 0.5rem; margin-top: 0.3rem;">
+              <span class="chip text-xs">P99 &lt; <%= challenge[:max_acceptable_latency] %>ms</span>
+              <span class="chip text-xs">Error &lt; <%= challenge[:max_acceptable_error] %>%</span>
+              <span class="chip text-xs"><%= number_with_delimiter challenge[:target_rps] %> Target RPS</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="row row--between mt-3" style="align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <span class="badge badge--xp">+<%= challenge[:xp_reward] %> XP</span>
+          <%= link_to "Enter Simulator →", system_design_challenge_path(challenge[:slug]), class: "btn btn--primary btn--sm" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

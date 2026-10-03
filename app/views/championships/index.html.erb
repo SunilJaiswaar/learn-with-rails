@@ -1,0 +1,72 @@
+<% content_for :title, "Championship Arena" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">Championship Arena</span>
+        <span class="text-xs text-muted">Final Mastery Assessment</span>
+      </div>
+      <h1 class="page-title">The Engineering Championships</h1>
+      <p class="page-lead">
+        The ultimate test of full-stack engineering, systems architecture, and production readiness. Take on the comprehensive 12-round technical interview or defend an entire platform against catastrophic failure in the Developer Capstone.
+      </p>
+    </div>
+  </header>
+
+  <div class="grid grid--2">
+    <%# Track 1: 12-Round Technical Interview Championship %>
+    <div class="card border-accent" style="padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="stack stack--tight">
+        <div class="row row--between" style="align-items: center;">
+          <span class="badge badge--accent">12 Rounds</span>
+          <span class="badge badge--xp">+500 XP</span>
+        </div>
+
+        <h2 class="text-lg mt-2" style="margin-bottom: 0.4rem;">🏆 12-Round Master Technical Interview</h2>
+        <p class="text-sm text-muted">
+          Simulate a complete end-to-end senior engineering interview gauntlet across all 12 disciplines: Programming, Algorithms, SQL, Rails, Postgres, Redis/Sidekiq, Frontend, Security, System Design, Debugging, Architecture, and Rapid Fire.
+        </p>
+
+        <div class="card card--subtle mt-2" style="padding: 0.8rem;">
+          <strong class="text-xs uppercase text-muted">Evaluation Dimensions:</strong>
+          <p class="text-xs text-muted mt-1" style="margin: 0;">
+            Technical Accuracy · Problem Solving · Depth · Trade-offs · Performance · Security · Communication
+          </p>
+        </div>
+      </div>
+
+      <div class="row row--between mt-3" style="align-items: center; border-top: 1px solid var(--border); padding-top: 1.2rem;">
+        <span class="text-xs text-faint">Full Performance Scorecard</span>
+        <%= link_to "Enter 12-Round Interview →", interview_championship_path, class: "btn btn--primary" %>
+      </div>
+    </div>
+
+    <%# Track 2: Developer Championship Capstone %>
+    <div class="card border-accent" style="padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between;">
+      <div class="stack stack--tight">
+        <div class="row row--between" style="align-items: center;">
+          <span class="badge badge--danger">Final Capstone</span>
+          <span class="badge badge--xp">+600 XP</span>
+        </div>
+
+        <h2 class="text-lg mt-2" style="margin-bottom: 0.4rem;">⚔️ Scalable E-Commerce Developer Capstone</h2>
+        <p class="text-sm text-muted">
+          Design, build, and defend a high-volume platform under real-world traffic spikes and failure injections: Database ERD, Flash-Sale Concurrency, Async Sidekiq Workers, Circuit Breakers, and Hotwire Edge Caching.
+        </p>
+
+        <div class="card card--subtle mt-2" style="padding: 0.8rem;">
+          <strong class="text-xs uppercase text-muted">Failure Defense:</strong>
+          <p class="text-xs text-muted mt-1" style="margin: 0;">
+            Overselling Prevention · TOCTOU Race Conditions · External 503 Outages · CDN Edge Offload
+          </p>
+        </div>
+      </div>
+
+      <div class="row row--between mt-3" style="align-items: center; border-top: 1px solid var(--border); padding-top: 1.2rem;">
+        <span class="text-xs text-faint">Architectural Defense</span>
+        <%= link_to "Launch Capstone Challenge →", developer_capstone_path, class: "btn btn--primary" %>
+      </div>
+    </div>
+  </div>
+</div>

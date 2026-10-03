@@ -7,10 +7,23 @@
     ["Algorithms", algorithms_path,    "⇅"],
     ["Big-O lab",  complexity_path,    "∿"]
   ]
+  labs = [
+    ["System design",    system_design_index_path,  "🌐"],
+    ["Network lab",      network_lab_path,          "🧭"],
+    ["Redis vault",      redis_vault_path,          "🧠"],
+    ["Sidekiq factory",  sidekiq_factory_path,      "⚙"],
+    ["Git time machine", git_lab_path,              "🌲"],
+    ["CI/CD pipeline",   cicd_game_path,            "🚀"],
+    ["Security fortress", security_lab_path,        "🔒"],
+    ["CPU scheduler",    cpu_scheduler_path,        "💻"],
+    ["Hotwire galaxy",   hotwire_lab_path,          "⚡"]
+  ]
   arena = [
-    ["Boss battles", boss_battles_path, "☠"],
-    ["Interviews",   interviews_path,   "◎"],
-    ["Revision",     revisions_path,    "↻"]
+    ["Incidents",        incidents_path,            "🚨"],
+    ["Boss battles",     boss_battles_path,         "☠"],
+    ["Interviews",       interviews_path,           "◎"],
+    ["Championships",    championships_path,        "🏆"],
+    ["Revision",         revisions_path,            "↻"]
   ]
   you = [
     ["Progress",     progress_path,     "▤"],
@@ -32,7 +45,15 @@
       <% end %>
     <% end %>
 
-    <div class="sidebar__section">Arena</div>
+    <div class="sidebar__section">Labs &amp; Simulators</div>
+    <% labs.each do |label, path, icon| %>
+      <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
+        <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+        <span><%= label %></span>
+      <% end %>
+    <% end %>
+
+    <div class="sidebar__section">Arena &amp; War Room</div>
     <% arena.each do |label, path, icon| %>
       <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
         <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>

@@ -1,0 +1,98 @@
+<% content_for :title, "Hotwire Galaxy & DOM Simulator" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">World 11</span>
+        <span class="text-xs text-muted">Reactive Rails Frontend</span>
+      </div>
+      <h1 class="page-title">Hotwire Galaxy &amp; DOM Simulator</h1>
+      <p class="page-lead">
+        Build high-speed, modern reactive web applications without the complexity of heavy client-side SPAs. Explore Turbo Drive, Turbo Frames, Turbo Streams, Turbo Morph, and Stimulus controller lifecycles.
+      </p>
+    </div>
+  </header>
+
+  <%# Technique Selector Tabs %>
+  <div class="row" style="gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem;">
+    <% HotwireLabController::TECHNIQUES.each do |key, tech| %>
+      <% active = (key == @active_technique) %>
+      <%= link_to hotwire_lab_path(tech: key),
+                  class: "card card--interactive #{'border-accent bg-surface-accent' if active}",
+                  style: "min-width: 170px; padding: 1rem; text-decoration: none;" do %>
+        <div class="row" style="align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.5rem;"><%= tech[:icon] %></span>
+          <div>
+            <strong class="text-sm <%= active ? 'text-accent' : 'text-default' %>" style="display: block;">
+              <%= tech[:name].sub(/\s*\(.+\)/, '') %>
+            </strong>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="grid grid--2">
+    <%# Column 1: Technique Explanation & DOM Mechanics %>
+    <div class="card" style="padding: 1.5rem;">
+      <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+        <div class="row" style="align-items: center; gap: 0.6rem;">
+          <span style="font-size: 1.8rem;"><%= @technique_data[:icon] %></span>
+          <h2 class="text-base" style="margin: 0;"><%= @technique_data[:name] %></h2>
+        </div>
+      </div>
+
+      <p class="text-sm text-muted mb-3"><%= @technique_data[:summary] %></p>
+
+      <div class="card card--subtle mb-3" style="padding: 1rem; border-left: 3px solid var(--accent);">
+        <strong class="text-xs uppercase text-muted">DOM Mutation Effect:</strong>
+        <p class="text-xs text-muted mt-1" style="margin: 0;"><%= @technique_data[:dom_effect] %></p>
+      </div>
+
+      <div class="code-panel">
+        <div class="code-panel__bar">Example Implementation</div>
+        <pre class="mono" style="margin: 0; padding: 1rem; font-size: 0.8rem; color: var(--accent);"><%= @technique_data[:code] %></pre>
+      </div>
+    </div>
+
+    <%# Column 2: Interactive DOM Tree Visualization %>
+    <div class="card" style="padding: 1.5rem;">
+      <h3 class="text-sm uppercase text-muted" style="margin-top: 0; margin-bottom: 0.8rem;">Visual DOM Simulator</h3>
+
+      <div class="code-panel" style="padding: 1.2rem; background: var(--surface-subtle); border-radius: var(--radius-sm); font-family: monospace; font-size: 0.8rem;">
+        <div>&lt;html&gt;</div>
+        <div style="padding-left: 1.5rem;">
+          &lt;head&gt; <span class="text-faint">&lt;!-- Merged on Turbo Drive navigations --&gt;</span> &lt;/head&gt;
+        </div>
+        <div style="padding-left: 1.5rem;">
+          &lt;body&gt;
+          <div style="padding-left: 1.5rem; margin: 0.5rem 0;">
+            &lt;nav&gt; ... &lt;/nav&gt;
+          </div>
+          <div style="padding-left: 1.5rem; border: 2px dashed <%= @active_technique == 'turbo_frames' ? 'var(--accent)' : 'var(--border)' %>; padding: 0.5rem; margin: 0.5rem 0; border-radius: var(--radius-sm);">
+            <div class="row row--between" style="align-items: center;">
+              <span class="text-accent">&lt;turbo-frame id="cart"&gt;</span>
+              <% if @active_technique == 'turbo_frames' %>
+                <span class="badge badge--accent text-xs">Scoped Active Frame</span>
+              <% end %>
+            </div>
+            <div style="padding-left: 1rem; margin: 0.3rem 0;">
+              &lt;div class="items"&gt; 3 items in cart &lt;/div&gt;
+            </div>
+            <span class="text-accent">&lt;/turbo-frame&gt;</span>
+          </div>
+          <div style="padding-left: 1.5rem; border: 2px dashed <%= @active_technique == 'stimulus' ? 'var(--accent)' : 'var(--border)' %>; padding: 0.5rem; margin: 0.5rem 0; border-radius: var(--radius-sm);">
+            <span class="text-accent">&lt;div data-controller="dropdown"&gt;</span>
+            <div style="padding-left: 1rem; margin: 0.3rem 0;">
+              &lt;button data-action="click-&gt;dropdown#toggle"&gt;Menu&lt;/button&gt;
+            </div>
+            <span class="text-accent">&lt;/div&gt;</span>
+          </div>
+          &lt;/body&gt;
+        </div>
+        <div>&lt;/html&gt;</div>
+      </div>
+    </div>
+  </div>
+</div>

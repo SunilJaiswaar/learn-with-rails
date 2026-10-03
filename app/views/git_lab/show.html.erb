@@ -1,0 +1,163 @@
+<% content_for :title, "Git Time Machine & Version Control" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">World 15</span>
+        <span class="text-xs text-muted">DevOps Mountain</span>
+      </div>
+      <h1 class="page-title">Git Time Machine &amp; DAG Visualizer</h1>
+      <p class="page-lead">
+        Visualize the lifecycle: <strong>Working Directory → Staging Index → Commit Graph → Remote Branch</strong>. Run real git commands, watch branch pointers advance, and resolve real merge conflicts.
+      </p>
+    </div>
+  </header>
+
+  <%# Active Merge Conflict Challenge Banner %>
+  <% if @state["conflict_active"] %>
+    <div class="card border-danger" style="padding: 1.5rem; background: rgba(239, 68, 68, 0.06);">
+      <div class="row row--between" style="align-items: center;">
+        <div class="stack stack--tight">
+          <div class="row" style="align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.8rem;">⚔️</span>
+            <h2 class="text-base text-danger" style="margin: 0;">CHALLENGE: Merge Conflict in app/models/user.rb</h2>
+          </div>
+          <p class="text-xs text-muted" style="margin: 0.2rem 0 0;">
+            Both <code>main</code> and <code>feature/auth</code> modified the password encryption line. Resolve the conflict below.
+          </p>
+        </div>
+        <span class="badge badge--xp">+150 XP</span>
+      </div>
+
+      <%= form_with url: git_lab_resolve_conflict_path, method: :post, class: "mt-3" do |f| %>
+        <div class="code-panel">
+          <div class="code-panel__bar">app/models/user.rb (Conflict Editor)</div>
+          <%= text_area_tag :resolved_code,
+            "class User < ApplicationRecord\n<<<<<<< HEAD (main)\n  has_secure_password\n=======\n  has_secure_password :recovery_password\n  validates :email, presence: true\n>>>>>>> feature/auth\nend",
+            rows: 8, class: "mono text-sm", style: "width: 100%; border: none; background: transparent; padding: 0.8rem; color: var(--text);" %>
+        </div>
+        <div class="row row--between mt-2" style="align-items: center;">
+          <span class="text-xs text-muted">Hint: Remove conflict markers and keep <code>has_secure_password</code> with email validation.</span>
+          <button type="submit" class="btn btn--primary btn--sm">Save &amp; Complete Merge</button>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Git DAG Visualizer & Working Tree Grid %>
+  <div class="grid grid--3">
+    <%# Column 1 & 2: Commit Tree & Git Log %>
+    <div class="stack stack--loose" style="grid-column: span 2;">
+      <%# Commit Graph %>
+      <div class="card" id="git-graph-panel" style="padding: 1.5rem;">
+        <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+          <div class="row" style="align-items: center; gap: 0.6rem;">
+            <span style="font-size: 1.4rem;">🌲</span>
+            <h2 class="text-base" style="margin: 0;">Commit History (Directed Acyclic Graph)</h2>
+          </div>
+          <div class="row" style="gap: 0.5rem;">
+            <span class="badge badge--accent">HEAD → <%= @state["current_branch"] %></span>
+            <%= button_to "Reset Repo", git_lab_reset_path, method: :post, class: "btn btn--sm text-xs" %>
+          </div>
+        </div>
+
+        <%# Visual Commits Chain %>
+        <div class="stack stack--tight">
+          <% @state["commits"].reverse.each do |c| %>
+            <% is_head = (@state["branches"][@state["current_branch"]] == c["sha"]) %>
+            <div class="card card--subtle <%= 'border-accent' if is_head %>" style="padding: 0.8rem 1rem;">
+              <div class="row row--between" style="align-items: center;">
+                <div class="row" style="align-items: center; gap: 0.8rem;">
+                  <span class="mono text-xs font-bold text-accent"><%= c["sha"] %></span>
+                  <strong class="text-sm"><%= c["message"] %></strong>
+                </div>
+                <div class="row" style="align-items: center; gap: 0.4rem;">
+                  <% @state["branches"].each do |b_name, b_sha| %>
+                    <% if b_sha == c["sha"] %>
+                      <span class="badge badge--subtle text-xs"><%= b_name %></span>
+                    <% end %>
+                  <% end %>
+                  <% if is_head %>
+                    <span class="badge badge--accent text-xs">HEAD</span>
+                  <% end %>
+                </div>
+              </div>
+              <div class="text-xs text-faint mt-1">Author: <%= c["author"] %> · Parent: <%= c["parent"] || "root" %></div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Interactive Git Terminal %>
+      <div class="card" style="padding: 1.5rem;">
+        <h3 class="text-sm uppercase text-muted" style="margin-top: 0; margin-bottom: 0.8rem;">Interactive Git Terminal</h3>
+        <%= form_with url: git_lab_execute_path, method: :post, data: { turbo_stream: true } do |f| %>
+          <div class="row" style="gap: 0.6rem;">
+            <div style="flex: 1; display: flex; align-items: center; background: var(--surface-subtle); border-radius: var(--radius-sm); border: 1px solid var(--border); padding: 0 0.8rem;">
+              <span class="mono text-accent" style="margin-right: 0.5rem;">~/repo (<%= @state["current_branch"] %>)$</span>
+              <%= text_field_tag :command, nil, placeholder: "git status (or git add ., git commit -m \"...\", git merge feature/auth)",
+                                 class: "mono", style: "border: none; background: transparent; width: 100%; outline: none; padding: 0.6rem 0;" %>
+            </div>
+            <%= submit_tag "Run", class: "btn btn--primary btn--sm" %>
+          </div>
+        <% end %>
+
+        <div id="git-cli-output" class="code-panel mt-2" style="margin-bottom: 0;">
+          <div class="code-panel__bar">Terminal Output</div>
+          <pre class="mono" style="margin: 0; padding: 0.8rem; font-size: 0.8rem; color: var(--accent);"><%= @last_output || "Enter a git command above (e.g. 'git status', 'git add .', 'git merge feature/auth')." %></pre>
+        </div>
+      </div>
+    </div>
+
+    <%# Column 3: Working Tree & Staging Status %>
+    <div class="stack stack--loose">
+      <div class="card" style="padding: 1.5rem;">
+        <h3 class="text-sm uppercase text-muted" style="margin-top: 0; margin-bottom: 0.8rem;">Working Tree &amp; Index</h3>
+
+        <%# Staging Area %>
+        <div class="card card--subtle mb-2" style="padding: 1rem;">
+          <div class="row row--between" style="align-items: center;">
+            <strong class="text-xs text-success">Staged for Commit (Index):</strong>
+            <span class="badge badge--success text-xs"><%= @state["staging"].size %> files</span>
+          </div>
+          <% if @state["staging"].any? %>
+            <ul class="text-xs mono text-success mt-1" style="margin-bottom: 0; padding-left: 1.2rem;">
+              <% @state["staging"].each do |f| %>
+                <li><%= f %></li>
+              <% end %>
+            </ul>
+          <% else %>
+            <span class="text-xs text-faint mt-1" style="display: block;">No staged changes</span>
+          <% end %>
+        </div>
+
+        <%# Working Directory %>
+        <div class="card card--subtle" style="padding: 1rem;">
+          <div class="row row--between" style="align-items: center;">
+            <strong class="text-xs text-danger">Unstaged Changes (Working Tree):</strong>
+            <span class="badge badge--danger text-xs"><%= @state["working_tree"].size %> files</span>
+          </div>
+          <% if @state["working_tree"].any? %>
+            <ul class="text-xs mono text-danger mt-1" style="margin-bottom: 0; padding-left: 1.2rem;">
+              <% @state["working_tree"].each do |f| %>
+                <li><%= f %></li>
+              <% end %>
+            </ul>
+          <% else %>
+            <span class="text-xs text-faint mt-1" style="display: block;">Working tree clean</span>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 1.2rem;">
+        <h3 class="text-xs uppercase text-muted" style="margin-top: 0; margin-bottom: 0.6rem;">Quick Git Commands:</h3>
+        <div class="stack stack--tight text-xs">
+          <%= button_to "Run 'git status'", git_lab_execute_path(command: "git status"), method: :post, class: "btn btn--sm text-xs", style: "width: 100%;" %>
+          <%= button_to "Run 'git add .'", git_lab_execute_path(command: "git add ."), method: :post, class: "btn btn--sm text-xs", style: "width: 100%;" %>
+          <%= button_to "Run 'git merge feature/auth'", git_lab_execute_path(command: "git merge feature/auth"), method: :post, class: "btn btn--sm text-xs", style: "width: 100%;" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

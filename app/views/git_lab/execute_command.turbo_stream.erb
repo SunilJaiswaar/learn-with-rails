@@ -1,0 +1,44 @@
+<%= turbo_stream.replace "git-graph-panel" do %>
+  <div class="card" id="git-graph-panel" style="padding: 1.5rem;">
+    <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span style="font-size: 1.4rem;">🌲</span>
+        <h2 class="text-base" style="margin: 0;">Commit History (Directed Acyclic Graph)</h2>
+      </div>
+      <div class="row" style="gap: 0.5rem;">
+        <span class="badge badge--accent">HEAD → <%= @state["current_branch"] %></span>
+        <%= button_to "Reset Repo", git_lab_reset_path, method: :post, class: "btn btn--sm text-xs" %>
+      </div>
+    </div>
+
+    <div class="stack stack--tight">
+      <% @state["commits"].reverse.each do |c| %>
+        <% is_head = (@state["branches"][@state["current_branch"]] == c["sha"]) %>
+        <div class="card card--subtle <%= 'border-accent' if is_head %>" style="padding: 0.8rem 1rem;">
+          <div class="row row--between" style="align-items: center;">
+            <div class="row" style="align-items: center; gap: 0.8rem;">
+              <span class="mono text-xs font-bold text-accent"><%= c["sha"] %></span>
+              <strong class="text-sm"><%= c["message"] %></strong>
+            </div>
+            <div class="row" style="align-items: center; gap: 0.4rem;">
+              <% @state["branches"].each do |b_name, b_sha| %>
+                <% if b_sha == c["sha"] %>
+                  <span class="badge badge--subtle text-xs"><%= b_name %></span>
+                <% end %>
+              <% end %>
+              <% if is_head %>
+                <span class="badge badge--accent text-xs">HEAD</span>
+              <% end %>
+            </div>
+          </div>
+          <div class="text-xs text-faint mt-1">Author: <%= c["author"] %> · Parent: <%= c["parent"] || "root" %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+<% end %>
+
+<%= turbo_stream.update "git-cli-output" do %>
+  <div class="code-panel__bar">Terminal Output</div>
+  <pre class="mono" style="margin: 0; padding: 0.8rem; font-size: 0.8rem; color: var(--accent);"><%= @last_output %></pre>
+<% end %>

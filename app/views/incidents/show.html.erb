@@ -1,0 +1,91 @@
+<% content_for :title, "#{@incident[:title]} · Incident War Room" %>
+
+<div class="stack stack--loose">
+  <div class="row row--between" style="align-items: center;">
+    <div>
+      <%= link_to "← Back to Incidents War Room", incidents_path, class: "text-xs text-muted" %>
+      <h1 class="page-title mt-1" style="margin-bottom: 0;"><%= @incident[:title] %></h1>
+    </div>
+    <div class="row" style="gap: 0.6rem; align-items: center;">
+      <span class="badge <%= @resolved ? 'badge--success' : 'badge--danger' %>">
+        <%= @resolved ? 'RESOLVED ✔' : @incident[:severity] %>
+      </span>
+      <span class="badge badge--xp">+<%= @incident[:xp_reward] %> XP</span>
+    </div>
+  </div>
+
+  <%# Symptom Overview %>
+  <div class="card card--subtle" style="padding: 1.2rem;">
+    <strong class="text-xs uppercase text-muted">Outage Symptom &amp; User Impact:</strong>
+    <p class="text-sm mt-1" style="margin-bottom: 0;"><%= @incident[:symptom] %></p>
+  </div>
+
+  <%# Live Telemetry Board %>
+  <div class="card" style="padding: 1.2rem;">
+    <h3 class="text-xs uppercase text-muted" style="margin-top: 0; margin-bottom: 0.8rem;">Live Telemetry &amp; Metrics Dashboard</h3>
+    <div class="grid grid--4">
+      <% @incident[:telemetry].each do |metric, val| %>
+        <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+          <span class="text-xs text-muted"><%= metric %></span>
+          <div class="mono text-base font-bold text-accent mt-1"><%= val %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid grid--2">
+    <%# Column 1: Live Server Log Console %>
+    <div class="code-panel">
+      <div class="code-panel__bar row row--between">
+        <span>Production Server Logs (stdout)</span>
+        <span class="mono text-xs">puma.stdout.log</span>
+      </div>
+      <pre class="mono" style="margin: 0; padding: 1rem; font-size: 0.78rem; line-height: 1.5; max-height: 320px; overflow-y: auto; color: #f87171;"><%= @incident[:logs] %></pre>
+    </div>
+
+    <%# Column 2: Problematic Application Source Code %>
+    <div class="code-panel">
+      <div class="code-panel__bar row row--between">
+        <span>Active Source Code with Bug</span>
+        <span class="mono text-xs">app/controllers/</span>
+      </div>
+      <pre class="mono" style="margin: 0; padding: 1rem; font-size: 0.8rem; line-height: 1.5; color: var(--text);"><%= @incident[:code_snippet] %></pre>
+    </div>
+  </div>
+
+  <%# Remediation & Diagnostic Hypothesis Section %>
+  <div class="card <%= @resolved ? 'border-success bg-surface-success' : 'border-accent' %>" style="padding: 1.5rem;">
+    <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+      <h2 class="text-base" style="margin: 0;">Diagnose Root Cause &amp; Deploy Remediation</h2>
+      <% if @resolved %>
+        <span class="badge badge--success">Resolved &amp; Verified</span>
+      <% end %>
+    </div>
+
+    <% if @resolved %>
+      <div class="card card--subtle" style="padding: 1.2rem; border-left: 4px solid var(--success);">
+        <strong class="text-sm text-success">Engineering Debrief:</strong>
+        <p class="text-xs text-muted mt-1" style="margin-bottom: 0;">
+          <%= @incident[:explanation] %>
+        </p>
+      </div>
+    <% else %>
+      <%= form_with url: resolve_incident_path(@incident[:slug]), method: :post do |f| %>
+        <div class="stack stack--tight mb-3">
+          <% @incident[:options].each do |opt| %>
+            <label class="card card--interactive" style="display: flex; align-items: flex-start; gap: 0.8rem; padding: 0.9rem; cursor: pointer; margin: 0;">
+              <input type="radio" name="remediation_id" value="<%= opt[:id] %>" style="margin-top: 0.2rem; cursor: pointer;" required>
+              <div style="flex: 1;">
+                <strong class="text-xs" style="display: block;"><%= opt[:text] %></strong>
+              </div>
+            </label>
+          <% end %>
+        </div>
+
+        <button type="submit" class="btn btn--primary" style="padding: 0.7rem 1.5rem;">
+          ⚡ Apply Remediation &amp; Verify Telemetry
+        </button>
+      <% end %>
+    <% end %>
+  </div>
+</div>

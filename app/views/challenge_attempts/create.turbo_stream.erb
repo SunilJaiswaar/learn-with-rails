@@ -18,32 +18,23 @@
 
 <% if @xp.to_i.positive? %>
   <%= turbo_stream.append "toasts" do %>
-    <div class="toast" data-controller="toast" role="status">
-      <div class="toast__title">+<%= @xp %> XP</div>
-      <div class="text-sm text-muted">Challenge solved: <%= @challenge.title %></div>
-    </div>
+    <%= render "shared/toast", title: "+#{@xp} XP",
+               body: "Challenge solved: #{@challenge.title}", kind: :xp %>
   <% end %>
 <% end %>
 
 <% if @award&.levelled_up? %>
   <%= turbo_stream.append "toasts" do %>
-    <div class="toast" data-controller="toast" data-toast-timeout-value="9000" role="status">
-      <div class="toast__title">Level <%= @award.new_level %></div>
-      <div class="text-sm text-muted">
-        <%= Gamification::LevelCurve.title_for(@award.new_level) %>
-      </div>
-    </div>
+    <%= render "shared/toast", title: "Level #{@award.new_level}",
+               body: Gamification::LevelCurve.title_for(@award.new_level),
+               kind: :level, timeout: 9000 %>
   <% end %>
 <% end %>
 
 <% Array(@award&.achievements).each do |achievement| %>
   <%= turbo_stream.append "toasts" do %>
-    <div class="toast toast--achievement" data-controller="toast"
-         data-toast-timeout-value="9000" role="status">
-      <div class="toast__title">
-        <%= achievement.icon %> <%= achievement.name %>
-      </div>
-      <div class="text-sm text-muted"><%= achievement.description %></div>
-    </div>
+    <%= render "shared/toast",
+               title: "#{achievement.icon} #{achievement.name}",
+               body: achievement.description, kind: :achievement, timeout: 9000 %>
   <% end %>
 <% end %>

@@ -1,0 +1,58 @@
+<% content_for :title, "Scalable E-Commerce Developer Capstone" %>
+
+<div class="stack stack--loose">
+  <div class="row row--between" style="align-items: center;">
+    <div>
+      <%= link_to "← Back to Championship Arena", championships_path, class: "text-xs text-muted" %>
+      <h1 class="page-title mt-1" style="margin-bottom: 0;">Scalable E-Commerce Developer Capstone</h1>
+    </div>
+    <%= button_to "Reset Capstone", reset_developer_capstone_path, method: :post, class: "btn btn--sm text-xs" %>
+  </div>
+
+  <% if @current_stage > @stages.size %>
+    <%# Capstone Completed Trophy Screen %>
+    <div class="card border-accent" style="padding: 2.5rem; text-align: center;">
+      <div style="font-size: 3.5rem; margin-bottom: 0.8rem;">🏆</div>
+      <span class="badge badge--xp">+600 XP Awarded</span>
+      <h2 class="text-xl mt-2">CAPSTONE CONQUERED: Master Software Engineer</h2>
+      <p class="text-sm text-muted" style="max-width: 600px; margin: 0.8rem auto 1.5rem;">
+        You have designed, implemented, and defended an end-to-end scalable architecture against high-volume traffic surges, TOCTOU inventory race conditions, upstream 503 retry storms, and edge CDN cache invalidations.
+      </p>
+      <%= link_to "View Updated Skill Graph & Mastery →", skill_map_path, class: "btn btn--primary" %>
+    </div>
+  <% else %>
+    <% stage = @stages.find { |s| s[:stage] == @current_stage } %>
+    <div class="card" style="padding: 1.8rem;">
+      <div class="row row--between" style="align-items: center; margin-bottom: 1.2rem;">
+        <span class="badge badge--accent">Stage <%= @current_stage %> of <%= @stages.size %></span>
+        <div class="meter meter--sm" style="width: 150px;" role="img" aria-label="Capstone progress">
+          <div class="meter__fill" style="width: <%= ((@current_stage - 1).to_f / @stages.size) * 100 %>%;"></div>
+        </div>
+      </div>
+
+      <h2 class="text-lg font-bold mb-2"><%= stage[:title] %></h2>
+      <div class="card card--subtle mb-3" style="padding: 1.2rem;">
+        <strong class="text-xs uppercase text-muted">Scenario &amp; Constraints:</strong>
+        <p class="text-sm mt-1" style="margin-bottom: 0;"><%= stage[:scenario] %></p>
+      </div>
+
+      <%= form_with url: submit_capstone_stage_path, method: :post do |f| %>
+        <div class="stack stack--tight mb-3">
+          <% stage[:options].each do |opt| %>
+            <label class="card card--interactive" style="display: flex; align-items: flex-start; gap: 0.8rem; padding: 1rem; cursor: pointer; margin: 0;">
+              <input type="radio" name="choice" value="<%= opt[:id] %>" style="margin-top: 0.2rem; cursor: pointer;" required>
+              <span class="text-sm"><%= opt[:text] %></span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="row row--between" style="align-items: center;">
+          <span class="text-xs text-faint">Architecture tested under failure injection</span>
+          <button type="submit" class="btn btn--primary" style="padding: 0.7rem 1.8rem;">
+            Validate Architecture &amp; Deploy →
+          </button>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

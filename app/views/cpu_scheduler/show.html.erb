@@ -1,0 +1,150 @@
+<% content_for :title, "CPU Scheduler Game & OS Lab" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">World 1</span>
+        <span class="text-xs text-muted">Operating Systems &amp; Concurrency</span>
+      </div>
+      <h1 class="page-title">CPU Scheduler Game</h1>
+      <p class="page-lead">
+        Simulate how operating systems allocate execution cycles to processes and threads. Compare FIFO, Shortest Job First, Priority, and Round Robin time slicing on an animated Gantt chart.
+      </p>
+    </div>
+  </header>
+
+  <div class="grid grid--3">
+    <%# Column 1 & 2: Gantt Chart & Performance Telemetry %>
+    <div class="stack stack--loose" style="grid-column: span 2;">
+      <%# Gantt Chart Visualizer %>
+      <div class="card" id="scheduler-results" style="padding: 1.5rem;">
+        <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+          <h2 class="text-base" style="margin: 0;">Execution Timeline (Gantt Chart)</h2>
+          <span class="badge badge--subtle">Total Time: <%= @simulation['total_time'] %>ms</span>
+        </div>
+
+        <%# Visual Gantt Chart %>
+        <div style="display: flex; gap: 2px; height: 50px; background: var(--surface-subtle); border-radius: var(--radius-sm); overflow: hidden; padding: 2px;">
+          <% @simulation["timeline"].each do |slice| %>
+            <% width_pct = (slice["duration"].to_f / @simulation["total_time"]) * 100 %>
+            <%
+              bg_color = case slice["pid"]
+                         when "P1" then "var(--accent)"
+                         when "P2" then "#34d399"
+                         when "P3" then "#f59e0b"
+                         when "P4" then "#ec4899"
+                         else "var(--border)"
+                         end
+            %>
+            <div style="width: <%= width_pct %>%; height: 100%; background: <%= bg_color %>; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.75rem;"
+                 title="<%= slice['pid'] %>: <%= slice['start'] %>ms - <%= slice['end'] %>ms (<%= slice['duration'] %>ms)">
+              <span><%= slice["pid"] %></span>
+              <span style="font-size: 0.65rem; opacity: 0.85;"><%= slice["duration"] %>ms</span>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Telemetry Gauges Grid %>
+        <div class="grid grid--3 mt-3">
+          <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+            <span class="text-xs text-muted">Average Waiting Time:</span>
+            <div class="mono text-lg font-bold text-accent"><%= @simulation["avg_wait"] %>ms</div>
+            <span class="text-xs text-faint">Time spent in ready queue</span>
+          </div>
+
+          <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+            <span class="text-xs text-muted">Average Turnaround:</span>
+            <div class="mono text-lg font-bold"><%= @simulation["avg_turnaround"] %>ms</div>
+            <span class="text-xs text-faint">Arrival to completion</span>
+          </div>
+
+          <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+            <span class="text-xs text-muted">Context Switches:</span>
+            <div class="mono text-lg font-bold"><%= @simulation["context_switches"] %></div>
+            <span class="text-xs text-faint">CPU register swaps</span>
+          </div>
+        </div>
+      </div>
+
+      <%# Process Queue Table %>
+      <div class="card" style="padding: 1.5rem;">
+        <h3 class="text-sm uppercase text-muted" style="margin-top: 0; margin-bottom: 0.8rem;">Ready Queue Processes</h3>
+        <table class="table" style="font-size: 0.85rem;">
+          <thead>
+            <tr>
+              <th scope="col">PID</th>
+              <th scope="col">Burst Time (CPU Duration)</th>
+              <th scope="col">Priority (Lower = Higher Priority)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @processes.each do |p| %>
+              <tr>
+                <td class="mono font-bold" style="color: var(--accent);"><%= p["pid"] %></td>
+                <td class="mono"><%= p["burst"] %>ms</td>
+                <td class="mono">Level <%= p["priority"] %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <%# Column 3: Algorithm Controls & Explanations %>
+    <div class="stack stack--loose">
+      <div class="card border-accent" style="padding: 1.5rem;">
+        <h3 class="text-sm uppercase text-accent" style="margin-top: 0; margin-bottom: 0.8rem;">Select Scheduling Algorithm</h3>
+
+        <%= form_with url: cpu_scheduler_simulate_path, method: :post, data: { turbo_stream: true } do |f| %>
+          <div class="stack stack--tight text-xs mb-3">
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+              <input type="radio" name="algorithm" value="round_robin" <%= 'checked' if @algorithm == 'round_robin' %>
+                     onchange="this.form.requestSubmit();">
+              <strong>Round Robin (Time Slicing)</strong>
+            </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+              <input type="radio" name="algorithm" value="sjf" <%= 'checked' if @algorithm == 'sjf' %>
+                     onchange="this.form.requestSubmit();">
+              <strong>Shortest Job First (Minimizes Waiting Time)</strong>
+            </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+              <input type="radio" name="algorithm" value="priority" <%= 'checked' if @algorithm == 'priority' %>
+                     onchange="this.form.requestSubmit();">
+              <strong>Priority Scheduling (Strict Precedence)</strong>
+            </label>
+            <label style="cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+              <input type="radio" name="algorithm" value="fifo" <%= 'checked' if @algorithm == 'fifo' %>
+                     onchange="this.form.requestSubmit();">
+              <strong>First In First Out (Convoy Effect Risk)</strong>
+            </label>
+          </div>
+
+          <div class="stack stack--tight mb-3">
+            <label class="text-xs uppercase text-muted font-bold">Round Robin Time Quantum (ms):</label>
+            <div class="row row--between" style="align-items: center;">
+              <input type="range" name="quantum" min="1" max="6" value="<%= @quantum %>"
+                     id="quantum-slider" style="flex: 1;"
+                     oninput="document.getElementById('quantum-val').textContent = this.value + 'ms';"
+                     onchange="this.form.requestSubmit();">
+              <span class="mono text-xs text-accent" id="quantum-val" style="min-width: 35px; text-align: right;"><%= @quantum %>ms</span>
+            </div>
+            <span class="text-xs text-faint">Too small = high context switch overhead. Too large = degrades to FIFO.</span>
+          </div>
+
+          <button type="submit" class="btn btn--primary btn--sm" style="width: 100%; justify-content: center;">
+            ⚡ Re-simulate Scheduling
+          </button>
+        <% end %>
+      </div>
+
+      <div class="card" style="padding: 1.2rem;">
+        <span class="badge badge--xp">+150 XP</span>
+        <h4 class="text-xs uppercase text-muted mt-2 mb-1">Why this matters for Rails:</h4>
+        <p class="text-xs text-muted" style="margin: 0; font-size: 0.75rem;">
+          Puma runs multiple Ruby threads inside each worker process. Under CRuby's Global VM Lock (GVL), thread execution is time-sliced similarly to Round Robin. CPU-bound code starves other threads, while I/O-bound requests release the GVL voluntarily!
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

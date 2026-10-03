@@ -1,0 +1,92 @@
+<div id="simulation-results" class="stack stack--loose">
+  <%# Status Banner %>
+  <div class="card <%= @simulation.passed ? 'border-success bg-surface-success' : (@simulation.bottlenecks.any? ? 'border-danger' : 'border-warning') %>" style="padding: 1.2rem;">
+    <div class="row row--between" style="align-items: center;">
+      <div class="stack stack--tight" style="gap: 0.3rem;">
+        <span class="badge <%= @simulation.passed ? 'badge--success' : (@simulation.bottlenecks.any? ? 'badge--danger' : 'badge--warning') %>" style="align-self: flex-start;">
+          <%= @simulation.verdict %>
+        </span>
+        <p class="text-sm <%= @simulation.passed ? 'text-success' : 'text-muted' %>" style="margin: 0;">
+          <%= @simulation.explanation %>
+        </p>
+      </div>
+      <% if @simulation.passed %>
+        <div style="font-size: 2rem;">🏆</div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Telemetry Gauges Grid %>
+  <div class="grid grid--4">
+    <div class="card" style="padding: 1rem; text-align: center;">
+      <span class="text-xs text-muted" style="text-transform: uppercase;">P99 Latency</span>
+      <div class="mono" style="font-size: 1.8rem; font-weight: bold; color: <%= @simulation.p99_latency_ms > @challenge[:max_acceptable_latency] ? 'var(--danger)' : 'var(--success)' %>;">
+        <%= @simulation.p99_latency_ms %>ms
+      </div>
+      <span class="text-xs text-faint">Target: &lt; <%= @challenge[:max_acceptable_latency] %>ms</span>
+    </div>
+
+    <div class="card" style="padding: 1rem; text-align: center;">
+      <span class="text-xs text-muted" style="text-transform: uppercase;">Error Rate</span>
+      <div class="mono" style="font-size: 1.8rem; font-weight: bold; color: <%= @simulation.error_rate_percent > @challenge[:max_acceptable_error] ? 'var(--danger)' : 'var(--success)' %>;">
+        <%= @simulation.error_rate_percent %>%
+      </div>
+      <span class="text-xs text-faint">Target: &lt; <%= @challenge[:max_acceptable_error] %>%</span>
+    </div>
+
+    <div class="card" style="padding: 1rem; text-align: center;">
+      <span class="text-xs text-muted" style="text-transform: uppercase;">App Server CPU</span>
+      <div class="mono" style="font-size: 1.8rem; font-weight: bold; color: <%= @simulation.app_cpu_percent >= 85 ? 'var(--danger)' : 'var(--accent)' %>;">
+        <%= @simulation.app_cpu_percent %>%
+      </div>
+      <div class="meter meter--sm mt-1" role="img" aria-label="<%= @simulation.app_cpu_percent %>% CPU usage">
+        <div class="meter__fill <%= 'bg-danger' if @simulation.app_cpu_percent >= 85 %>" style="width: <%= @simulation.app_cpu_percent %>%;"></div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 1rem; text-align: center;">
+      <span class="text-xs text-muted" style="text-transform: uppercase;">DB Connections</span>
+      <div class="mono" style="font-size: 1.8rem; font-weight: bold; color: <%= @simulation.db_connections_used > @simulation.db_connection_limit ? 'var(--danger)' : 'var(--text)' %>;">
+        <%= @simulation.db_connections_used %> / <%= @simulation.db_connection_limit %>
+      </div>
+      <span class="text-xs text-faint">Cache Hit: <%= @simulation.cache_hit_ratio_percent %>%</span>
+    </div>
+  </div>
+
+  <%# Active Bottlenecks & Critical Alerts %>
+  <% if @simulation.bottlenecks.any? %>
+    <div class="card border-danger" style="padding: 1.2rem;">
+      <h3 class="text-sm text-danger" style="margin-top: 0; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>🚨</span> Active Architectural Bottlenecks (<%= @simulation.bottlenecks.size %>)
+      </h3>
+      <div class="stack stack--tight">
+        <% @simulation.bottlenecks.each do |alert| %>
+          <div class="card card--subtle" style="padding: 0.8rem; border-left: 3px solid var(--danger);">
+            <div class="mono text-xs"><%= alert %></div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# Active Architecture Visual Topology %>
+  <div class="card" style="padding: 1.2rem;">
+    <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+      <h3 class="text-sm text-muted" style="margin: 0; text-transform: uppercase;">Live Topology (Data Flow)</h3>
+      <span class="badge badge--subtle"><%= @components.size %> Nodes Active · $<%= @simulation.monthly_cost %>/mo</span>
+    </div>
+
+    <div class="system-topology-flow" style="display: flex; flex-wrap: wrap; gap: 0.8rem; align-items: center; justify-content: center; padding: 1.5rem 0;">
+      <% @components.each_with_index do |comp, idx| %>
+        <% info = SystemDesign::Simulator::COMPONENTS_INFO[comp] || { name: comp, icon: "📦" } %>
+        <div class="chip chip--active" style="padding: 0.8rem 1.2rem; font-size: 1rem; border-radius: var(--radius-md); display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.4rem;"><%= info[:icon] %></span>
+          <strong><%= info[:name] %></strong>
+        </div>
+        <% if idx < @components.size - 1 %>
+          <span class="flow__arrow" style="font-size: 1.4rem; color: var(--accent);">➔</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+</div>

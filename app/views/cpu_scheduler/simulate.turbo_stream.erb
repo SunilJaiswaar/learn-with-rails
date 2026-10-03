@@ -1,0 +1,57 @@
+<%= turbo_stream.replace "scheduler-results" do %>
+  <div class="card" id="scheduler-results" style="padding: 1.5rem;">
+    <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+      <h2 class="text-base" style="margin: 0;">Execution Timeline (Gantt Chart)</h2>
+      <span class="badge badge--subtle">Total Time: <%= @simulation['total_time'] %>ms</span>
+    </div>
+
+    <div style="display: flex; gap: 2px; height: 50px; background: var(--surface-subtle); border-radius: var(--radius-sm); overflow: hidden; padding: 2px;">
+      <% @simulation["timeline"].each do |slice| %>
+        <% width_pct = (slice["duration"].to_f / @simulation["total_time"]) * 100 %>
+        <%
+          bg_color = case slice["pid"]
+                     when "P1" then "var(--accent)"
+                     when "P2" then "#34d399"
+                     when "P3" then "#f59e0b"
+                     when "P4" then "#ec4899"
+                     else "var(--border)"
+                     end
+        %>
+        <div style="width: <%= width_pct %>%; height: 100%; background: <%= bg_color %>; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.75rem;"
+             title="<%= slice['pid'] %>: <%= slice['start'] %>ms - <%= slice['end'] %>ms (<%= slice['duration'] %>ms)">
+          <span><%= slice["pid"] %></span>
+          <span style="font-size: 0.65rem; opacity: 0.85;"><%= slice["duration"] %>ms</span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="grid grid--3 mt-3">
+      <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+        <span class="text-xs text-muted">Average Waiting Time:</span>
+        <div class="mono text-lg font-bold text-accent"><%= @simulation["avg_wait"] %>ms</div>
+        <span class="text-xs text-faint">Time spent in ready queue</span>
+      </div>
+
+      <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+        <span class="text-xs text-muted">Average Turnaround:</span>
+        <div class="mono text-lg font-bold"><%= @simulation["avg_turnaround"] %>ms</div>
+        <span class="text-xs text-faint">Arrival to completion</span>
+      </div>
+
+      <div class="card card--subtle" style="padding: 0.8rem; text-align: center;">
+        <span class="text-xs text-muted">Context Switches:</span>
+        <div class="mono text-lg font-bold"><%= @simulation["context_switches"] %></div>
+        <span class="text-xs text-faint">CPU register swaps</span>
+      </div>
+    </div>
+  </div>
+<% end %>
+
+<% if @algorithm == "sjf" || (@algorithm == "round_robin" && @quantum == 2) %>
+  <%= turbo_stream.append "toasts" do %>
+    <%= render "shared/toast",
+               title: "Scheduling Optimized! (+150 XP)",
+               body: "Average waiting time reduced to #{@simulation['avg_wait']}ms.",
+               kind: :xp %>
+  <% end %>
+<% end %>

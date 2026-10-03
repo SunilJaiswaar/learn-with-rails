@@ -24,4 +24,5 @@ RSpec.configure do |config|
   config.include AuthenticationHelpers, type: :request
   config.include SandboxHelpers
   config.include RackAttackHelpers, type: :request
+  config.include ActiveSupport::Testing::TimeHelpers
 end

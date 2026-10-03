@@ -78,9 +78,7 @@
 
 <% if @attempt.xp_awarded.positive? %>
   <%= turbo_stream.append "toasts" do %>
-    <div class="toast" data-controller="toast" role="status">
-      <div class="toast__title">+<%= @attempt.xp_awarded %> XP</div>
-      <div class="text-sm text-muted">Interview question answered</div>
-    </div>
+    <%= render "shared/toast", title: "+#{@attempt.xp_awarded} XP",
+               body: "Interview question answered", kind: :xp %>
   <% end %>
 <% end %>

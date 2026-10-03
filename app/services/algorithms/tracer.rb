@@ -12,6 +12,7 @@ module Algorithms
       "sliding-window" => Tracers::SlidingWindow,
       "breadth-first-search" => Tracers::BreadthFirstSearch,
       "depth-first-search" => Tracers::DepthFirstSearch,
+      "dijkstra" => Tracers::Dijkstra,
       "fibonacci-memoisation" => Tracers::FibonacciMemo
     }.freeze
 

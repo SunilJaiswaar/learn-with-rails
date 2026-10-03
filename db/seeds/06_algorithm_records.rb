@@ -143,7 +143,18 @@ records = [
     tradeoffs: [ "Turns O(2^n) into O(n)",
                  "Costs memory proportional to the state space",
                  "Only valid when subproblems genuinely overlap" ],
-    production_note: "The same idea as caching an expensive pure function." }
+    production_note: "The same idea as caching an expensive pure function." },
+
+  { slug: "dijkstra", name: "Dijkstra's Algorithm", category: "graph",
+    skill: "algorithmic-thinking", position: 12, visualizer_kind: "graph",
+    idea: "Find the shortest path from a starting node to all other nodes in a weighted graph using a priority queue.",
+    pseudocode: "dist[start] = 0; pq.push([0, start])\nuntil pq.empty?:\n  d, u = pq.pop_min()\n  for v, weight in u.neighbors:\n    if dist[u] + weight < dist[v]:\n      dist[v] = dist[u] + weight\n      pq.push([dist[v], v])",
+    time_best: "O((V + E) log V)", time_average: "O((V + E) log V)", time_worst: "O((V + E) log V)",
+    space_complexity: "O(V)",
+    tradeoffs: [ "Guarantees shortest paths on non-negative weighted graphs",
+                 "Greedy choice: visits confirmed shortest node next",
+                 "Cannot handle negative edge weights (requires Bellman-Ford)" ],
+    production_note: "Network routing protocols (OSPF, IS-IS) and mapping navigation services." }
 ]
 
 records.each do |attrs|

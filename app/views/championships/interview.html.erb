@@ -1,0 +1,89 @@
+<% content_for :title, "12-Round Technical Interview Championship" %>
+
+<div class="stack stack--loose">
+  <div class="row row--between" style="align-items: center;">
+    <div>
+      <%= link_to "← Back to Championship Arena", championships_path, class: "text-xs text-muted" %>
+      <h1 class="page-title mt-1" style="margin-bottom: 0;">12-Round Master Technical Interview</h1>
+    </div>
+    <%= button_to "Reset Interview", reset_interview_championship_path, method: :post, class: "btn btn--sm text-xs" %>
+  </div>
+
+  <% if @completed %>
+    <%# Final Scorecard & Evaluation Report %>
+    <div class="card border-accent" style="padding: 2rem;">
+      <div class="row row--between" style="align-items: center; margin-bottom: 1.5rem;">
+        <div>
+          <span class="badge badge--xp">+500 XP Awarded</span>
+          <h2 class="text-xl mt-1" style="margin-bottom: 0;">Interview Evaluation Scorecard</h2>
+        </div>
+        <div style="text-align: right;">
+          <span class="text-xs text-muted">Overall Competency Score:</span>
+          <div class="mono text-accent" style="font-size: 2.2rem; font-weight: bold;"><%= @accuracy %>%</div>
+        </div>
+      </div>
+
+      <div class="grid grid--2 mb-3">
+        <div class="card card--subtle" style="padding: 1.2rem; border-left: 4px solid var(--success);">
+          <strong class="text-sm text-success">Demonstrated Strong Areas (<%= @strong_areas.size %>):</strong>
+          <ul class="text-xs text-muted mt-2" style="margin-bottom: 0; padding-left: 1.2rem;">
+            <% @strong_areas.each do |area| %>
+              <li style="margin-bottom: 0.3rem;"><%= area %></li>
+            <% end %>
+          </ul>
+        </div>
+
+        <div class="card card--subtle" style="padding: 1.2rem; border-left: 4px solid var(--danger);">
+          <strong class="text-sm text-danger">Recommended Revision &amp; Knowledge Gaps (<%= @weak_areas.size %>):</strong>
+          <% if @weak_areas.any? %>
+            <ul class="text-xs text-muted mt-2" style="margin-bottom: 0; padding-left: 1.2rem;">
+              <% @weak_areas.each do |area| %>
+                <li style="margin-bottom: 0.3rem;"><%= area %></li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-xs text-muted mt-2">Zero gaps identified! Perfect performance across all 12 rounds.</p>
+          <% end %>
+        </div>
+      </div>
+
+      <div class="row row--between" style="align-items: center; border-top: 1px solid var(--border); padding-top: 1.2rem;">
+        <span class="text-xs text-muted">Review schedules have been updated across your spaced repetition queue.</span>
+        <%= link_to "Return to Dashboard →", dashboard_path, class: "btn btn--primary" %>
+      </div>
+    </div>
+  <% else %>
+    <%# Live Active Round Player %>
+    <div class="card" style="padding: 1.8rem;">
+      <div class="row row--between" style="align-items: center; margin-bottom: 1.2rem;">
+        <div class="row" style="align-items: center; gap: 0.6rem;">
+          <span class="badge badge--accent">Round <%= @current_round_num %> of <%= @total_rounds %></span>
+          <span class="text-xs text-muted"><%= @round[:name] %></span>
+        </div>
+        <div class="meter meter--sm" style="width: 150px;" role="img" aria-label="Progress <%= @current_round_num %> of <%= @total_rounds %>">
+          <div class="meter__fill" style="width: <%= ((@current_round_num - 1).to_f / @total_rounds) * 100 %>%;"></div>
+        </div>
+      </div>
+
+      <h2 class="text-lg mb-3" style="font-weight: 600; line-height: 1.4;"><%= @round[:question] %></h2>
+
+      <%= form_with url: answer_interview_championship_path, method: :post do |f| %>
+        <div class="stack stack--tight mb-3">
+          <% @round[:options].each_with_index do |opt, idx| %>
+            <label class="card card--interactive" style="display: flex; align-items: flex-start; gap: 0.8rem; padding: 1rem; cursor: pointer; margin: 0;">
+              <input type="radio" name="option_index" value="<%= idx %>" style="margin-top: 0.2rem; cursor: pointer;" required>
+              <span class="text-sm"><%= opt[:text] %></span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="row row--between" style="align-items: center;">
+          <span class="text-xs text-faint">Evaluated against Senior Engineering Rubrics</span>
+          <button type="submit" class="btn btn--primary" style="padding: 0.7rem 1.8rem;">
+            Submit Answer &amp; Advance →
+          </button>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>

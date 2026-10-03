@@ -34,9 +34,7 @@
 
 <% if @outcome.xp.to_i.positive? %>
   <%= turbo_stream.append "toasts" do %>
-    <div class="toast" data-controller="toast" role="status">
-      <div class="toast__title">+<%= @outcome.xp %> XP</div>
-      <div class="text-sm text-muted">Boss defeated</div>
-    </div>
+    <%= render "shared/toast", title: "+#{@outcome.xp} XP",
+               body: "Boss defeated", kind: :xp %>
   <% end %>
 <% end %>

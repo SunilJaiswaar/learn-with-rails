@@ -1,0 +1,22 @@
+<%#
+  Shared toast notification.
+
+  Locals:
+    title   - the headline (required)
+    body    - supporting line (optional)
+    kind    - :xp (default), :achievement or :level; selects the accent
+    timeout - ms before it self-dismisses (optional)
+%>
+<%
+  kind ||= :xp
+  body ||= nil
+  timeout ||= nil
+  modifier = kind.to_sym == :achievement ? " toast--achievement" : ""
+%>
+<div class="toast<%= modifier %>" data-controller="toast" role="status"
+     <%= tag.attributes(data: { toast_timeout_value: timeout }) if timeout %>>
+  <div class="toast__title"><%= title %></div>
+  <% if body.present? %>
+    <div class="text-sm text-muted"><%= body %></div>
+  <% end %>
+</div>

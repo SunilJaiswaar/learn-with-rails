@@ -17,6 +17,57 @@ Rails.application.routes.draw do
   get "big-o",     to: "complexity#show", as: :complexity
   get "search",    to: "search#index",   as: :search
 
+  # --- Engineering Laboratories & Simulators ----------------------------
+  get  "system-design",            to: "system_design#index", as: :system_design_index
+  get  "system-design/:slug",      to: "system_design#show",  as: :system_design_challenge
+  post "system-design/:slug/simulate", to: "system_design#simulate", as: :system_design_simulate
+
+  get  "network-lab",              to: "network_lab#show",         as: :network_lab
+  post "network-lab/inspect",      to: "network_lab#inspect_layer", as: :network_lab_inspect
+  post "network-lab/solve",        to: "network_lab#solve_challenge", as: :network_lab_solve
+
+  get  "redis-vault",              to: "redis_vault#show",           as: :redis_vault
+  post "redis-vault/execute",      to: "redis_vault#execute_command", as: :redis_vault_execute
+  post "redis-vault/blast",        to: "redis_vault#rate_limit_blast", as: :redis_vault_blast
+  post "redis-vault/reset",        to: "redis_vault#reset_store",    as: :redis_vault_reset
+
+  get  "sidekiq-factory",          to: "sidekiq_factory#show",             as: :sidekiq_factory
+  post "sidekiq-factory/enqueue",  to: "sidekiq_factory#enqueue_job",      as: :sidekiq_factory_enqueue
+  post "sidekiq-factory/incident", to: "sidekiq_factory#trigger_incident", as: :sidekiq_factory_trigger_incident
+  post "sidekiq-factory/resolve",  to: "sidekiq_factory#resolve_incident", as: :sidekiq_factory_resolve_incident
+  post "sidekiq-factory/reset",    to: "sidekiq_factory#reset",            as: :sidekiq_factory_reset
+
+  get  "git-lab",                  to: "git_lab#show",             as: :git_lab
+  post "git-lab/execute",          to: "git_lab#execute_command",  as: :git_lab_execute
+  post "git-lab/resolve-conflict", to: "git_lab#resolve_conflict", as: :git_lab_resolve_conflict
+  post "git-lab/reset",            to: "git_lab#reset",            as: :git_lab_reset
+
+  get  "cicd-game",                to: "cicd_game#show",         as: :cicd_game
+  post "cicd-game/run",            to: "cicd_game#run_pipeline", as: :cicd_game_run
+  post "cicd-game/reset",          to: "cicd_game#reset",        as: :cicd_game_reset
+
+  get  "security-lab",             to: "security_lab#show",         as: :security_lab
+  post "security-lab/exploit",     to: "security_lab#test_exploit", as: :security_lab_exploit
+
+  get  "cpu-scheduler",            to: "cpu_scheduler#show",     as: :cpu_scheduler
+  post "cpu-scheduler/simulate",   to: "cpu_scheduler#simulate", as: :cpu_scheduler_simulate
+
+  get  "hotwire-lab",              to: "hotwire_lab#show", as: :hotwire_lab
+
+  resources :incidents, only: %i[index show] do
+    member do
+      post :resolve
+    end
+  end
+
+  get  "championships",                                to: "championships#index",              as: :championships
+  get  "championships/interview-championship",          to: "championships#interview",          as: :interview_championship
+  post "championships/interview-championship/answer",   to: "championships#answer_round",       as: :answer_interview_championship
+  post "championships/interview-championship/reset",    to: "championships#reset_interview",    as: :reset_interview_championship
+  get  "championships/developer-capstone",             to: "championships#developer_capstone", as: :developer_capstone
+  post "championships/developer-capstone/submit",       to: "championships#submit_capstone_stage", as: :submit_capstone_stage
+  post "championships/developer-capstone/reset",        to: "championships#reset_capstone",     as: :reset_developer_capstone
+
   get   "settings", to: "settings#show",   as: :settings
   patch "settings", to: "settings#update"
 

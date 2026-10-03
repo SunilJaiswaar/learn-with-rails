@@ -1,0 +1,51 @@
+<div id="packet-inspector" class="stack stack--loose">
+  <div class="card" style="padding: 1.5rem; border-top: 4px solid var(--accent);">
+    <div class="row row--between" style="align-items: center; margin-bottom: 0.8rem;">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span style="font-size: 1.8rem;" aria-hidden="true"><%= @layer_data[:icon] %></span>
+        <div>
+          <h2 class="text-base" style="margin: 0;"><%= @layer_data[:name] %></h2>
+          <span class="mono text-xs text-accent"><%= @layer_data[:protocol] %></span>
+        </div>
+      </div>
+      <span class="badge badge--subtle"><%= @layer_data[:telemetry] %></span>
+    </div>
+
+    <p class="text-sm text-muted" style="margin-top: 0; margin-bottom: 1rem;">
+      <%= @layer_data[:summary] %>
+    </p>
+
+    <%# Packet Headers / Wire Frame Inspector %>
+    <div class="code-panel">
+      <div class="code-panel__bar row row--between">
+        <span>Packet Inspector · Protocol Headers</span>
+        <span class="text-xs text-faint">Decoded Binary Frame</span>
+      </div>
+      <div style="padding: 1rem; overflow-x: auto;">
+        <table class="table" style="font-size: 0.8rem; margin: 0;">
+          <thead>
+            <tr>
+              <th scope="col" style="width: 35%;">Header Field</th>
+              <th scope="col">Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @layer_data[:headers].each do |field, value| %>
+              <tr>
+                <td class="mono" style="color: var(--accent); font-weight: bold;"><%= field %></td>
+                <td class="mono"><%= value %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card card--subtle mt-3" style="padding: 1rem; border-left: 3px solid var(--accent);">
+      <strong class="text-xs uppercase text-muted">Why This Layer Matters:</strong>
+      <p class="text-xs text-muted mt-1" style="margin-bottom: 0;">
+        <%= @layer_data[:explanation] %>
+      </p>
+    </div>
+  </div>
+</div>

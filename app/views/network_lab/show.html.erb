@@ -1,0 +1,115 @@
+<% content_for :title, "Networking Lab & Internet City" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--accent">World 2</span>
+        <span class="text-xs text-muted">Engineering Laboratory</span>
+      </div>
+      <h1 class="page-title">Networking Lab &amp; Packet Inspector</h1>
+      <p class="page-lead">
+        Trace an HTTP request as it traverses physical, transport, security, and application layers. Click any layer in the pipeline to disassemble the packets, inspect raw headers, and solve network failure scenarios.
+      </p>
+    </div>
+  </header>
+
+  <%# Multi-Layer Interactive Pipeline %>
+  <div class="card" style="padding: 1.5rem;">
+    <div class="row row--between" style="align-items: center; margin-bottom: 1.2rem;">
+      <h2 class="text-sm uppercase text-muted" style="margin: 0;">Interactive Request Pipeline</h2>
+      <span class="text-xs text-faint">Click a layer to inspect its live packets</span>
+    </div>
+
+    <div style="display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.8rem; align-items: center;">
+      <% NetworkLabController::LAYERS.each do |key, layer| %>
+        <% active = (key == @active_layer) %>
+        <%= link_to network_lab_path(layer: key),
+                    class: "card card--interactive #{'border-accent bg-surface-accent' if active}",
+                    style: "min-width: 140px; padding: 0.8rem; text-decoration: none; text-align: center; flex: 1;",
+                    data: { turbo_stream: true } do %>
+          <div style="font-size: 1.8rem; margin-bottom: 0.3rem;"><%= layer[:icon] %></div>
+          <strong class="text-xs <%= active ? 'text-accent' : 'text-default' %>" style="display: block;">
+            <%= layer[:name].sub(/^\d+\.\s*/, '') %>
+          </strong>
+          <span class="mono text-xs text-faint" style="font-size: 0.65rem;"><%= layer[:protocol] %></span>
+        <% end %>
+        <% unless key == "database" %>
+          <span class="flow__arrow" style="color: var(--accent); font-size: 1.2rem;">➔</span>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Selected Layer Packet Inspector %>
+  <%= render "network_lab/inspector" %>
+
+  <%# Network Engineering Challenges %>
+  <div class="card" style="padding: 1.5rem;">
+    <h2 class="text-base" style="margin-top: 0; margin-bottom: 1rem;">Networking Engineering Challenges</h2>
+    <div class="grid grid--3">
+      <%# Challenge 1 %>
+      <div class="card card--subtle" style="padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="stack stack--tight">
+          <span class="badge badge--xp" style="align-self: flex-start;">+150 XP</span>
+          <strong class="text-sm mt-1">Why is HTTPS secure?</strong>
+          <p class="text-xs text-muted">
+            What cryptographic guarantees does TLS 1.3 provide that plain HTTP over TCP lacks?
+          </p>
+        </div>
+        <%= form_with url: network_lab_solve_path, method: :post, class: "mt-2" do |f| %>
+          <%= hidden_field_tag :challenge_id, "https_security" %>
+          <%= hidden_field_tag :layer, @active_layer %>
+          <div class="stack stack--tight text-xs mb-2">
+            <label><input type="radio" name="answer" value="faster_bandwidth"> It compresses data to speed up transfer</label>
+            <label><input type="radio" name="answer" value="encryption_authentication"> End-to-end encryption + Server Authentication</label>
+            <label><input type="radio" name="answer" value="avoids_dns"> It bypasses DNS lookups</label>
+          </div>
+          <button type="submit" class="btn btn--sm btn--primary" style="width: 100%;">Submit Diagnosis</button>
+        <% end %>
+      </div>
+
+      <%# Challenge 2 %>
+      <div class="card card--subtle" style="padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="stack stack--tight">
+          <span class="badge badge--xp" style="align-self: flex-start;">+150 XP</span>
+          <strong class="text-sm mt-1">Why is DNS needed?</strong>
+          <p class="text-xs text-muted">
+            Why can't Internet routers route packets using domain names alone?
+          </p>
+        </div>
+        <%= form_with url: network_lab_solve_path, method: :post, class: "mt-2" do |f| %>
+          <%= hidden_field_tag :challenge_id, "dns_need" %>
+          <%= hidden_field_tag :layer, @active_layer %>
+          <div class="stack stack--tight text-xs mb-2">
+            <label><input type="radio" name="answer" value="name_to_ip"> Routers route fixed-size IP addresses via BGP, not text strings</label>
+            <label><input type="radio" name="answer" value="saves_money"> It charges domain fees</label>
+            <label><input type="radio" name="answer" value="cookies"> It stores browser cookies</label>
+          </div>
+          <button type="submit" class="btn btn--sm btn--primary" style="width: 100%;">Submit Diagnosis</button>
+        <% end %>
+      </div>
+
+      <%# Challenge 3 %>
+      <div class="card card--subtle" style="padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="stack stack--tight">
+          <span class="badge badge--xp" style="align-self: flex-start;">+150 XP</span>
+          <strong class="text-sm mt-1">Why did this request time out?</strong>
+          <p class="text-xs text-muted">
+            A client experiences a 30s connection timeout. TCP SYN packets were sent with no response.
+          </p>
+        </div>
+        <%= form_with url: network_lab_solve_path, method: :post, class: "mt-2" do |f| %>
+          <%= hidden_field_tag :challenge_id, "tcp_timeout" %>
+          <%= hidden_field_tag :layer, @active_layer %>
+          <div class="stack stack--tight text-xs mb-2">
+            <label><input type="radio" name="answer" value="sql_error"> The database had a SQL syntax error</label>
+            <label><input type="radio" name="answer" value="syn_unanswered"> Firewall dropped SYN packet or server port was unreachable</label>
+            <label><input type="radio" name="answer" value="ssl_cert"> The SSL certificate had expired</label>
+          </div>
+          <button type="submit" class="btn btn--sm btn--primary" style="width: 100%;">Submit Diagnosis</button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

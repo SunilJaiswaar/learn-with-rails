@@ -1,0 +1,43 @@
+<% content_for :title, "Production Incident Simulator & Debugging" %>
+
+<div class="stack stack--loose">
+  <header class="page-header">
+    <div class="stack stack--tight">
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="badge badge--danger">🚨 Live War Room</span>
+        <span class="text-xs text-muted">Real-World Production Incidents</span>
+      </div>
+      <h1 class="page-title">Production Incidents &amp; Debugging World</h1>
+      <p class="page-lead">
+        No mock quizzes. Receive real alerts, analyze live telemetry metrics, inspect failing server logs and stack traces, diagnose the root cause, and deploy the fix to resolve the outage.
+      </p>
+    </div>
+  </header>
+
+  <%# Active Incidents Grid %>
+  <div class="grid grid--2">
+    <% @incidents.each do |incident| %>
+      <% resolved = Array(session[:resolved_incidents]).include?(incident[:slug]) %>
+      <div class="card <%= resolved ? 'border-success bg-surface-success' : 'border-danger' %>" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
+        <div class="stack stack--tight">
+          <div class="row row--between" style="align-items: center;">
+            <span class="badge <%= resolved ? 'badge--success' : 'badge--danger' %>">
+              <%= resolved ? 'RESOLVED ✔' : incident[:severity] %>
+            </span>
+            <span class="badge badge--xp">+<%= incident[:xp_reward] %> XP</span>
+          </div>
+
+          <h2 class="text-base mt-2" style="margin-bottom: 0.4rem;"><%= incident[:title] %></h2>
+          <span class="text-xs text-muted"><%= incident[:category] %></span>
+          <p class="text-xs text-muted mt-2"><%= incident[:symptom] %></p>
+        </div>
+
+        <div class="row row--between mt-3" style="align-items: center; border-top: 1px solid var(--border); padding-top: 1rem;">
+          <span class="text-xs text-faint">Live Telemetry &amp; Logs Ready</span>
+          <%= link_to (resolved ? "Review Debrief →" : "Enter Incident War Room →"), incident_path(incident[:slug]),
+                      class: "btn btn--sm #{resolved ? '' : 'btn--primary'}" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

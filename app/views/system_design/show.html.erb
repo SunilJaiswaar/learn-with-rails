@@ -1,0 +1,137 @@
+<% content_for :title, "#{@challenge[:title]} · System Design Simulator" %>
+
+<div class="stack stack--loose">
+  <div class="row row--between" style="align-items: center;">
+    <div>
+      <%= link_to "← Back to System Design Universe", system_design_index_path, class: "text-xs text-muted" %>
+      <div class="row" style="align-items: center; gap: 0.6rem; margin-top: 0.2rem;">
+        <span style="font-size: 1.8rem;" aria-hidden="true"><%= @challenge[:icon] %></span>
+        <h1 class="page-title" style="margin: 0;"><%= @challenge[:title] %></h1>
+      </div>
+    </div>
+    <div class="row" style="gap: 0.6rem; align-items: center;">
+      <span class="badge badge--xp">+<%= @challenge[:xp_reward] %> XP</span>
+      <span class="badge badge--accent"><%= @challenge[:difficulty] %></span>
+    </div>
+  </div>
+
+  <%# Requirements and Mission Objective %>
+  <div class="card card--subtle" style="padding: 1.2rem;">
+    <div class="grid grid--2">
+      <div>
+        <strong class="text-xs uppercase text-muted">Requirements & Constraints:</strong>
+        <ul class="text-xs text-muted" style="margin: 0.4rem 0 0; padding-left: 1.2rem;">
+          <% @challenge[:functional_requirements].each do |req| %>
+            <li><%= req %></li>
+          <% end %>
+        </ul>
+      </div>
+      <div>
+        <strong class="text-xs uppercase text-muted">Target SLA (To Pass Challenge):</strong>
+        <ul class="text-xs text-muted" style="margin: 0.4rem 0 0; padding-left: 1.2rem;">
+          <li>Traffic Target: <strong><%= number_with_delimiter @challenge[:target_rps] %> RPS</strong></li>
+          <li>Latency Target: <strong>P99 &lt; <%= @challenge[:max_acceptable_latency] %>ms</strong></li>
+          <li>Error Target: <strong>&lt; <%= @challenge[:max_acceptable_error] %>% errors</strong></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <%# Interactive Simulation Workbench %>
+  <%= form_with url: system_design_simulate_path(@challenge[:slug]), method: :post, id: "simulator-form", data: { turbo_stream: true } do |f| %>
+    <div class="grid grid--3">
+      <%# Column 1 & 2: Architectural Components Canvas %>
+      <div class="stack stack--loose" style="grid-column: span 2;">
+        <div class="card" style="padding: 1.5rem;">
+          <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
+            <h2 class="text-sm uppercase text-muted" style="margin: 0;">1. Architectural Building Blocks</h2>
+            <span class="text-xs text-faint">Select components to include in your topology</span>
+          </div>
+
+          <div class="grid grid--2" style="gap: 0.8rem;">
+            <% @challenge[:available_components].each do |comp_id| %>
+              <% info = SystemDesign::Simulator::COMPONENTS_INFO[comp_id] || { name: comp_id, icon: "📦", cost: 0 } %>
+              <% checked = @components.include?(comp_id) %>
+              <label class="card card--interactive <%= 'border-accent' if checked %>"
+                     style="display: flex; align-items: center; gap: 0.8rem; padding: 0.8rem 1rem; cursor: pointer; margin: 0;">
+                <input type="checkbox" name="components[]" value="<%= comp_id %>" <%= 'checked' if checked %>
+                       onchange="document.getElementById('simulator-form').requestSubmit();" style="cursor: pointer;">
+                <span style="font-size: 1.4rem;"><%= info[:icon] %></span>
+                <div style="flex: 1;">
+                  <strong class="text-sm" style="display: block;"><%= info[:name] %></strong>
+                  <span class="text-xs text-faint">$<%= info[:cost] %>/mo</span>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Dynamic Simulation Results Panel %>
+        <%= render "system_design/simulation_results" %>
+      </div>
+
+      <%# Column 3: Traffic Controls & Failure Injections %>
+      <div class="stack stack--loose">
+        <%# Traffic Control Slider %>
+        <div class="card" style="padding: 1.2rem;">
+          <h2 class="text-sm uppercase text-muted" style="margin-top: 0; margin-bottom: 0.8rem;">2. Traffic Load (RPS)</h2>
+          <div class="stack stack--tight">
+            <div class="row row--between" style="align-items: center;">
+              <span class="text-xs text-muted">Simulated Traffic:</span>
+              <span class="mono text-lg text-accent" id="rps-display"><%= number_with_delimiter @rps %> RPS</span>
+            </div>
+            <input type="range" name="rps" min="1000" max="60000" step="1000" value="<%= @rps %>"
+                   id="rps-slider" style="width: 100%; cursor: pointer;"
+                   oninput="document.getElementById('rps-display').textContent = Number(this.value).toLocaleString() + ' RPS';"
+                   onchange="document.getElementById('simulator-form').requestSubmit();">
+            <div class="row row--between text-xs text-faint">
+              <span>1k RPS</span>
+              <span>Target: <%= number_with_delimiter @challenge[:target_rps] %></span>
+              <span>60k RPS</span>
+            </div>
+          </div>
+        </div>
+
+        <%# Failure Injections %>
+        <div class="card border-warning" style="padding: 1.2rem;">
+          <h2 class="text-sm text-warning" style="margin-top: 0; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚡</span> 3. Chaos & Failure Injections
+          </h2>
+          <p class="text-xs text-muted mb-2">Simulate real-world production outages and watch your system respond.</p>
+
+          <div class="stack stack--tight">
+            <% @challenge[:available_failures].each do |failure| %>
+              <% active = @failures.include?(failure[:id]) %>
+              <label class="card card--subtle <%= 'border-danger' if active %>"
+                     style="display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.7rem; cursor: pointer; margin: 0;">
+                <input type="checkbox" name="failures[]" value="<%= failure[:id] %>" <%= 'checked' if active %>
+                       onchange="document.getElementById('simulator-form').requestSubmit();" style="margin-top: 0.2rem; cursor: pointer;">
+                <div>
+                  <strong class="text-xs <%= active ? 'text-danger' : 'text-default' %>" style="display: block;">
+                    <%= failure[:name] %>
+                  </strong>
+                  <span class="text-xs text-muted" style="font-size: 0.75rem;"><%= failure[:description] %></span>
+                </div>
+              </label>
+            <% end %>
+          </div>
+        </div>
+
+        <%# Run Simulation Button %>
+        <button type="submit" class="btn btn--primary" style="width: 100%; justify-content: center; padding: 0.8rem;">
+          ⚡ Run High-Scale Simulation
+        </button>
+
+        <%# Recommended Architectural Patterns %>
+        <div class="card" style="padding: 1.2rem;">
+          <h3 class="text-xs uppercase text-muted" style="margin-top: 0; margin-bottom: 0.6rem;">Engineering Patterns:</h3>
+          <ul class="text-xs text-muted" style="margin: 0; padding-left: 1.2rem;">
+            <% @challenge[:architectural_solutions].each do |sol| %>
+              <li style="margin-bottom: 0.4rem;"><%= sol %></li>
+            <% end %>
+          </ul>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
