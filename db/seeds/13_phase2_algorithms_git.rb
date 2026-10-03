@@ -583,8 +583,8 @@ challenge!(
 )
 
 challenge!(
-  slug: "debug-index-inside-loop", title: "The index built in the wrong place",
-  topic: hm1, skill_slug: "hash-maps", type: :debug, difficulty: :medium, xp: 50,
+  slug: "optimize-index-inside-loop", title: "The index built in the wrong place",
+  topic: hm1, skill_slug: "hash-maps", type: :optimize, difficulty: :medium, xp: 50,
   prompt: "`attach_customers(orders, customers)` pairs each order with its " \
           "customer's name. It uses a hash index — but it is still O(n*m) and " \
           "times out on the hidden test.\n\n" \
@@ -614,16 +614,66 @@ challenge!(
       "attach_customers([{id: 1, customer_id: 99}], [{id: 10, name: 'Asha'}])",
       "[[1, nil]]" ],
     [ "handles no orders", "attach_customers([], [{id: 1, name: 'A'}])", "[]" ],
-    [ "is fast on 2,000 orders and 2,000 customers",
-      "orders = (1..2000).map { |i| {id: i, customer_id: i} }; " \
-      "customers = (1..2000).map { |i| {id: i, name: \"c\#{i}\"} }; " \
-      "attach_customers(orders, customers).length", "2000", true ]
+    [ "is fast on 4,000 orders and 4,000 customers",
+      "orders = (1..4000).map { |i| {id: i, customer_id: i} }; " \
+      "customers = (1..4000).map { |i| {id: i, name: \"c\#{i}\"} }; " \
+      "attach_customers(orders, customers).length", "4000", true ]
   ],
   hints: [
     [ :nudge, "Read the loop body. What work happens on every single iteration?", 3 ],
     [ :concept, "Building the index is O(m). Doing it n times is O(n*m) — the " \
                 "same cost as no index at all.", 4 ],
     [ :solution, "Move the `by_id = ...` line above the `map`.", 8 ]
+  ]
+)
+
+challenge!(
+  slug: "debug-mutated-hash-key", title: "The entry that disappeared",
+  topic: hm1, skill_slug: "hash-maps", type: :debug, difficulty: :medium, xp: 50,
+  prompt: "`tally_pairs(pairs)` should count how many times each `[a, b]` pair " \
+          "appears, returning a hash from pair to count.\n\n" \
+          "It loses counts: `[[1, 2], [1, 2]]` should give `{[1, 2] => 2}` but " \
+          "gives two separate entries of 1. The bug is not in the counting.",
+  starter: "def tally_pairs(pairs)\n" \
+           "  counts = Hash.new(0)\n" \
+           "  buffer = []\n" \
+           "  pairs.each do |a, b|\n" \
+           "    buffer.clear\n" \
+           "    buffer.push(a, b)\n" \
+           "    counts[buffer] += 1\n" \
+           "  end\n" \
+           "  counts\n" \
+           "end\n",
+  solution: "def tally_pairs(pairs)\n" \
+            "  counts = Hash.new(0)\n" \
+            "  pairs.each do |a, b|\n" \
+            "    counts[[a, b].freeze] += 1\n" \
+            "  end\n" \
+            "  counts\n" \
+            "end\n",
+  explanation: "The same `buffer` array was reused as every key. A Hash records " \
+               "a key's hash value at insertion time, so mutating that array " \
+               "afterwards leaves the entry filed under a hash that no longer " \
+               "matches it — the lookup misses and a fresh entry is created, " \
+               "while the old one becomes unreachable. Building a new array per " \
+               "pair fixes it; freezing it documents that a key must not change.",
+  tests: [
+    [ "counts a repeated pair", "tally_pairs([[1, 2], [1, 2]])", "{[1, 2] => 2}" ],
+    [ "keeps distinct pairs apart",
+      "tally_pairs([[1, 2], [3, 4]])", "{[1, 2] => 1, [3, 4] => 1}" ],
+    [ "counts a mix",
+      "tally_pairs([[1, 2], [3, 4], [1, 2]])", "{[1, 2] => 2, [3, 4] => 1}" ],
+    [ "returns an empty hash for no pairs", "tally_pairs([])", "{}" ],
+    [ "handles string elements",
+      "tally_pairs([%w[a b], %w[a b]])", '{["a", "b"] => 2}', true ]
+  ],
+  hints: [
+    [ :nudge, "Inspect the keys of the returned hash. Are they the pairs you " \
+              "expected?", 3 ],
+    [ :concept, "A Hash stores a key by its hash value at the moment of " \
+                "insertion. What happens if that object changes afterwards?", 5 ],
+    [ :solution, "Build a fresh array for each key instead of reusing one " \
+                 "buffer, and `freeze` it so the mistake cannot recur.", 9 ]
   ]
 )
 
