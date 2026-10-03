@@ -70,4 +70,21 @@ RSpec.describe Labs::Catalogue do
   it "excludes the championship, which spans every skill" do
     expect(described_class.find("championship")).to be_nil
   end
+
+  # A lab with no success path awards nothing and records nothing, which is
+  # exactly the state every lab was in before the catalogue existed. This is
+  # the structural check that stops a new lab regressing to it: the mapping
+  # alone does not make a lab count, the call does.
+  it "routes every lab's success through Labs::Completion" do
+    described_class.all.each_key do |key|
+      path = Rails.root.join("app/controllers/#{key}_controller.rb")
+      expect(path).to exist, "#{key} has no controller at #{path}"
+
+      source = path.read
+      expect(source).to include("Labs::Completion"),
+                        "#{key} never calls Labs::Completion, so it cannot record evidence"
+      expect(source).to include(%(lab_key: "#{key}")),
+                        "#{key}'s controller calls Labs::Completion under a different lab_key"
+    end
+  end
 end

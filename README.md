@@ -32,6 +32,7 @@ working end to end and covered by specs.
 | Big-O lab | Live operation counts across six growth classes |
 | Boss battles | 5, including three multi-discipline capstones |
 | Engineering labs | System design simulator, networking, Redis, Sidekiq, Git, CI/CD, security, CPU scheduling, Hotwire, incidents, championships |
+| Lab accountability | Every lab maps to a skill and a mastery dimension, awards XP once per accomplishment, and schedules that skill for revision |
 | XP, levels, achievements, streaks | Append-only ledger, 14 achievements, idempotent awards |
 | Mastery + spaced repetition | Six-dimension evidence model, expanding review ladder |
 | Admin panel | CRUD, content analytics, version management, audit log, branding |
@@ -317,6 +318,14 @@ examples; `spec/requests/rate_limiting_spec.rb` enables it explicitly.
   required code. Every call degrades to the rubric on failure.
 - **The code reviewer is heuristic.** Complexity is inferred from loop nesting
   depth. Findings are labelled as heuristics in the UI.
+- **The Redis and Hotwire labs run against simulators, not the real thing.**
+  The Redis Vault interprets commands in Ruby; the Hotwire Lab models the DOM
+  as a list. Both are faithful on the behaviour they teach — key types, TTL,
+  `maxmemory`, and the exact difference between `replace` and `update` — and
+  both are bounded by the session cookie, so they are small on purpose. The
+  Hotwire playground is the exception: its responses are real
+  `<turbo-stream>` elements, so that half genuinely runs. Neither lab reaches
+  a real Redis server or a real browser.
 - **`StaticGuard` is not a security boundary.** It is an early-rejection
   convenience; the sandbox is the control.
 - **Fork bombs are contained by wall-clock timeout and process-group kill**,
