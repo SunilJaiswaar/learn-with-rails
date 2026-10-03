@@ -27,6 +27,8 @@ ActiveRecord::Base.transaction do
     11_sql_aggregation
     12_sql_loop_completion
     13_phase2_algorithms_git
+    14_phase3_database
+    15_phase3_stack
     08_demo_users
   ].each { |file| load Rails.root.join("db/seeds/#{file}.rb") }
 end

@@ -8,7 +8,7 @@ module SqlExecution
     SCHEMA = "sql_sandbox".freeze
 
     # Order matters: children are created after the parents they reference.
-    TABLES = %w[departments employees customers orders order_items].freeze
+    TABLES = %w[departments employees customers orders order_items events].freeze
 
     DDL = <<~SQL.freeze
       CREATE TABLE #{SCHEMA}.departments (
@@ -38,6 +38,17 @@ module SqlExecution
         status      text NOT NULL,
         total       numeric(10, 2) NOT NULL,
         placed_on   date NOT NULL
+      );
+
+      -- Large enough (50k rows) that the planner genuinely chooses between a
+      -- sequential scan and an index scan, which is what makes EXPLAIN
+      -- teachable. `status` is deliberately left unindexed and low-cardinality
+      -- so the contrast with the indexed `user_id` is visible.
+      CREATE TABLE #{SCHEMA}.events (
+        id          integer PRIMARY KEY,
+        user_id     integer NOT NULL,
+        status      text NOT NULL,
+        occurred_on date NOT NULL
       );
 
       CREATE TABLE #{SCHEMA}.order_items (
@@ -86,6 +97,19 @@ module SqlExecution
         (1004, 2, 'cancelled', 999.00, '2024-03-04'),
         (1005, 3, 'paid',      120.00, '2024-03-05'),
         (1006, 1, 'pending',    60.00, '2024-03-05');
+
+      INSERT INTO #{SCHEMA}.events (id, user_id, status, occurred_on)
+      SELECT i,
+             (i % 5000) + 1,
+             CASE WHEN i % 10 = 0 THEN 'failed' ELSE 'ok' END,
+             DATE '2024-01-01' + ((i % 365) || ' days')::interval
+      FROM generate_series(1, 50000) AS i;
+
+      -- Indexed on user_id only. Queries on status must scan.
+      CREATE INDEX events_user_id_idx ON #{SCHEMA}.events (user_id);
+
+      -- The planner needs statistics before it will choose the index.
+      ANALYZE #{SCHEMA}.events;
 
       INSERT INTO #{SCHEMA}.order_items (id, order_id, product, quantity, unit_price) VALUES
         (1, 1001, 'bolt',   10, 15.00),
