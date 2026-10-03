@@ -31,6 +31,7 @@ ActiveRecord::Base.transaction do
     15_phase3_stack
     16_phase4_frontend
     17_phase5_computer_science
+    18_phase6_patterns_architecture
     08_demo_users
   ].each { |file| load Rails.root.join("db/seeds/#{file}.rb") }
 end
