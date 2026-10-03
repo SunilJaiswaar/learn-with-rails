@@ -53,6 +53,9 @@ Rails.application.routes.draw do
   post "cpu-scheduler/simulate",   to: "cpu_scheduler#simulate", as: :cpu_scheduler_simulate
 
   get  "hotwire-lab",              to: "hotwire_lab#show", as: :hotwire_lab
+  post "hotwire-lab/predict",      to: "hotwire_lab#predict", as: :hotwire_lab_predict
+  post "hotwire-lab/operate",      to: "hotwire_lab#operate", as: :hotwire_lab_operate
+  post "hotwire-lab/reset",        to: "hotwire_lab#reset", as: :hotwire_lab_reset
 
   resources :incidents, only: %i[index show] do
     member do

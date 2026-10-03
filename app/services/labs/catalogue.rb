@@ -52,7 +52,7 @@ module Labs
       },
       "hotwire_lab" => {
         name: "Hotwire Lab", icon: "⚡", skill: "dom-rendering",
-        route: :hotwire_lab_path, dimension: :application,
+        route: :hotwire_lab_path, dimension: :prediction,
         summary: "Turbo frames and streams against a live DOM."
       },
       "incidents" => {

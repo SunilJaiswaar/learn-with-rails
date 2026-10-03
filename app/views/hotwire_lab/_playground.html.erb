@@ -1,0 +1,50 @@
+<div class="card" id="hotwire-playground" style="padding: 1.5rem;">
+  <div class="row row--between" style="align-items: center; margin-bottom: 0.4rem;">
+    <h2 class="text-base" style="margin: 0;">⚡ Live Turbo Stream Playground</h2>
+    <%= button_to "Reset", hotwire_lab_reset_path, method: :post, class: "btn btn--sm text-xs" %>
+  </div>
+  <p class="text-xs text-muted mb-2">
+    Every button below sends a real <code>&lt;turbo-stream&gt;</code> response.
+    The list is changed by the mechanism being taught, not by a drawing of it
+    &mdash; view source on the response to see the element that did it.
+  </p>
+
+  <div class="code-panel mb-2">
+    <div class="code-panel__bar">&lt;div id="<%= Hotwire::StreamEngine::CONTAINER_ID %>"&gt;</div>
+    <ul id="hotwire-messages" class="stack stack--tight" style="list-style: none; margin: 0; padding: 0.8rem;">
+      <% playground.each do |item| %>
+        <li id="<%= item['id'] %>" class="row" style="gap: 0.6rem; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: var(--radius-sm);">
+          <code class="text-xs text-accent"><%= item["id"] %></code>
+          <span class="text-sm"><%= item["text"] %></span>
+        </li>
+      <% end %>
+      <% if playground.empty? %>
+        <li class="text-xs text-faint">The container is empty.</li>
+      <% end %>
+    </ul>
+  </div>
+
+  <% if stream_error %>
+    <p class="text-xs text-danger mb-2">
+      This simulator says: <strong><%= stream_error %></strong>. Turbo itself
+      says nothing at all &mdash; it matches by id and moves on.
+    </p>
+  <% end %>
+
+  <%= form_with url: hotwire_lab_operate_path, method: :post,
+                data: { turbo_stream: true }, class: "stack stack--tight" do |f| %>
+    <div class="row" style="gap: 0.6rem; flex-wrap: wrap;">
+      <%= f.select :action_name, Hotwire::StreamEngine::ACTIONS,
+                   { selected: "append" }, class: "text-sm" %>
+      <%= f.text_field :target, value: Hotwire::StreamEngine::CONTAINER_ID,
+                       placeholder: "target id", class: "mono text-sm", style: "max-width: 10rem;" %>
+      <%= f.text_field :text, placeholder: "template contents", class: "text-sm", style: "flex: 1; min-width: 8rem;" %>
+      <%= f.submit "Send stream", class: "btn btn--primary btn--sm" %>
+    </div>
+    <p class="text-xs text-faint mb-0">
+      append and prepend target the container
+      (<code><%= Hotwire::StreamEngine::CONTAINER_ID %></code>); the other five
+      target an element id such as <code>msg_1</code>.
+    </p>
+  <% end %>
+</div>

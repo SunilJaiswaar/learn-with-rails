@@ -1,0 +1,72 @@
+<div class="card" id="hotwire-predictions" style="padding: 1.5rem;">
+  <div class="row row--between" style="align-items: center; margin-bottom: 0.4rem;">
+    <h2 class="text-base" style="margin: 0;">🎯 Predict the DOM</h2>
+    <span class="badge <%= solved_slugs.size == scenarios.size ? 'badge--success' : 'badge--subtle' %>">
+      <%= solved_slugs.size %>/<%= scenarios.size %> correct
+    </span>
+  </div>
+  <p class="text-xs text-muted mb-2">
+    Commit to an answer before you run it. Each option below is a real result
+    &mdash; the one Turbo produces, and the ones produced by the actions it is
+    most often confused with. A wrong prediction counts as practice against
+    your <strong>prediction</strong> dimension, so guessing costs you.
+  </p>
+
+  <div class="stack stack--tight">
+    <% scenarios.each do |scenario| %>
+      <% solved = solved_slugs.include?(scenario[:slug]) %>
+      <% revealing = revealed_slug == scenario[:slug] %>
+      <details class="card card--subtle" style="padding: 0.9rem;" <%= "open" if revealing || !solved %>>
+        <summary class="row" style="gap: 0.5rem; cursor: pointer;">
+          <span><%= solved ? "✅" : "⬜" %></span>
+          <strong class="text-sm"><%= scenario[:title] %></strong>
+          <span class="text-xs text-faint">+<%= scenario[:xp_reward] %> XP</span>
+        </summary>
+
+        <div class="code-panel mt-2 mb-2">
+          <div class="code-panel__bar">The response Turbo receives</div>
+          <pre class="mono text-xs" style="margin: 0; padding: 0.8rem;">&lt;turbo-stream action="<%= scenario[:action] %>" target="<%= scenario[:target] %>"&gt;
+  &lt;template&gt;
+    &lt;li id="<%= scenario[:content]['id'] %>"&gt;<%= scenario[:content]["text"] %>&lt;/li&gt;
+  &lt;/template&gt;
+&lt;/turbo-stream&gt;</pre>
+        </div>
+
+        <p class="text-xs text-muted mb-1">Starting from:</p>
+        <p class="mono text-xs text-faint mb-2">
+          <%= Hotwire::Scenarios::START.map { |i| "#{i['id']}: #{i['text']}" }.join(" · ") %>
+        </p>
+
+        <%= form_with url: hotwire_lab_predict_path, method: :post,
+                      data: { turbo_stream: true } do |f| %>
+          <%= f.hidden_field :slug, value: scenario[:slug] %>
+          <div class="stack stack--tight mb-2">
+            <% Hotwire::Scenarios.options_for(scenario).each_with_index do |option, index| %>
+              <% chosen = revealing && chosen_digest == option.digest %>
+              <% right = revealing && option.digest == Hotwire::Scenarios.correct_digest(scenario) %>
+              <label class="row" style="gap: 0.5rem; align-items: flex-start; padding: 0.5rem 0.6rem; border: 1px solid <%= right ? 'var(--success)' : 'var(--border)' %>; border-radius: var(--radius-sm);">
+                <%= f.radio_button :prediction, option.digest, checked: chosen, id: "#{scenario[:slug]}_#{index}" %>
+                <span class="mono text-xs">
+                  <%= option.items.map { |i| "#{i['id']}: #{i['text']}" }.join(" · ") %>
+                  <% if option.items.empty? %><em>(empty)</em><% end %>
+                </span>
+                <% if revealing && right %><span class="text-xs text-success">← Turbo does this</span><% end %>
+                <% if revealing && chosen && !right %><span class="text-xs text-danger">← you chose this</span><% end %>
+              </label>
+            <% end %>
+          </div>
+          <%= f.submit solved ? "Answer again" : "Submit prediction", class: "btn btn--primary btn--sm" %>
+        <% end %>
+
+        <% if revealing %>
+          <p class="text-xs <%= correct ? 'text-success' : 'text-danger' %>" style="margin: 0.8rem 0 0.3rem;">
+            <%= correct ? "Correct." : "Not what Turbo does." %>
+          </p>
+          <p class="text-xs text-muted mb-0"><%= scenario[:lesson] %></p>
+        <% elsif solved %>
+          <p class="text-xs text-muted" style="margin: 0.8rem 0 0;"><%= scenario[:lesson] %></p>
+        <% end %>
+      </details>
+    <% end %>
+  </div>
+</div>

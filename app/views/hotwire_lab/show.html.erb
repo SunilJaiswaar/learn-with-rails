@@ -9,10 +9,23 @@
       </div>
       <h1 class="page-title">Hotwire Galaxy &amp; DOM Simulator</h1>
       <p class="page-lead">
-        Build high-speed, modern reactive web applications without the complexity of heavy client-side SPAs. Explore Turbo Drive, Turbo Frames, Turbo Streams, Turbo Morph, and Stimulus controller lifecycles.
+        Send real Turbo Streams at a live DOM and predict what they do before
+        you run them. The seven stream actions differ in ways that are easy to
+        read about and easy to get wrong &mdash; especially
+        <code>replace</code> versus <code>update</code>, and what happens when
+        a target simply is not there.
       </p>
     </div>
   </header>
+
+  <div class="grid grid--2">
+    <%= render "playground", playground: @playground, stream_error: nil %>
+    <%= render "predictions",
+               scenarios: @scenarios, solved_slugs: @solved_slugs,
+               revealed_slug: nil, chosen_digest: nil, correct: nil %>
+  </div>
+
+  <h2 class="text-base" style="margin-bottom: 0;">Reference: the five techniques</h2>
 
   <%# Technique Selector Tabs %>
   <div class="row" style="gap: 0.8rem; overflow-x: auto; padding-bottom: 0.5rem;">

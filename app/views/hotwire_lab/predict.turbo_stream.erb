@@ -1,0 +1,10 @@
+<%= turbo_stream.replace "hotwire-predictions" do %>
+  <%= render "predictions",
+             scenarios: @scenarios, solved_slugs: @solved_slugs,
+             revealed_slug: @scenario[:slug], chosen_digest: @chosen,
+             correct: @correct %>
+<% end %>
+
+<%= turbo_stream.replace "flash-messages" do %>
+  <%= render "shared/flash" %>
+<% end %>

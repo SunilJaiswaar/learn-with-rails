@@ -1,0 +1,4 @@
+<%# This response is itself the lesson: a real <turbo-stream> element. %>
+<%= turbo_stream.replace "hotwire-playground" do %>
+  <%= render "playground", playground: @playground, stream_error: @stream_error %>
+<% end %>
