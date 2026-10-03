@@ -37,47 +37,96 @@ RSpec.describe "Capstone content", :content, type: :model do
     end
   end
 
+  # Iterates every seeded boss rather than a hardcoded list, so a new boss
+  # battle is validated the moment it is authored. The list cannot be built at
+  # load time because the hermetic suite runs against an unseeded database.
   describe "the capstone boss battles" do
-    %w[the-black-friday-outage the-leaking-worker the-leaked-invoice].each do |slug|
-      context slug do
-        let(:boss) { BossBattle.find_by(slug: slug) }
+    def each_seeded_boss
+      bosses = BossBattle.published.order(:slug).to_a
+      skip "no boss battles seeded" if bosses.empty?
+      bosses.each { |boss| yield boss }
+    end
 
-        it "is winnable by answering every stage correctly" do
-          skip "#{slug} not seeded" if boss.nil?
+    it "covers every world that has one" do
+      each_seeded_boss do |boss|
+        expect(boss.world).to be_present, "#{boss.slug} belongs to no world"
+        expect(boss.skill).to be_present, "#{boss.slug} belongs to no skill"
+      end
+    end
+
+    # The winnability check below builds its answer out of the stage's own
+    # keywords, so it proves the attempt mechanism works end to end but cannot
+    # fail on a bad keyword list — it is tautological for open stages. This is
+    # the check that actually discriminates: a confident, generic,
+    # content-free answer must NOT pass, or the stage is graded on nothing.
+    it "rejects a generic answer that names none of the expected concepts" do
+      generic = "I would investigate this carefully, look at the logs and " \
+                "metrics, talk to the team, and then apply the appropriate fix " \
+                "before verifying it in staging."
+
+      each_seeded_boss do |boss|
+        boss.stage_list.each_with_index do |spec, index|
+          next unless spec["kind"] == "open"
+
           user = create(:user)
-          attempt = user.boss_attempts.create!(boss_battle: boss, status: :in_progress,
-                                               current_stage: 0)
+          attempt = user.boss_attempts.create!(boss_battle: boss,
+                                               status: :in_progress,
+                                               current_stage: index)
+          outcome = BossBattles::StageEvaluator.new(attempt: attempt, answer: generic).call
 
-          boss.stage_list.each do |spec|
-            answer = if spec["kind"] == "choice"
-                       spec["answer"]
-            else
-                       "#{Array(spec['keywords']).join(' ')} and the reasoning in full"
-            end
-            outcome = BossBattles::StageEvaluator.new(attempt: attempt.reload,
-                                                     answer: answer).call
-            expect(outcome.correct).to be(true), "stage '#{spec['label']}' did not pass"
+          expect(outcome.correct).to be(false),
+                                    "#{boss.slug}: stage '#{spec['label']}' passed an " \
+                                    "answer containing none of its concepts"
+        end
+      end
+    end
+
+    it "is winnable by answering every stage correctly" do
+      each_seeded_boss do |boss|
+        user = create(:user)
+        attempt = user.boss_attempts.create!(boss_battle: boss, status: :in_progress,
+                                             current_stage: 0)
+
+        boss.stage_list.each do |spec|
+          answer = if spec["kind"] == "choice"
+                     spec["answer"]
+          else
+                     "#{Array(spec['keywords']).join(' ')} and the reasoning in full"
           end
-
-          expect(attempt.reload).to be_won_battle
+          outcome = BossBattles::StageEvaluator.new(attempt: attempt.reload,
+                                                   answer: answer).call
+          expect(outcome.correct).to be(true),
+                                    "#{boss.slug}: stage '#{spec['label']}' did not pass"
         end
 
-        it "refuses an empty answer on every stage" do
-          skip "#{slug} not seeded" if boss.nil?
-          user = create(:user)
-          attempt = user.boss_attempts.create!(boss_battle: boss, status: :in_progress,
-                                               current_stage: 0)
+        expect(attempt.reload).to be_won_battle, "#{boss.slug} was not winnable"
+      end
+    end
 
-          outcome = BossBattles::StageEvaluator.new(attempt: attempt, answer: "").call
+    it "refuses an empty answer on the first stage" do
+      each_seeded_boss do |boss|
+        user = create(:user)
+        attempt = user.boss_attempts.create!(boss_battle: boss, status: :in_progress,
+                                             current_stage: 0)
 
-          expect(outcome.correct).to be(false)
-          expect(attempt.reload).to be_in_progress_battle
-        end
+        outcome = BossBattles::StageEvaluator.new(attempt: attempt, answer: "").call
 
-        it "mixes disciplines rather than repeating one" do
-          skip "#{slug} not seeded" if boss.nil?
+        expect(outcome.correct).to be(false), "#{boss.slug} accepted an empty answer"
+        expect(attempt.reload).to be_in_progress_battle
+      end
+    end
 
-          expect(boss.stage_count).to be >= 3
+    it "mixes disciplines rather than repeating one" do
+      each_seeded_boss do |boss|
+        expect(boss.stage_count).to be >= 3, "#{boss.slug} has only #{boss.stage_count} stages"
+      end
+    end
+
+    it "explains every stage, so a wrong answer teaches something" do
+      each_seeded_boss do |boss|
+        boss.stage_list.each do |spec|
+          expect(spec["explanation"]).to be_present,
+                                        "#{boss.slug}: stage '#{spec['label']}' has no explanation"
         end
       end
     end

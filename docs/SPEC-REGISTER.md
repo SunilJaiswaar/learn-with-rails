@@ -20,7 +20,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 8 | Programming fundamentals before syntax; multi-language choice | **partial** | `Programming Forest` is Ruby-only; no language switch |
 | 9 | Per-language BEGINNER→…→INTERVIEW ladder | **none** | no language has all 7 tiers |
 | 10 | Ruby Kingdom as one of the deepest tracks | **partial** | `Ruby Kingdom` has **1** skill (`ruby-blocks`) |
-| 11–14 | Rails as flagship: fundamentals, Active Record, advanced, internals | **partial** | two slices built: request cycle, routing, controllers, model lifecycle, associations, transactions — 6 skills, 6 missions at §116 depth, 12 challenges — plus the Rails Request Lab. Caching, jobs, security, testing and internals outstanding |
+| 11–14 | Rails as flagship: fundamentals, Active Record, advanced, internals | **partial** | 9 skills in 3 modules, 9 missions at §116 depth, 18 challenges, a boss battle and the Rails Request Lab. Rails internals (Zeitwerk, instrumentation, connection pool) and a project outstanding |
 | 15 | Hotwire Galaxy (Drive/Frames/Streams/Morph/Stimulus) | **partial** | Hotwire Lab rebuilt with 7 stream actions + 6 prediction challenges; Morph and Stimulus lifecycle not covered |
 | 16 | Python world | **none** | |
 | 17 | DSA world (18 structures, 20 algorithms) | **partial** | `Algorithm Arena` 6 skills, 12 algorithms |
@@ -40,9 +40,9 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 31–40 | AI universe: maths, ML, DL, LLM, RAG, advanced RAG, agents, agent lab, data science, Python AI stack | **none** | **entirely greenfield** (audit X3) |
 | 41 | Rails + Python AI architecture, 5 variants | **none** | |
 | 42 | Software architecture world (CQRS, event sourcing, hexagonal…) | **partial** | `architecture` skill at floor depth |
-| 43 | Security world + attack/defence simulations | **partial** | Security Fortress runs exploits against vulnerable and secured code; 1 skill |
+| 43 | Security world + attack/defence simulations | **partial** | Security Fortress runs exploits against vulnerable and secured code; now 2 skills, with `rails-security` covering what Rails defends by default and the four places it does not |
 | 44 | DevOps world (Linux, Docker, CI/CD, AWS) | **partial** | `containers`, `ci-cd`, `observability` at floor depth; CI/CD lab exists; no Linux/AWS |
-| 45 | Testing world (RSpec + pytest) | **partial** | `testing-rspec` at floor depth |
+| 45 | Testing world (RSpec + pytest) | **partial** | `testing-rspec` at floor depth, plus `rails-testing` at §116 depth on which spec level can observe which bug; no pytest |
 | 46 | Debugging world — "one of the biggest areas", 18 named scenarios | **partial** | debug challenges exist and are proven to fail before shipping; Incidents lab; far from 18 |
 | 47 | Game system where XP represents demonstrated skill | **done** | append-only ledger, idempotency keys, no replay farming |
 | 48 | Dynamic skill tree with prerequisite unlocking | **done** | computed, rendered, and now enforced on skills, missions, challenges and boss battles |

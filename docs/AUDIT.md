@@ -143,18 +143,20 @@ Interview questions mentioning Rails: 2 (incidental)
 The brief makes Rails the flagship specialisation (§11–§14, three full
 sections), and a Rails teaching platform written in Rails taught no Rails.
 
-**Slices 1 and 2 of the vertical slice (§114) are built**: a `Rails Citadel`
-world, `Ruby on Rails` as a technology with four versions, six chained skills
-in two modules —
+**The Rails vertical slice (§114) is built**: a `Rails Citadel` world,
+`Ruby on Rails` as a technology with four versions, nine chained skills in
+three modules —
 
 ```text
 Foundations  rails-request-cycle → rails-routing → rails-controllers
 Persistence  active-record-lifecycle → active-record-associations
                                      → active-record-transactions
+Production   rails-caching · rails-security · rails-testing
 ```
 
-— six missions at §116 depth, twelve challenges, six interview questions with
-twenty-one follow-up probes, and the Rails Request Lab.
+— nine missions at §116 depth, eighteen challenges, nine interview questions
+with thirty-three follow-up probes, the Rails Request Lab, and a five-stage
+boss battle (`the-rails-release`) spanning all three modules.
 
 The Persistence skills reach *across worlds* for their prerequisites
 (`sql-basics`, `sql-joins`, `concurrency`), which is the knowledge graph
@@ -167,9 +169,14 @@ Database Dungeon (`the-n-plus-one`, `preload-associations`,
 `count-queries-n-plus-one`), and duplicating it is exactly the mixed-content
 problem M1/M2 describe. The associations mission cross-references it instead.
 
-Still outstanding: caching, background jobs as a Rails topic, security,
-testing, Rails internals, a Rails boss battle, and a project — plus `Project`
-as an entity at all (X5).
+Background jobs are deliberately absent as a Rails topic: `background-jobs`
+already exists as a skill with the Sidekiq Factory lab behind it, so the
+caching mission cross-references it rather than shipping a second copy.
+
+Of the §116 checklist, Rails now has every element **except a project**, which
+cannot be built because `Project` does not exist as an entity (X5). Rails
+internals (Rack internals, Zeitwerk, instrumentation, the connection pool) and
+Hotwire-as-curriculum also remain.
 
 ### Finding C3 — technology coverage is 3 of ~57
 
