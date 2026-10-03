@@ -64,13 +64,19 @@ jobs:
           ruby-version: .ruby-version
           bundler-cache: true
 
-      # The code runner needs bubblewrap and unprivileged user namespaces.
-      # Without it the sandbox specs skip rather than silently pass.
-      - name: Install bubblewrap
+      # The code runner needs bubblewrap *and* permission to create
+      # unprivileged user namespaces. Ubuntu 24.04 restricts those through
+      # AppArmor, which makes bwrap fail when it configures loopback inside the
+      # new network namespace.
+      - name: Install bubblewrap and allow unprivileged user namespaces
         run: |
           sudo apt-get update
           sudo apt-get install -y bubblewrap
           bwrap --version
+          # Best effort: the sysctl does not exist on every kernel.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+          sudo sysctl -w kernel.unprivileged_userns_clone=1 || true
+
 
       - name: Prepare the database
         run: bin/rails db:test:prepare
@@ -79,6 +85,11 @@ jobs:
       # so the playground has to exist before the SQL specs run.
       - name: Provision the SQL playground
         run: bin/rails sql_sandbox:provision && bin/rails sql_sandbox:verify
+
+      # Fails loudly if the Ruby sandbox cannot enforce its isolation, rather
+      # than letting the security specs skip silently.
+      - name: Verify the code sandbox
+        run: bin/rails code_sandbox:verify
 
       - name: Specs
         run: bundle exec rspec
