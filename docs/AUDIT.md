@@ -143,14 +143,33 @@ Interview questions mentioning Rails: 2 (incidental)
 The brief makes Rails the flagship specialisation (§11–§14, three full
 sections), and a Rails teaching platform written in Rails taught no Rails.
 
-**Slice 1 of the vertical slice (§114) is built**: a `Rails Citadel` world,
-`Ruby on Rails` as a technology with four versions, three chained skills
-(`rails-request-cycle` → `rails-routing` → `rails-controllers`), three
-missions at §116 depth, six challenges, three interview questions with ten
-follow-up probes, and the Rails Request Lab. Still outstanding: Active
-Record, associations, queries and N+1, caching, background jobs, security,
-testing, a boss battle, and a project — plus `Project` as an entity at all
-(X5).
+**Slices 1 and 2 of the vertical slice (§114) are built**: a `Rails Citadel`
+world, `Ruby on Rails` as a technology with four versions, six chained skills
+in two modules —
+
+```text
+Foundations  rails-request-cycle → rails-routing → rails-controllers
+Persistence  active-record-lifecycle → active-record-associations
+                                     → active-record-transactions
+```
+
+— six missions at §116 depth, twelve challenges, six interview questions with
+twenty-one follow-up probes, and the Rails Request Lab.
+
+The Persistence skills reach *across worlds* for their prerequisites
+(`sql-basics`, `sql-joins`, `concurrency`), which is the knowledge graph
+(§49, §63) doing its job rather than a tidy per-world tree. Verified that the
+graph is still fully traversable afterwards: all 39 skills reachable, none
+stranded.
+
+Deliberately **not** re-taught here: the N+1. It already has real depth in the
+Database Dungeon (`the-n-plus-one`, `preload-associations`,
+`count-queries-n-plus-one`), and duplicating it is exactly the mixed-content
+problem M1/M2 describe. The associations mission cross-references it instead.
+
+Still outstanding: caching, background jobs as a Rails topic, security,
+testing, Rails internals, a Rails boss battle, and a project — plus `Project`
+as an entity at all (X5).
 
 ### Finding C3 — technology coverage is 3 of ~57
 

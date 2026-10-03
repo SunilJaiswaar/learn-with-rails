@@ -20,7 +20,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 8 | Programming fundamentals before syntax; multi-language choice | **partial** | `Programming Forest` is Ruby-only; no language switch |
 | 9 | Per-language BEGINNER→…→INTERVIEW ladder | **none** | no language has all 7 tiers |
 | 10 | Ruby Kingdom as one of the deepest tracks | **partial** | `Ruby Kingdom` has **1** skill (`ruby-blocks`) |
-| 11–14 | Rails as flagship: fundamentals, Active Record, advanced, internals | **partial** | first slice built: request cycle, routing, controllers at §116 depth, plus the Rails Request Lab. Active Record, caching, jobs, security and internals outstanding |
+| 11–14 | Rails as flagship: fundamentals, Active Record, advanced, internals | **partial** | two slices built: request cycle, routing, controllers, model lifecycle, associations, transactions — 6 skills, 6 missions at §116 depth, 12 challenges — plus the Rails Request Lab. Caching, jobs, security, testing and internals outstanding |
 | 15 | Hotwire Galaxy (Drive/Frames/Streams/Morph/Stimulus) | **partial** | Hotwire Lab rebuilt with 7 stream actions + 6 prediction challenges; Morph and Stimulus lifecycle not covered |
 | 16 | Python world | **none** | |
 | 17 | DSA world (18 structures, 20 algorithms) | **partial** | `Algorithm Arena` 6 skills, 12 algorithms |
@@ -60,7 +60,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 60 | Real-world incident mode | **partial** | Incidents lab with logs/metrics/traces |
 | 61 | Daily quest system | **done** | `QuestTemplate` ×5, `Learning::QuestGenerator` |
 | 62 | Spaced repetition with varied contexts | **partial** | ladder `[0,1,3,7,14,30,60]`; same item re-asked, not re-contextualised |
-| 63 | Cross-concept learning ("where will I use this?") | **partial** | labs now surface on skill pages; no general cross-concept view |
+| 63 | Cross-concept learning ("where will I use this?") | **partial** | labs surface on skill pages, and the Rails persistence skills take prerequisites from SQL and concurrency so the graph crosses worlds; still no general cross-concept view |
 | 64 | Technology comparison lab, 12 comparisons | **none** | |
 | 65 | FDE track | **none** | |
 | 66 | Career paths (4 named) | **partial** | 3 roadmaps now routed at `/roadmaps` with per-step state; no `Career`/`Role` layer, and 1 of the 4 named paths exists |
