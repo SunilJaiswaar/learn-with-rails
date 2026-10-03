@@ -26,6 +26,7 @@ RSpec.configure do |config|
   config.include RackAttackHelpers, type: :request
   config.include ActiveSupport::Testing::TimeHelpers
   config.include SqlSandboxHelpers
+  config.include SkillHelpers
 
   # Provisioned once, outside any example transaction, so the separate
   # sandbox connection can see the committed schema.

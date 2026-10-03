@@ -231,6 +231,7 @@ code, kbd, pre, .mono { font-family: var(--mono); font-size: 0.875em; }
 }
 .card--raised { box-shadow: var(--shadow); }
 .card--flush { padding: 0; overflow: hidden; }
+.card--subtle { background: var(--bg-raised); border-color: var(--border); }
 .card__header {
   display: flex; align-items: center; gap: 0.75rem;
   padding: 0.9rem 1.1rem; border-bottom: 1px solid var(--border);
@@ -433,6 +434,9 @@ pre.code {
 .text-sm { font-size: 0.85rem; }
 .text-xs { font-size: 0.78rem; }
 .d-block { display: block; }
+/* Used across the lab views for pass/fail colouring. */
+.text-success { color: var(--success); }
+.text-danger { color: var(--danger); }
 
 /* Lab entries on a skill page: the link between a skill and its laboratory. */
 .lab-link {

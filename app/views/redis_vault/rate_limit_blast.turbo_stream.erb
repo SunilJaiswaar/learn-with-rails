@@ -1,0 +1,11 @@
+<%= turbo_stream.replace "redis-limiter" do %>
+  <%= render "limiter", rate_limiter: @rate_limiter %>
+<% end %>
+
+<%= turbo_stream.replace "redis-objectives" do %>
+  <%= render "objectives", reports: @reports, solved_count: @solved_count %>
+<% end %>
+
+<%= turbo_stream.replace "flash-messages" do %>
+  <%= render "shared/flash" %>
+<% end %>

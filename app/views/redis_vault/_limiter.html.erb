@@ -1,0 +1,31 @@
+<div class="card border-accent" id="redis-limiter" style="padding: 1.5rem;">
+  <div class="row row--between" style="align-items: center; margin-bottom: 0.8rem;">
+    <h2 class="text-sm uppercase text-accent" style="margin: 0;">Token Bucket Rate Limiter</h2>
+    <span class="badge badge--accent">Redis + Lua</span>
+  </div>
+
+  <p class="text-xs text-muted mb-2">
+    Tokens refill at 1 token/sec up to capacity 10. Each incoming request consumes 1 token.
+  </p>
+
+  <div class="card card--subtle" style="padding: 1rem; text-align: center; margin-bottom: 1rem;">
+    <span class="text-xs text-muted">Available Bucket Tokens:</span>
+    <div class="mono text-accent" style="font-size: 2.2rem; font-weight: bold;">
+      <%= rate_limiter["tokens"] %> / <%= rate_limiter["capacity"] %>
+    </div>
+    <div class="meter meter--sm mt-1" role="img" aria-label="Bucket tokens">
+      <div class="meter__fill" style="width: <%= (rate_limiter['tokens'].to_f / rate_limiter['capacity']) * 100 %>%;"></div>
+    </div>
+  </div>
+
+  <div class="row row--between text-xs mono text-muted mb-2">
+    <span>Allowed: <strong class="text-success"><%= rate_limiter["allowed"] %></strong></span>
+    <span>Blocked (429): <strong class="text-danger"><%= rate_limiter["blocked"] %></strong></span>
+  </div>
+
+  <div class="stack stack--tight">
+    <%= button_to "Blast 1 Request (200 OK)", redis_vault_blast_path(count: 1), method: :post, form: { data: { turbo_stream: true } }, class: "btn btn--sm", style: "width: 100%; justify-content: center;" %>
+    <%= button_to "Blast 5 Concurrent Requests", redis_vault_blast_path(count: 5), method: :post, form: { data: { turbo_stream: true } }, class: "btn btn--sm", style: "width: 100%; justify-content: center;" %>
+    <%= button_to "Blast 15 Requests (Trigger 429)", redis_vault_blast_path(count: 15), method: :post, form: { data: { turbo_stream: true } }, class: "btn btn--sm btn--primary", style: "width: 100%; justify-content: center;" %>
+  </div>
+</div>

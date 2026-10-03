@@ -1,6 +1,10 @@
-<% flash.each do |type, message| %>
-  <% next if message.blank? %>
-  <div class="flash flash--<%= type == 'alert' ? 'alert' : 'notice' %>" role="status">
-    <%= message %>
-  </div>
-<% end %>
+<%# Wrapped in a stable id so a turbo_stream response can replace it;
+      without that, flash set in a turbo_stream action never renders. %>
+<div id="flash-messages">
+  <% flash.each do |type, message| %>
+    <% next if message.blank? %>
+    <div class="flash flash--<%= type == 'alert' ? 'alert' : 'notice' %>" role="status">
+      <%= message %>
+    </div>
+  <% end %>
+</div>

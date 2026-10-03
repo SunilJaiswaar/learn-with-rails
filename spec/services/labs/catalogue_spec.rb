@@ -32,7 +32,7 @@ RSpec.describe Labs::Catalogue do
 
   describe ".skill_for" do
     it "resolves the mapped skill record" do
-      skill = create(:skill, slug: "git-fundamentals")
+      skill = skill_at("git-fundamentals")
       expect(described_class.skill_for("git_lab")).to eq(skill)
     end
 
@@ -41,6 +41,7 @@ RSpec.describe Labs::Catalogue do
     end
 
     it "returns nil rather than guessing when the skill is absent" do
+      without_skill("git-fundamentals")
       expect(described_class.skill_for("git_lab")).to be_nil
     end
   end
@@ -57,10 +58,12 @@ RSpec.describe Labs::Catalogue do
   end
 
   describe ".missing_skills" do
-    it "names the skills a lab points at that do not exist" do
-      create(:skill, slug: "git-fundamentals")
+    it "names a skill a lab points at that does not exist" do
+      without_skill("git-fundamentals")
+      expect(described_class.missing_skills).to include("git-fundamentals")
+
+      skill_at("git-fundamentals")
       expect(described_class.missing_skills).not_to include("git-fundamentals")
-      expect(described_class.missing_skills).to include("web-security")
     end
   end
 

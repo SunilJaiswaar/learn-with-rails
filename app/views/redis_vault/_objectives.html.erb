@@ -1,0 +1,37 @@
+<div class="card" id="redis-objectives" style="padding: 1.5rem;">
+  <div class="row row--between" style="align-items: center; margin-bottom: 0.4rem;">
+    <h2 class="text-base" style="margin: 0;">🎯 Vault Challenges</h2>
+    <span class="badge <%= solved_count == reports.size ? 'badge--success' : 'badge--subtle' %>">
+      <%= solved_count %>/<%= reports.size %> solved
+    </span>
+  </div>
+  <p class="text-xs text-muted mb-2">
+    Each challenge is checked against the vault's real state. Solving one awards
+    XP once and records evidence against your Redis skill &mdash; repeating it
+    is free practice.
+  </p>
+
+  <div class="stack stack--tight">
+    <% reports.each do |report| %>
+      <details class="card card--subtle" style="padding: 0.9rem;" <%= "open" unless report.passed %>>
+        <summary class="row" style="gap: 0.5rem; cursor: pointer;">
+          <span><%= report.passed ? "✅" : "⬜" %></span>
+          <strong class="text-sm"><%= report.challenge[:title] %></strong>
+          <span class="text-xs text-faint">+<%= report.challenge[:xp_reward] %> XP</span>
+        </summary>
+
+        <p class="text-xs text-muted" style="margin: 0.6rem 0;"><%= report.challenge[:brief] %></p>
+
+        <ul class="text-xs" style="margin: 0 0 0.6rem; padding-left: 1.1rem; list-style: none;">
+          <% report.statuses.each do |status| %>
+            <li class="<%= status.met ? 'text-success' : 'text-muted' %>">
+              <%= status.met ? "✓" : "·" %> <%= status.label %>
+            </li>
+          <% end %>
+        </ul>
+
+        <p class="text-xs text-faint mb-0"><em>Hint:</em> <%= report.challenge[:hint] %></p>
+      </details>
+    <% end %>
+  </div>
+</div>

@@ -7,7 +7,7 @@ RSpec.describe "Engineering Laboratories & Interactive Simulators", type: :reque
 
   describe "discovering a lab from its skill" do
     it "lists the skill's laboratories on the skill page" do
-      skill = create(:skill, slug: "web-security", name: "Web Security")
+      skill = skill_at("web-security", name: "Web Security")
 
       get skill_path(skill.slug)
 
@@ -17,7 +17,7 @@ RSpec.describe "Engineering Laboratories & Interactive Simulators", type: :reque
     end
 
     it "says nothing about labs on a skill that has none" do
-      skill = create(:skill, slug: "some-other-skill")
+      skill = skill_at("some-other-skill")
 
       get skill_path(skill.slug)
 

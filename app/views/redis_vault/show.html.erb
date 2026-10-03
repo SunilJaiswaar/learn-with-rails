@@ -9,7 +9,11 @@
       </div>
       <h1 class="page-title">Redis Vault &amp; Memory Simulator</h1>
       <p class="page-lead">
-        Inspect in-memory data structures (Strings, Hashes, Lists, Sets, Sorted Sets), watch TTL countdowns, test eviction, and blast live traffic against the Token Bucket rate limiter.
+        Run real commands against a simulated in-memory engine: strings,
+        hashes, lists, sets and sorted sets, TTL, the <code>maxmemory</code>
+        ceiling, and a token-bucket rate limiter. Five challenges on the right
+        are checked against the vault's actual state &mdash; solving one
+        records evidence against your Redis skill.
       </p>
     </div>
   </header>
@@ -17,47 +21,7 @@
   <div class="grid grid--3">
     <%# Column 1 & 2: Redis Memory Key Inspector & CLI %>
     <div class="stack stack--loose" style="grid-column: span 2;">
-      <%# Live Redis Memory Table %>
-      <div class="card" id="redis-keys-panel" style="padding: 1.5rem;">
-        <div class="row row--between" style="align-items: center; margin-bottom: 1rem;">
-          <div class="row" style="align-items: center; gap: 0.6rem;">
-            <span style="font-size: 1.5rem;">🧠</span>
-            <h2 class="text-base" style="margin: 0;">Resident Keys in RAM (<%= @redis_keys.size %> keys)</h2>
-          </div>
-          <%= button_to "Reset Store", redis_vault_reset_path, method: :post, class: "btn btn--sm text-xs" %>
-        </div>
-
-        <div style="overflow-x: auto;">
-          <table class="table" style="font-size: 0.85rem;">
-            <thead>
-              <tr>
-                <th scope="col">Key</th>
-                <th scope="col">Type</th>
-                <th scope="col">Value</th>
-                <th scope="col">TTL</th>
-                <th scope="col">Memory</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% @redis_keys.each do |k, data| %>
-                <tr>
-                  <td class="mono font-bold text-accent"><%= k %></td>
-                  <td>
-                    <span class="badge badge--subtle"><%= data["type"] %></span>
-                  </td>
-                  <td class="mono text-xs">
-                    <%= data["type"] == "zset" ? data["value"].map { |i| "#{i['member']} (#{i['score']})" }.join(", ") : data["value"] %>
-                  </td>
-                  <td class="mono text-xs">
-                    <%= data["ttl"] == -1 ? "persist (∞)" : "#{data['ttl']}s" %>
-                  </td>
-                  <td class="mono text-xs text-faint"><%= data["bytes"] %> bytes</td>
-                </tr>
-              <% end %>
-            </tbody>
-          </table>
-        </div>
-      </div>
+      <%= render "keys_panel", redis_keys: @redis_keys %>
 
       <%# Interactive Redis CLI %>
       <div class="card" style="padding: 1.5rem;">
@@ -80,39 +44,11 @@
       </div>
     </div>
 
-    <%# Column 3: Rate Limiting & Token Bucket Simulator %>
+    <%# Column 3: Challenges, rate limiting & the token bucket %>
     <div class="stack stack--loose">
-      <div class="card border-accent" style="padding: 1.5rem;">
-        <div class="row row--between" style="align-items: center; margin-bottom: 0.8rem;">
-          <h2 class="text-sm uppercase text-accent" style="margin: 0;">Token Bucket Rate Limiter</h2>
-          <span class="badge badge--accent">Redis + Lua</span>
-        </div>
+      <%= render "objectives", reports: @reports, solved_count: @solved_count %>
 
-        <p class="text-xs text-muted mb-2">
-          Tokens refill at 1 token/sec up to capacity 10. Each incoming request consumes 1 token.
-        </p>
-
-        <div class="card card--subtle" style="padding: 1rem; text-align: center; margin-bottom: 1rem;">
-          <span class="text-xs text-muted">Available Bucket Tokens:</span>
-          <div class="mono text-accent" style="font-size: 2.2rem; font-weight: bold;">
-            <%= @rate_limiter["tokens"] %> / <%= @rate_limiter["capacity"] %>
-          </div>
-          <div class="meter meter--sm mt-1" role="img" aria-label="Bucket tokens">
-            <div class="meter__fill" style="width: <%= (@rate_limiter['tokens'].to_f / @rate_limiter['capacity']) * 100 %>%;"></div>
-          </div>
-        </div>
-
-        <div class="row row--between text-xs mono text-muted mb-2">
-          <span>Allowed: <strong class="text-success"><%= @rate_limiter["allowed"] %></strong></span>
-          <span>Blocked (429): <strong class="text-danger"><%= @rate_limiter["blocked"] %></strong></span>
-        </div>
-
-        <div class="stack stack--tight">
-          <%= button_to "Blast 1 Request (200 OK)", redis_vault_blast_path(count: 1), method: :post, class: "btn btn--sm", style: "width: 100%; justify-content: center;" %>
-          <%= button_to "Blast 5 Concurrent Requests", redis_vault_blast_path(count: 5), method: :post, class: "btn btn--sm", style: "width: 100%; justify-content: center;" %>
-          <%= button_to "Blast 15 Requests (Trigger 429)", redis_vault_blast_path(count: 15), method: :post, class: "btn btn--sm btn--primary", style: "width: 100%; justify-content: center;" %>
-        </div>
-      </div>
+      <%= render "limiter", rate_limiter: @rate_limiter %>
 
       <div class="card" style="padding: 1.2rem;">
         <h3 class="text-xs uppercase text-muted" style="margin-top: 0; margin-bottom: 0.6rem;">Redis Data Type Cheatsheet</h3>

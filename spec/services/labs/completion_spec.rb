@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe Labs::Completion do
   let(:user) { create(:user) }
-  let!(:skill) { create(:skill, slug: "git-fundamentals") }
+  let!(:skill) { skill_at("git-fundamentals") }
 
   def complete(**overrides)
     described_class.new(
@@ -39,7 +39,7 @@ RSpec.describe Labs::Completion do
   end
 
   it "records evidence against :debugging for a diagnosis lab" do
-    create(:skill, slug: "observability")
+    skill_at("observability")
     described_class.new(
       user: user, lab_key: "incidents", xp: 200,
       reason: "Resolved an incident", detail: "n-plus-one"
@@ -97,11 +97,11 @@ RSpec.describe Labs::Completion do
     ).call
 
     expect(outcome.xp).to be_zero
-    expect(SkillProgress.count).to be_zero
+    expect(SkillProgress.where(skill: skill)).to be_empty
   end
 
   it "still awards XP when the mapped skill has not been seeded" do
-    create(:skill, slug: "concurrency").destroy
+    without_skill("concurrency")
     outcome = described_class.new(
       user: user, lab_key: "cpu_scheduler", xp: 90,
       reason: "Scheduled a workload", detail: "sjf"
