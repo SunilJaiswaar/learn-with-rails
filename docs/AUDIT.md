@@ -260,25 +260,43 @@ DISCOVER → SEE → UNDERSTAND → INTERACT ordering.
 
 ## 6. MISSING DEPENDENCIES
 
-### X1 — the prerequisite engine does not gate anything (severity: high)
+### X1 — prerequisites are a soft gate, bypassable by URL (severity: medium)
 
-`SkillDependency` holds **40 rows**, is a verified DAG, and is used in exactly
-three places: rendering a prerequisite list on `skills/show`, cycle detection, and
-tree building. **No controller consults it before granting access.** Every
-skill, topic and challenge is directly reachable by URL regardless of
-prerequisites.
+**Corrected after a closer read of `Skills::TreeBuilder`.** An earlier draft
+of this audit said prerequisites gate nothing and that `LOCKED`/`AVAILABLE` do
+not exist. Both claims were too strong.
 
-§50 requires a check-and-offer flow ("You need these 2 concepts first").
-§93 requires `LOCKED` and `AVAILABLE` states. Neither exists.
+`Skills::TreeBuilder#state_for` **does** compute `:locked`, `:available`,
+`:in_progress` and `:complete` from prerequisite mastery, requiring every
+prerequisite to have reached at least `developing`. The skill map renders a
+locked skill as a dashed, non-clickable node carrying
+`aria-label="<name>, locked"`. That logic is correct and worth keeping.
 
-### X2 — mastery state machine is 5 states, not 9
+What is actually missing is **enforcement and persistence**:
 
-Present: `untested / weak / developing / strong / mastered`.
+- `SkillsController#show` never consults the state, so `/skills/:slug` serves a
+  locked skill to anyone who types the URL. `TopicsController` and
+  `ChallengesController` do not check either.
+- The state is computed per request for display only. It is not stored on
+  `SkillProgress`, so nothing can answer "which skills are available to this
+  user" without rebuilding the entire tree.
+- §50's check-and-offer flow ("You need these 2 concepts first — learn them in
+  8 minutes") does not exist; a locked node is simply inert.
+
+`SkillDependency` holds 40 rows and is used in three places: the prerequisite
+list on `skills/show`, cycle detection, and tree building.
+
+### X2 — mastery state machine is 5 persisted states, not 9
+
+Persisted on `SkillProgress`: `untested / weak / developing / strong /
+mastered`.
 Required (§93): `LOCKED / AVAILABLE / STARTED / PRACTICING / UNDERSTOOD /
 APPLIED / VALIDATED / MASTERED / REVIEW_REQUIRED`.
 
-The missing states are precisely the ones that drive gating and revision
-routing, not merely labels.
+`LOCKED` and `AVAILABLE` exist as computed values in `TreeBuilder` (X1) but
+are not part of the persisted enum, so two separate concerns — "has this
+learner demonstrated it" and "is this learner allowed to start it" — share one
+column. That conflation is the substantive gap, not the label count.
 
 ### X3 — no AI, RAG or agent layer
 
@@ -384,8 +402,11 @@ Each step is independently shippable and reversible.
    to `concept_id`. No progress table touches it.
 3. **Promote `CurriculumModule` → `Domain`** above `Skill` (D1). This is the
    only genuinely invasive change; it is detailed below in §119 format.
-4. **Extend the state machine** to 9 states and make `SkillDependency`
-   actually gate (X1, X2).
+4. **Enforce the gate that is already computed** (X1, X2): have
+   `SkillsController`, `TopicsController` and `ChallengesController` consult
+   `TreeBuilder`'s state, add §50's check-and-offer page for a locked skill,
+   and separate "allowed to start" from "has demonstrated" on `SkillProgress`.
+   Smaller than it first appeared — the lock logic exists and is correct.
 5. **Then** vertical slices per §114.
 
 ### The one invasive change, in §119's required format
@@ -449,8 +470,9 @@ Therefore the highest-value next work, in order:
 
 1. **Route the invisible** (step 1 above) — hours, not days, and it converts
    existing unreachable content into a usable product.
-2. **Make prerequisites real** — the gating states are what turn a content
-   list into a learning path.
+2. **Enforce the prerequisite gate** — the computation is already correct
+   (X1); it needs enforcing at the controller, persisting on `SkillProgress`,
+   and §50's "learn these two first" page.
 3. **One excellent vertical slice, per §114.** Given C2, that slice should be
    **Rails**, not Python: it is the brief's flagship, it has zero content, and
    the platform is itself a Rails application, so every lesson can inspect
