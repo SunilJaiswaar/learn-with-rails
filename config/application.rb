@@ -35,8 +35,11 @@ module LearnWithRails
     # running them inline keeps specs deterministic.
     config.active_job.queue_adapter = Rails.env.test? ? :test : :sidekiq
 
-    # Rate limiting sits in front of the app (spec 73).
-    config.middleware.use Rack::Attack
+    # Rate limiting sits in front of the app (spec 73). It is NOT registered
+    # here: rack-attack ships a railtie that already does
+    # `app.middleware.use(Rack::Attack)`, so adding it again put the
+    # middleware in the stack twice and counted every request twice against
+    # every throttle — making the effective limits half the configured ones.
 
     # Configuration for the application, engines, and railties goes here.
     #

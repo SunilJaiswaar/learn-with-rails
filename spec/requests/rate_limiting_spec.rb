@@ -5,6 +5,15 @@ require "rails_helper"
 RSpec.describe "Rate limiting", type: :request do
   let!(:user) { create(:user, email: "target@example.com") }
 
+  # rack-attack's railtie registers the middleware itself. config/application.rb
+  # used to register it again, which put it in the stack twice and counted every
+  # request twice against every throttle — so the effective limits were half the
+  # configured ones. Easy to reintroduce, invisible without this assertion.
+  it "installs the throttle middleware exactly once" do
+    names = Rails.application.middleware.map(&:name)
+    expect(names.count("Rack::Attack")).to eq(1)
+  end
+
   it "throttles repeated login attempts from one IP" do
     with_rack_attack do
       statuses = 13.times.map do
