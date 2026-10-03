@@ -37,19 +37,11 @@ class SystemDesignController < ApplicationController
     ).call
 
     if @simulation.passed
-      skill = Skill.find_by(slug: "query-performance") || Skill.first
-      Mastery::Recorder.new(
-        user: current_user,
-        skill: skill,
-        dimension: :application,
-        score: 95
-      ).call
-
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: @challenge[:xp_reward] || 350,
+      Labs::Completion.new(
+        user: current_user, lab_key: "system_design",
+        xp: @challenge[:xp_reward] || 350,
         reason: "Mastered #{@challenge[:title]} System Design challenge",
-        idempotency_key: "sysdesign-#{@challenge[:slug]}-#{current_user.id}"
+        detail: @challenge[:slug]
       ).call
     end
 

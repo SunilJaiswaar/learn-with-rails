@@ -31,11 +31,10 @@ class CpuSchedulerController < ApplicationController
     @simulation = simulate_scheduler(@algorithm, @quantum, @processes)
 
     if @algorithm == "sjf" || (@algorithm == "round_robin" && @quantum == 2)
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: 150,
+      Labs::Completion.new(
+        user: current_user, lab_key: "cpu_scheduler", xp: 150,
         reason: "Optimized CPU Scheduling Latency in Operating Systems Lab",
-        idempotency_key: "cpu-scheduler-#{@algorithm}-#{current_user.id}"
+        detail: @algorithm
       ).call
     end
 

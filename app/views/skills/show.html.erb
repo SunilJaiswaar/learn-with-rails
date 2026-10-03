@@ -156,6 +156,28 @@
       </section>
     <% end %>
 
+    <% if @labs.any? %>
+      <section class="card">
+        <h3>Laboratories</h3>
+        <p class="text-sm text-muted">
+          Hands-on practice for this skill. Completing a lab records evidence
+          against your <strong>application</strong> and <strong>debugging</strong>
+          dimensions and schedules the skill for revision.
+        </p>
+        <div class="stack stack--tight">
+          <% @labs.each do |key, lab| %>
+            <%= link_to send(lab[:route]), class: "lab-link" do %>
+              <span class="lab-link__icon"><%= lab[:icon] %></span>
+              <span>
+                <strong class="text-sm"><%= lab[:name] %></strong>
+                <span class="text-xs text-muted d-block"><%= lab[:summary] %></span>
+              </span>
+            <% end %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
     <% if @questions_count.positive? %>
       <section class="card">
         <h3>Interview questions</h3>

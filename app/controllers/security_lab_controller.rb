@@ -115,11 +115,10 @@ class SecurityLabController < ApplicationController
     end
 
     if @result["status"] == "secured"
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: 150,
+      Labs::Completion.new(
+        user: current_user, lab_key: "security_lab", xp: 150,
         reason: "Secured Vulnerability in Security Fortress: #{LABS[lab][:name]}",
-        idempotency_key: "security-lab-#{lab}-#{current_user.id}"
+        detail: lab
       ).call
     end
 

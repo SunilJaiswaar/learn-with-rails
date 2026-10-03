@@ -41,11 +41,10 @@ class CicdGameController < ApplicationController
   end
 
   def award_repair
-    Gamification::XpAward.new(
-      user: current_user,
-      amount: XP_REWARD,
+    Labs::Completion.new(
+      user: current_user, lab_key: "cicd_game", xp: XP_REWARD,
       reason: "Repaired the broken production CI/CD pipeline",
-      idempotency_key: "cicd-pipeline-repaired"
+      detail: "pipeline-repaired"
     ).call
   end
 end

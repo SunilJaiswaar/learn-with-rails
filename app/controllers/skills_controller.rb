@@ -7,6 +7,7 @@ class SkillsController < ApplicationController
     @algorithms = @skill.algorithms.ordered
     @boss_battles = @skill.boss_battles.published
     @questions_count = @skill.questions.published.count
+    @labs = Labs::Catalogue.for_skill(@skill.slug)
     @completed_topic_ids = current_user.topic_completions.finished.pluck(:topic_id).to_set
     @solved_challenge_ids = current_user.challenge_attempts.successful
                                         .pluck(:challenge_id).to_set

@@ -20,6 +20,9 @@ class RevisionsController < ApplicationController
     when Challenge then challenge_path(reviewable.slug)
     when Topic then topic_path(reviewable.slug)
     when Question then question_path(reviewable)
+    # Lab practice schedules the skill itself, so the skill page is where the
+    # learner goes to revise it.
+    when Skill then skill_path(reviewable.slug)
     else revisions_path
     end
   end

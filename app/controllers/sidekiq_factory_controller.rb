@@ -44,11 +44,10 @@ class SidekiqFactoryController < ApplicationController
       session[:sidekiq_state]["incident_active"] = false
       session[:sidekiq_state]["error_message"] = nil
 
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: 250,
+      Labs::Completion.new(
+        user: current_user, lab_key: "sidekiq_factory", xp: 250,
         reason: "Resolved Sidekiq Retry Storm & Queue Starvation Incident",
-        idempotency_key: "sidekiq-retry-storm-#{current_user.id}"
+        detail: "retry-storm"
       ).call
 
       flash[:notice] = "🏆 Excellent diagnosis! You prioritized queues (-q critical,5 -q default,2 -q mailers,1) and applied a Circuit Breaker on the failing gateway (+250 XP)."

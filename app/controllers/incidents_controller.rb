@@ -25,19 +25,11 @@ class IncidentsController < ApplicationController
     if chosen_opt && chosen_opt[:correct]
       session[:resolved_incidents] << @incident[:slug] unless session[:resolved_incidents].include?(@incident[:slug])
 
-      skill = Skill.find_by(slug: "debugging-skill") || Skill.first
-      Mastery::Recorder.new(
-        user: current_user,
-        skill: skill,
-        dimension: :debugging,
-        score: 95
-      ).call
-
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: @incident[:xp_reward] || 200,
+      Labs::Completion.new(
+        user: current_user, lab_key: "incidents",
+        xp: @incident[:xp_reward] || 200,
         reason: "Resolved Production Incident: #{@incident[:title]}",
-        idempotency_key: "incident-#{@incident[:slug]}-#{current_user.id}"
+        detail: @incident[:slug]
       ).call
 
       flash[:notice] = "🏆 Incident resolved! #{chosen_opt[:reason]} (+#{@incident[:xp_reward]} XP)"

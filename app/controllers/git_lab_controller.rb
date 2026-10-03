@@ -104,11 +104,10 @@ class GitLabController < ApplicationController
       }
       session[:git_state]["branches"]["main"] = sha
 
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: 150,
+      Labs::Completion.new(
+        user: current_user, lab_key: "git_lab", xp: 150,
         reason: "Resolved Git Merge Conflict in Git Time Machine",
-        idempotency_key: "git-merge-conflict-#{current_user.id}"
+        detail: "merge-conflict"
       ).call
 
       flash[:notice] = "Merge conflict resolved cleanly! Commit #{sha} created (+150 XP)."

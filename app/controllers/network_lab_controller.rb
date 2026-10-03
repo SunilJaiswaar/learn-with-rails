@@ -177,11 +177,10 @@ class NetworkLabController < ApplicationController
     end
 
     if correct
-      Gamification::XpAward.new(
-        user: current_user,
-        amount: 150,
+      Labs::Completion.new(
+        user: current_user, lab_key: "network_lab", xp: 150,
         reason: "Solved Networking Lab Challenge: #{challenge_id.titleize}",
-        idempotency_key: "net-challenge-#{challenge_id}-#{current_user.id}"
+        detail: challenge_id
       ).call
 
       flash[:notice] = "Correct! You understand the foundational networking protocols (+150 XP)."

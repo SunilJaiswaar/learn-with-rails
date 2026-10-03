@@ -5,6 +5,27 @@ RSpec.describe "Engineering Laboratories & Interactive Simulators", type: :reque
 
   before { sign_in_as(user) }
 
+  describe "discovering a lab from its skill" do
+    it "lists the skill's laboratories on the skill page" do
+      skill = create(:skill, slug: "web-security", name: "Web Security")
+
+      get skill_path(skill.slug)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to include("Security Fortress")
+      expect(response.body).to include(security_lab_path)
+    end
+
+    it "says nothing about labs on a skill that has none" do
+      skill = create(:skill, slug: "some-other-skill")
+
+      get skill_path(skill.slug)
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).not_to include("Laboratories")
+    end
+  end
+
   describe "System Design Universe" do
     it "renders the challenge index" do
       get system_design_index_path
