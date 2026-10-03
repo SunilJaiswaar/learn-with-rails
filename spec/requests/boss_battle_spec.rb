@@ -73,7 +73,11 @@ RSpec.describe "Boss battles", type: :request do
     post start_boss_battle_path(boss.slug)
     submit_stage("The join duplicates rows, so the sum double counts.")
 
-    expect { submit_stage("1") }.to change { user.reload.xp_total }.by(250)
+    submit_stage("1")
+
+    # The boss's own ledger entry, not the total: an achievement may fire too.
+    expect(user.xp_transactions.where(idempotency_key: "boss:#{boss.id}").sum(:amount))
+      .to eq(250)
 
     attempt = user.boss_attempts.last
     expect(attempt).to be_won_battle

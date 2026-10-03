@@ -30,8 +30,13 @@ RSpec.describe "Challenge submission", type: :request do
     end
 
     it "awards XP once, not on every re-solve" do
-      expect { submit(solution) }.to change { user.reload.xp_total }.by(30)
-      expect { submit(solution) }.not_to change { user.reload.xp_total }
+      key = "challenge:#{challenge.id}"
+
+      submit(solution)
+      expect(user.xp_transactions.where(idempotency_key: key).sum(:amount)).to eq(30)
+
+      submit(solution)
+      expect(user.xp_transactions.where(idempotency_key: key).count).to eq(1)
     end
 
     it "records implementation evidence against the skill" do

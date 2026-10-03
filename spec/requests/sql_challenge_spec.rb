@@ -37,13 +37,18 @@ RSpec.describe "SQL challenges", type: :request do
   end
 
   it "passes a correct query and awards XP once" do
-    expect { submit("SELECT count(*) FROM employees") }
-      .to change { user.reload.xp_total }.by(40)
+    # The challenge's own ledger entry is asserted rather than the total,
+    # because an achievement may legitimately fire in the same request.
+    key = "challenge:#{challenge.id}"
+
+    submit("SELECT count(*) FROM employees")
 
     expect(user.challenge_attempts.last).to be_passed
+    expect(user.xp_transactions.where(idempotency_key: key).sum(:amount)).to eq(40)
 
-    expect { submit("SELECT count(*) FROM employees") }
-      .not_to change { user.reload.xp_total }
+    submit("SELECT count(*) FROM employees")
+
+    expect(user.xp_transactions.where(idempotency_key: key).count).to eq(1)
   end
 
   it "fails a wrong query and awards nothing" do

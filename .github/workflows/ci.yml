@@ -91,6 +91,8 @@ jobs:
       - name: Verify the code sandbox
         run: bin/rails code_sandbox:verify
 
+      # The hermetic suite runs against an unseeded database: seeded
+      # achievements fire and award XP, which breaks exact-delta assertions.
       - name: Specs
         run: bundle exec rspec
 
@@ -100,5 +102,10 @@ jobs:
           bin/rails content:definition_of_done
           bin/rails content:validate_solutions
           bin/rails content:validate_debug_starters
+
+      # Capstone content specs assert the championship is buildable and the
+      # boss battles are winnable, so they need the seeded data.
+      - name: Content specs
+        run: bundle exec rspec spec/content
         env:
-          RAILS_ENV: test
+          RUN_CONTENT_SPECS: "1"

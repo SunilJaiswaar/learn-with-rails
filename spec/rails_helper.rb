@@ -30,4 +30,10 @@ RSpec.configure do |config|
   # Provisioned once, outside any example transaction, so the separate
   # sandbox connection can see the committed schema.
   config.before(:suite) { SqlSandboxHelpers.provision! }
+
+  # Content specs assert against seeded data, which makes the request suite
+  # non-hermetic (a seeded achievement awards XP and breaks exact-delta
+  # assertions). They are opt-in, and CI runs them in their own step after
+  # seeding.
+  config.filter_run_excluding(:content) unless ENV["RUN_CONTENT_SPECS"]
 end

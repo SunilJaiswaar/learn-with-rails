@@ -5,8 +5,12 @@ RSpec.describe "Interview flow", type: :request do
   let(:skill) { create(:skill) }
 
   let!(:template) do
+    # The round is scoped to this spec's own skill: without that, a seeded
+    # question can be selected instead and "the question I created" becomes
+    # ambiguous.
     create(:interview_template, experience_band: :mid, question_count: 2,
-           round_specs: [ { "name" => "Fundamentals", "count" => 2 } ])
+           round_specs: [ { "name" => "Fundamentals",
+                            "skills" => [ skill.slug ], "count" => 2 } ])
   end
 
   let!(:questions) do
@@ -136,7 +140,7 @@ RSpec.describe "Interview flow", type: :request do
 
   it "refuses to answer the same question twice" do
     interview = start_interview
-    current = interview.interview_questions.find_by!(question: questions.first)
+    current = interview.current_question
 
     post interview_answers_path(interview_id: interview.id),
          params: { interview_question_id: current.id, body: "First answer with index." }

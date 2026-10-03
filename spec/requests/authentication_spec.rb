@@ -1,7 +1,8 @@
 require "rails_helper"
 
 RSpec.describe "Authentication", type: :request do
-  let!(:user) { create(:user, email: "learner@example.com") }
+  # Deliberately not a seeded demo address, which would collide on email.
+  let!(:user) { create(:user, email: "auth-spec@example.test") }
 
   describe "signing in" do
     it "starts a session with valid credentials" do
