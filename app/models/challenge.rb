@@ -52,6 +52,27 @@ class Challenge < ApplicationRecord
     challenge_tests.where(hidden: false)
   end
 
+  # --- SQL challenge grading options (stored in metadata) ------------------
+
+  # True when row order is part of the answer, i.e. the prompt asked for it.
+  def ordered_result?
+    !!metadata["ordered"]
+  end
+
+  # Techniques the challenge insists on, e.g. "a window function".
+  def required_constructs
+    Array(metadata["requires"])
+  end
+
+  # Techniques the challenge rules out, e.g. "a subquery".
+  def forbidden_constructs
+    Array(metadata["forbids"])
+  end
+
+  def primary_test
+    challenge_tests.ordered.first
+  end
+
   def best_attempt_for(user)
     return nil unless user
 

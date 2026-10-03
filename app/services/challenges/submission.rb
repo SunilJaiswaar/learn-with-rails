@@ -21,7 +21,12 @@ module Challenges
 
     def call
       result = run_sandbox
-      review = CodeReview::Analyzer.new(code: code, challenge: challenge).call
+      # The heuristic reviewer reads Ruby; it has nothing useful to say about SQL.
+      review = if challenge.sql_language?
+                 {}
+      else
+                 CodeReview::Analyzer.new(code: code, challenge: challenge).call
+      end
       attempt = persist_attempt(result, review)
 
       award = nil
@@ -41,11 +46,30 @@ module Challenges
 
     attr_reader :user, :challenge, :code
 
+    # Ruby and SQL run in different sandboxes, so the submission picks the
+    # right one and normalises both outcomes into one attempt record.
     def run_sandbox
+      challenge.sql_language? ? run_sql : run_ruby
+    end
+
+    def run_ruby
       CodeExecution::Runner.new(
         code: code,
         tests: challenge.challenge_tests.ordered.to_a,
         limits: CodeExecution::Limits.for_challenge(challenge)
+      ).call
+    end
+
+    def run_sql
+      test = challenge.primary_test
+
+      SqlExecution::Runner.new(
+        sql: code,
+        expected_rows: test&.expected_rows || [],
+        ordered: challenge.ordered_result?,
+        timeout_ms: challenge.time_limit_ms,
+        requirements: challenge.required_constructs,
+        forbidden: challenge.forbidden_constructs
       ).call
     end
 
@@ -54,14 +78,26 @@ module Challenges
         challenge: challenge,
         submitted_code: code,
         status: result.status,
-        tests_passed: result.tests_passed,
-        tests_total: result.tests_total,
+        tests_passed: passed_count(result),
+        tests_total: total_count(result),
         runtime_ms: result.runtime_ms,
-        stdout: result.stdout.presence,
-        stderr: [ result.stderr.presence, result.message ].compact.join("\n").presence,
+        stdout: result.try(:stdout).presence,
+        stderr: [ result.try(:stderr).presence, result.message ].compact.join("\n").presence,
         results: result.to_results_payload,
         review: review
       )
+    end
+
+    # A SQL challenge is a single pass/fail against one expected result set,
+    # which is reported as 1-of-1 so the shared progress meter still works.
+    def passed_count(result)
+      return result.passed? ? 1 : 0 if challenge.sql_language?
+
+      result.tests_passed
+    end
+
+    def total_count(result)
+      challenge.sql_language? ? 1 : result.tests_total
     end
 
     # XP is paid once per challenge; later re-solves are free practice.

@@ -154,3 +154,80 @@ module SeedDSL
     end
   end
 end
+
+# --- SQL challenge authoring -------------------------------------------------
+module SeedDSL
+  module_function
+
+  # A SQL challenge, whose expected result set is derived by *running* the
+  # reference query against the live playground.
+  #
+  # This makes the content self-verifying: the stored expectation cannot drift
+  # from what the reference solution actually returns, and an authoring mistake
+  # fails the seed rather than shipping an unanswerable challenge.
+  #
+  # `requires` / `forbids` entries are { label:, pattern: } and let a challenge
+  # insist on a technique ("a window function") or rule one out ("a subquery").
+  def sql_challenge!(slug:, title:, prompt:, topic:, skill_slug:, solution:,
+                     type: :implement, difficulty: :easy, xp: 35,
+                     starter: nil, explanation: nil, ordered: false,
+                     requires: [], forbids: [], hints: [], timeout_ms: 2_000,
+                     test_name: "returns the expected rows")
+    unless SqlExecution::SandboxSchema.provisioned?
+      raise "The SQL playground is not provisioned. Run: rails sql_sandbox:provision"
+    end
+
+    expected = SeedDSL.expected_rows_for(solution)
+
+    challenge = Challenge.find_or_create_by!(slug: slug) do |c|
+      c.title = title
+      c.prompt = prompt
+      c.topic = topic
+      c.skill = skill!(skill_slug)
+      c.challenge_type = type
+      c.difficulty = difficulty
+      c.xp_award = xp
+      c.language = :sql
+      c.starter_code = starter || "SELECT\nFROM\n"
+      c.reference_solution = solution
+      c.explanation = explanation
+      c.time_limit_ms = timeout_ms
+      c.metadata = {
+        "ordered" => ordered,
+        "requires" => requires.map { |r| { "label" => r[:label], "pattern" => r[:pattern] } },
+        "forbids" => forbids.map { |r| { "label" => r[:label], "pattern" => r[:pattern] } }
+      }
+    end
+
+    test = ChallengeTest.find_or_initialize_by(challenge: challenge, position: 0)
+    test.name = test_name
+    test.expected = JSON.generate(expected)
+    test.hidden = false
+    test.save!
+
+    hints.each_with_index do |(level, body, penalty), index|
+      hint = Hint.find_or_initialize_by(challenge: challenge, position: index)
+      hint.level = level
+      hint.body = body
+      hint.xp_penalty = penalty || 3
+      hint.save!
+    end
+
+    challenge
+  end
+
+  # Executes an authored reference query and returns its rows, raising with a
+  # useful message if the query itself is broken.
+  def expected_rows_for(sql)
+    result = SqlExecution::Runner.new(sql: sql, expected_rows: []).call
+
+    if result.status == :rejected || result.status == :error || result.status == :timed_out
+      raise "Reference SQL failed (#{result.status}): #{result.message}\n#{sql}"
+    end
+
+    rows = Array(result.rows)
+    raise "Reference SQL returned no rows:\n#{sql}" if rows.empty?
+
+    rows
+  end
+end

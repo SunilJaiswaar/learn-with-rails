@@ -1,0 +1,105 @@
+<%#
+  Result panel for a SQL challenge: what the query returned, beside what was
+  expected, so a mismatch is diagnosable rather than just "wrong".
+
+  Locals: attempt, challenge, result (may be nil when replaying a past attempt), xp
+%>
+<%
+  result ||= nil
+  xp ||= nil
+  payload = attempt.results
+  columns = Array(payload["columns"])
+  rows = Array(payload["rows"])
+  expected = Array(payload["expected"])
+  requirements = Array(payload["requirements"])
+  message = result&.message || attempt.stderr
+%>
+<section class="card card--flush" aria-live="polite">
+  <div class="card__header">
+    <h2 class="mb-0">Result</h2>
+    <span class="badge badge--<%= attempt.passed? ? "success" : "danger" %>"
+          style="margin-left: auto;">
+      <%= attempt.status.humanize %>
+    </span>
+  </div>
+
+  <div class="card__body">
+    <div class="row row--between mb-2">
+      <span class="text-xs text-faint">
+        <%= pluralize(payload["row_count"].to_i, "row") %> returned
+        <% if attempt.runtime_ms %> · <%= attempt.runtime_ms %>ms<% end %>
+      </span>
+      <% if xp.to_i.positive? %>
+        <span class="badge badge--accent">+<%= xp %> XP</span>
+      <% end %>
+    </div>
+
+    <% if requirements.any? %>
+      <div class="verdict verdict--wrong mb-2" style="display: block;">
+        <strong>Technique required</strong>
+        <ul style="margin: 0.3rem 0 0; padding-left: 1.1rem;">
+          <% requirements.each do |note| %><li><%= note %></li><% end %>
+        </ul>
+      </div>
+    <% elsif message.present? %>
+      <div class="terminal mb-2"><%= message %></div>
+    <% end %>
+
+    <% if rows.any? %>
+      <h3 class="text-sm">Your result</h3>
+      <div style="overflow-x: auto;" class="mb-3">
+        <table class="table" style="font-size: 0.8rem;">
+          <thead>
+            <tr><% columns.each do |column| %><th scope="col" class="mono"><%= column %></th><% end %></tr>
+          </thead>
+          <tbody>
+            <% rows.each do |row| %>
+              <tr>
+                <% Array(row).each do |cell| %>
+                  <td class="mono <%= "text-faint" if cell.nil? %>">
+                    <%= cell.nil? ? "NULL" : cell %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+
+    <%# The expected set is only revealed once the learner has had a go, and
+        only when it did not match — otherwise it is just the answer. %>
+    <% if !attempt.passed? && expected.any? %>
+      <h3 class="text-sm">Expected</h3>
+      <div style="overflow-x: auto;">
+        <table class="table" style="font-size: 0.8rem;">
+          <tbody>
+            <% expected.each do |row| %>
+              <tr>
+                <% Array(row).each do |cell| %>
+                  <td class="mono <%= "text-faint" if cell.nil? %>">
+                    <%= cell.nil? ? "NULL" : cell %>
+                  </td>
+                <% end %>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-faint mt-2 mb-0">
+        <% if challenge.ordered_result? %>
+          Row order is part of this answer, so your ORDER BY must match.
+        <% else %>
+          Row order does not matter for this challenge.
+        <% end %>
+      </p>
+    <% end %>
+
+    <% if attempt.passed? && challenge.explanation.present? %>
+      <div class="verdict verdict--correct mt-3" style="display: block;">
+        <strong>Why this works</strong>
+        <p class="mb-0 mt-1" style="color: var(--text);"><%= challenge.explanation %></p>
+      </div>
+    <% end %>
+  </div>
+</section>

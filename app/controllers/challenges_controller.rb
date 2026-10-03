@@ -21,6 +21,13 @@ class ChallengesController < ApplicationController
     @best = @challenge.best_attempt_for(current_user)
     @code = params[:code].presence || @attempts.first&.submitted_code ||
             @challenge.starter_code
-    @sandbox_available = CodeExecution::Runner.sandbox_available?
+
+    if @challenge.sql_language?
+      @sandbox_available = SqlExecution::Runner.available?
+      @schema_reference = SqlExecution::SandboxSchema.reference
+      @row_counts = SqlExecution::SandboxSchema.row_counts
+    else
+      @sandbox_available = CodeExecution::Runner.sandbox_available?
+    end
   end
 end

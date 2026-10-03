@@ -24,7 +24,8 @@ working end to end and covered by specs.
 | Skill tree | 17 skills, prerequisite DAG with cycle detection, mastery-gated unlocks |
 | Lesson player | 10 typed block renderers; prose is one of ten, never the whole lesson |
 | Code runner | Sandboxed Ruby execution (bubblewrap + rlimits) |
-| Challenges | 23 challenges, 114 assertions, 67-step hint ladders, automated code review |
+| Challenges | 34 challenges (23 Ruby, 11 SQL), 125 assertions, 106 hints, automated code review |
+| SQL playground | Real PostgreSQL execution as a read-only role against a fixture schema |
 | Interview arena | 4 tracks, pressure modes, follow-up probe engine, competency feedback |
 | Algorithm visualiser | 11 step-through visualisers driven by real traces |
 | Big-O lab | Live operation counts across six growth classes |
@@ -32,14 +33,27 @@ working end to end and covered by specs.
 | XP, levels, achievements, streaks | Append-only ledger, 14 achievements, idempotent awards |
 | Mastery + spaced repetition | Six-dimension evidence model, expanding review ladder |
 | Progress reporting | Per-category interview readiness with explicit "not tested" |
+| Engineering labs | System design simulator, networking, Redis, Sidekiq, Git, CI/CD, security, CPU scheduling, Hotwire, incidents, championships |
 | Admin panel | CRUD, content analytics, version management, audit log, branding |
+
+### Phase 2 (done)
+
+SQL depth, with a **second execution engine**: learner SQL runs for real against
+a fixture dataset. Added `sql-basics` and `sql-aggregation` (SELECT/WHERE,
+ORDER BY and ties, GROUP BY/HAVING, window functions) plus the SQL Boss Arena
+challenges from the plan — second-highest salary, top-N-per-group, running
+totals and gaps-and-islands. 14 missions now satisfy the definition of done.
 
 ### Not built yet
 
-Phases 2–9 from the plan are **not** implemented: Rails/Hotwire/frontend
-curriculum worlds, system design simulator, DevOps and CI/CD games, Redis and
-Sidekiq teaching worlds, capstone projects, and the LLM-backed tutor. The
-interview evaluator and code reviewer currently use a transparent rubric engine
+Phases 3–9 are **not** implemented as curriculum: the Rails, Hotwire and
+frontend worlds, design patterns, distributed systems, AWS and observability,
+and the capstone projects. Several labs exist as interactive simulators
+(system design, networking, Redis, Sidekiq, Git, CI/CD, security, CPU
+scheduling) but without the surrounding mission content. Skills still with no
+missions: `number-systems`, `algorithmic-thinking`, `debugging-skill`,
+`memory-model`, `sorting`, `hash-maps`, `indexing`, `query-performance`.
+The interview evaluator and code reviewer use a transparent rubric engine
 (see [Honest limitations](#honest-limitations)).
 
 ---
@@ -123,6 +137,53 @@ Four non-obvious constraints, each found by testing:
 
 ---
 
+## SQL execution security
+
+SQL challenges execute real queries, so they get their own boundary. Learner
+SQL never runs on the application's connection:
+
+```
+Rails -> Challenges::Submission -> SqlExecution::Runner
+      -> StaticGuard (single read-only statement)
+      -> SqlSandboxRecord pool, authenticated as a restricted role
+      -> read-only transaction, statement_timeout, always rolled back
+      -> row comparison -> Result
+```
+
+| Control | Mechanism |
+|---|---|
+| Cannot read application tables | Queries run as `codequest_sql_runner`, which holds `SELECT` only on the `sql_sandbox` schema. `public` is revoked, so `users` and `sessions` are unreadable |
+| Cannot write or change schema | `transaction_read_only`, and the transaction is always rolled back |
+| Cannot reach the server | The role is not a superuser, so `pg_read_file` and friends are denied |
+| Bounded runtime | `statement_timeout` per challenge |
+| One statement only | `StaticGuard` rejects multiple statements and anything but `SELECT`/`WITH`/`EXPLAIN` |
+| Separate pool | The connection is established on `SqlSandboxRecord`, never `ActiveRecord::Base` — doing it on the base class would repoint the whole app at the restricted role |
+
+Provision and verify it with:
+
+```bash
+bin/rails sql_sandbox:provision
+bin/rails sql_sandbox:verify    # asserts the isolation properties above
+```
+
+`db:seed` provisions it automatically, because dropping the database drops the
+schema with it.
+
+### Self-verifying SQL content
+
+A SQL challenge's expected result set is not hand-written. `sql_challenge!`
+**runs the reference query** at seed time and stores what it returned, so the
+expectation cannot drift from the solution, and an authoring mistake fails the
+seed instead of shipping an unanswerable challenge.
+
+Challenges can also demand a technique. The second-highest-salary challenge is
+the clearest case: on this dataset `OFFSET 1 LIMIT 1` without `DISTINCT`
+returns the right answer *by luck*, and would be wrong the moment the top
+salary were shared. The challenge therefore requires `DISTINCT`, so passing
+means understanding rather than coincidence.
+
+---
+
 ## Architecture
 
 ```
@@ -189,11 +250,12 @@ idempotent — every record is found-or-created by a stable slug.
 ```bash
 bin/rails db:seed                          # idempotent
 bin/rails content:definition_of_done       # every mission carries the full loop
-bin/rails content:validate_solutions       # reference solutions pass their own tests
+bin/rails content:validate_solutions       # reference solutions pass (Ruby and SQL)
 bin/rails content:validate_debug_starters  # debug starters genuinely fail first
+bin/rails sql_sandbox:verify               # SQL isolation properties hold
 ```
 
-All three tasks run in CI. The last one matters more than it looks: a debugging
+All four tasks run in CI. The last one matters more than it looks: a debugging
 challenge whose starter already passes teaches nothing.
 
 ---
@@ -201,7 +263,7 @@ challenge whose starter already passes teaches nothing.
 ## Testing and quality
 
 ```bash
-bundle exec rspec        # 148 examples
+bundle exec rspec        # 258 examples
 bin/rubocop              # rubocop-rails-omakase
 bin/brakeman -i config/brakeman.ignore
 ```
@@ -273,7 +335,7 @@ reconciliation.
 
 ## Roadmap
 
-Phase 2 onward, in the order the plan sets out: SQL depth and Git; Rails,
+Phase 3 onward, in the order the plan sets out: Rails,
 PostgreSQL, Redis, Sidekiq, RSpec and Hotwire worlds; the frontend universe;
 computer science and networking; design patterns and system design; DevOps and
 observability; the LLM-backed tutor and interviewer; and the capstone projects

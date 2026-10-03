@@ -1,6 +1,7 @@
 <%= turbo_stream.replace "challenge-result" do %>
   <div id="challenge-result">
-    <%= render "challenges/result", attempt: @attempt, result: @result, xp: @xp,
+    <%= render @challenge.sql_language? ? "challenges/sql_result" : "challenges/result",
+               attempt: @attempt, result: @result, xp: @xp,
                challenge: @challenge, heading: "Result" %>
   </div>
 <% end %>

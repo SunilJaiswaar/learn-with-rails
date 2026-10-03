@@ -4,6 +4,15 @@ require Rails.root.join("db/seeds/support")
 
 puts "Seeding #{AppSetting.product_name rescue 'CodeQuest'}..."
 
+# SQL challenges are authored by running their reference query against the
+# playground, so the schema has to exist before the content loads. Dropping the
+# database drops the schema with it, which is why this runs on every seed.
+unless SqlExecution::SandboxSchema.provisioned?
+  puts "  provisioning the SQL playground"
+  SqlExecution::SandboxSchema.provision!
+  SqlExecution::Runner.reset_pool!
+end
+
 ActiveRecord::Base.transaction do
   %w[
     01_foundation
@@ -14,6 +23,9 @@ ActiveRecord::Base.transaction do
     06_algorithm_records
     07_gamification
     09_loop_completion
+    10_sql_basics
+    11_sql_aggregation
+    12_sql_loop_completion
     08_demo_users
   ].each { |file| load Rails.root.join("db/seeds/#{file}.rb") }
 end
@@ -28,6 +40,7 @@ puts "\nSeeded:"
   "Quest templates" => QuestTemplate, "Boss battles" => BossBattle,
   "Interview tracks" => InterviewTemplate, "Users" => User
 }.each { |label, klass| puts "  #{label.ljust(16)} #{klass.count}" }
+puts "  #{'SQL challenges'.ljust(16)} #{Challenge.sql_language.count}"
 
 incomplete = Topic.includes(:lessons, :challenges, :questions).reject(&:complete_content?)
 if incomplete.any?

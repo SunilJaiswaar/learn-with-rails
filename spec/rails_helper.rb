@@ -25,4 +25,9 @@ RSpec.configure do |config|
   config.include SandboxHelpers
   config.include RackAttackHelpers, type: :request
   config.include ActiveSupport::Testing::TimeHelpers
+  config.include SqlSandboxHelpers
+
+  # Provisioned once, outside any example transaction, so the separate
+  # sandbox connection can see the committed schema.
+  config.before(:suite) { SqlSandboxHelpers.provision! }
 end

@@ -40,7 +40,7 @@
       <div class="card__header">
         <h2>Your solution</h2>
         <span class="text-xs text-faint mono" style="margin-left: auto;">
-          Ruby · Ctrl+Enter to run
+          <%= @challenge.sql_language? ? "PostgreSQL" : "Ruby" %> · Ctrl+Enter to run
         </span>
       </div>
 
@@ -77,14 +77,43 @@
 
     <div id="challenge-result">
       <% if @best %>
-        <%= render "challenges/result", attempt: @best, result: nil, xp: nil,
+        <%= render @challenge.sql_language? ? "challenges/sql_result" : "challenges/result",
+                   attempt: @best, result: nil, xp: nil,
                    challenge: @challenge, heading: "Your best attempt so far" %>
       <% end %>
     </div>
   </div>
 
   <aside class="stack">
-    <section class="card card--flush">
+    <% if @challenge.sql_language? %>
+      <%# A learner cannot write a query without knowing the schema. %>
+      <section class="card card--flush">
+        <div class="card__header"><h3 class="mb-0">Tables you can query</h3></div>
+        <div class="card__body">
+          <div class="stack stack--tight">
+            <% Array(@schema_reference).each do |entry| %>
+              <div>
+                <div class="row row--between">
+                  <strong class="mono text-sm"><%= entry["table"] %></strong>
+                  <span class="text-xs text-faint">
+                    <%= @row_counts[entry["table"]] %> rows
+                  </span>
+                </div>
+                <div class="text-xs text-faint mono" style="word-break: break-word;">
+                  <%= entry["columns"].map { |c| "#{c['name']} #{c['type']}" }.join(" · ") %>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <p class="text-xs text-faint mt-2 mb-0">
+            Read-only. The search path is already set, so query
+            <code>employees</code> rather than <code>sql_sandbox.employees</code>.
+          </p>
+        </div>
+      </section>
+    <% end %>
+
+    <section class="card card--flush" <%= "hidden" if @challenge.sql_language? %>>
       <div class="card__header"><h3 class="mb-0">Visible tests</h3></div>
       <div class="card__body">
         <% if @visible_tests.any? %>
@@ -123,9 +152,16 @@
     <section class="card">
       <h3>Limits</h3>
       <ul class="text-xs text-muted" style="padding-left: 1.1rem; margin: 0;">
-        <li><%= @challenge.time_limit_ms %>ms CPU</li>
-        <li><%= @challenge.memory_limit_mb %>MB memory</li>
-        <li>No network, read-only filesystem</li>
+        <% if @challenge.sql_language? %>
+          <li><%= @challenge.time_limit_ms %>ms statement timeout</li>
+          <li>Read-only transaction, always rolled back</li>
+          <li>A role that can only read these tables</li>
+          <li>Single SELECT or WITH statement</li>
+        <% else %>
+          <li><%= @challenge.time_limit_ms %>ms CPU</li>
+          <li><%= @challenge.memory_limit_mb %>MB memory</li>
+          <li>No network, read-only filesystem</li>
+        <% end %>
       </ul>
     </section>
 

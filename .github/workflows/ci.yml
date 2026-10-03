@@ -75,6 +75,11 @@ jobs:
       - name: Prepare the database
         run: bin/rails db:test:prepare
 
+      # Learner SQL executes against a restricted role and a fixture schema,
+      # so the playground has to exist before the SQL specs run.
+      - name: Provision the SQL playground
+        run: bin/rails sql_sandbox:provision && bin/rails sql_sandbox:verify
+
       - name: Specs
         run: bundle exec rspec
 
