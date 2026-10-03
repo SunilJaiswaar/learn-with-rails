@@ -1,0 +1,15 @@
+<div class="qa__question" style="border: 0; padding: 0; background: transparent;">
+  <p class="mb-1"><strong><%= block.payload["question"] %></strong></p>
+</div>
+
+<div data-controller="reveal">
+  <button type="button" class="btn btn--sm"
+          data-reveal-target="trigger" data-action="reveal#show"
+          aria-controls="<%= dom_id(block, :model) %>">
+    What a strong answer contains
+  </button>
+  <div id="<%= dom_id(block, :model) %>" data-reveal-target="panel" hidden
+       class="qa__answer mt-1" style="display: block;">
+    <%= block.payload["good_answer"] %>
+  </div>
+</div>

@@ -1,0 +1,80 @@
+<%= form_with model: topic, url: topic.persisted? ? admin_topic_path(topic) : admin_topics_path do |form| %>
+  <% if topic.errors.any? %>
+    <div class="form-errors" role="alert">
+      <strong>Please fix the following:</strong>
+      <ul>
+        <% topic.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid--2">
+    <div>
+      <div class="field">
+        <%= form.label :name %>
+        <%= form.text_field :name, class: "input", required: true %>
+      </div>
+      <div class="field">
+        <%= form.label :slug %>
+        <%= form.text_field :slug, class: "input" %>
+        <span class="field__hint">Leave blank to generate from the name.</span>
+      </div>
+      <div class="field">
+        <%= form.label :hook, "Hook — the problem that creates curiosity" %>
+        <%= form.text_area :hook, class: "textarea", rows: 3, required: true %>
+      </div>
+      <div class="field">
+        <%= form.label :summary %>
+        <%= form.text_area :summary, class: "textarea", rows: 2 %>
+      </div>
+    </div>
+
+    <div>
+      <div class="field">
+        <%= form.label :curriculum_module_id, "Module" %>
+        <%= form.collection_select :curriculum_module_id, CurriculumModule.ordered,
+                                   :id, :name, { include_blank: true }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :skill_id, "Skill (the mastery target)" %>
+        <%= form.collection_select :skill_id, Skill.ordered, :id, :name,
+                                   { include_blank: true }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :technology_version_id, "Technology version" %>
+        <%= form.collection_select :technology_version_id,
+                                   TechnologyVersion.includes(:technology).to_a,
+                                   :id, :label, { include_blank: true }, class: "select" %>
+      </div>
+      <div class="row">
+        <div class="field" style="flex: 1;">
+          <%= form.label :estimated_minutes, "Minutes" %>
+          <%= form.number_field :estimated_minutes, class: "input", min: 1, max: 180 %>
+        </div>
+        <div class="field" style="flex: 1;">
+          <%= form.label :xp_award, "XP" %>
+          <%= form.number_field :xp_award, class: "input", min: 0 %>
+        </div>
+        <div class="field" style="flex: 1;">
+          <%= form.label :position %>
+          <%= form.number_field :position, class: "input" %>
+        </div>
+      </div>
+      <div class="field">
+        <%= form.label :difficulty %>
+        <%= form.select :difficulty, DifficultyScale::LEVELS.keys.map { |l| [l.to_s.humanize, l] },
+                        {}, class: "select" %>
+      </div>
+      <label class="checkbox">
+        <%= form.check_box :published %>
+        <span>Published</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="row row--end mt-3">
+    <%= link_to "Cancel", admin_topics_path, class: "btn" %>
+    <%= form.submit topic.persisted? ? "Save mission" : "Create mission",
+                    class: "btn btn--primary" %>
+  </div>
+<% end %>

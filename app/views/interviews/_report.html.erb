@@ -1,0 +1,98 @@
+<%
+  feedback = interview.feedback
+  strong_areas = Array(feedback["strong_areas"])
+  weak_areas = Array(feedback["weak_areas"])
+  gaps = Array(feedback["knowledge_gaps"])
+  revision = Array(feedback["recommended_revision"])
+%>
+<section class="card card--raised">
+  <div class="row row--between mb-2">
+    <h2 class="mb-0">Interview feedback</h2>
+    <span class="badge badge--accent">+<%= interview.xp_awarded %> XP</span>
+  </div>
+
+  <%# Never a pass/fail promise (spec 45): standing per competency instead. %>
+  <p class="text-sm text-muted">
+    This is an assessment of the answers you gave, not a prediction about any
+    real interview.
+  </p>
+
+  <h3 class="mt-3">Competencies</h3>
+  <div class="competency">
+    <% Interview::COMPETENCIES.each do |competency| %>
+      <% score = interview.competency_score(competency) %>
+      <div class="competency__row">
+        <span class="competency__name"><%= competency.humanize %></span>
+        <% if score %>
+          <div class="meter">
+            <div class="meter__fill" style="width: <%= score %>%"></div>
+          </div>
+          <span class="competency__score"><%= score %>%</span>
+        <% else %>
+          <span class="text-xs text-faint">Not tested in this interview</span>
+          <span class="competency__score">—</span>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="grid grid--2 mt-3">
+    <div>
+      <h3>Strong areas</h3>
+      <% if strong_areas.any? %>
+        <ul class="text-sm" style="padding-left: 1.1rem; margin: 0;">
+          <% strong_areas.each do |area| %>
+            <li><%= area["name"] %> — <%= area["score"] %>%</li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm text-muted mb-0">Nothing scored above 75% this time.</p>
+      <% end %>
+    </div>
+    <div>
+      <h3>Weak areas</h3>
+      <% if weak_areas.any? %>
+        <ul class="text-sm" style="padding-left: 1.1rem; margin: 0;">
+          <% weak_areas.each do |area| %>
+            <li><%= area["name"] %> — <%= area["score"] %>%</li>
+          <% end %>
+        </ul>
+      <% else %>
+        <p class="text-sm text-muted mb-0">Nothing fell below 50%.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <% if gaps.any? %>
+    <h3 class="mt-3">Concepts you did not mention</h3>
+    <div class="row">
+      <% gaps.each do |gap| %>
+        <span class="chip">
+          <%= gap["concept"] %>
+          <% if gap["times_missed"].to_i > 1 %>
+            <span class="text-faint">×<%= gap["times_missed"] %></span>
+          <% end %>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if feedback["communication_note"].present? %>
+    <h3 class="mt-3">Communication</h3>
+    <p class="text-sm mb-0"><%= feedback["communication_note"] %></p>
+  <% end %>
+
+  <% if revision.any? %>
+    <h3 class="mt-3">Recommended revision</h3>
+    <div class="row">
+      <% revision.each do |item| %>
+        <%= link_to item["skill"], skill_path(item["slug"]), class: "btn btn--sm" %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="row mt-3">
+    <%= link_to "Back to the arena", interviews_path, class: "btn" %>
+    <%= link_to "See what is due for revision", revisions_path, class: "btn btn--primary" %>
+  </div>
+</section>

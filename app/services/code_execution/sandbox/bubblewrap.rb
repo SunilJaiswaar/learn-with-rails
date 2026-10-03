@@ -1,19 +1,28 @@
 module CodeExecution
   module Sandbox
-    # Isolation via bubblewrap (bwrap) using unprivileged user namespaces:
+    # Isolation via bubblewrap (bwrap) using unprivileged user namespaces.
     #
-    #   * --unshare-all       no network, no pid/ipc/uts sharing with the host
-    #   * --ro-bind / /       the host filesystem is visible but read-only
-    #   * --bind work /tmp/work  the only writable path
-    #   * --die-with-parent   orphaned sandboxes cannot outlive the runner
-    #   * --new-session       detaches the controlling terminal (no TIOCSTI)
+    # The mount set is an allow-list, not the whole host: only the Ruby
+    # installation and the shared libraries it links against are visible, so
+    # learner code cannot read application source, credentials or /etc.
+    # The single writable path is the per-run working directory.
     #
-    # CPU, address space, file size and process count limits are applied by the
-    # in-sandbox harness, because setting RLIMIT_NPROC on the bwrap process
-    # itself makes namespace creation fail with EAGAIN.
+    #   --unshare-all      no network, and no shared pid/ipc/uts namespaces
+    #   --die-with-parent  an orphaned sandbox cannot outlive the runner
+    #   --new-session      detaches the controlling tty (blocks TIOCSTI tricks)
+    # The sandbox inherits none of the server's environment: the bwrap process
+    # itself is spawned with a cleared env (bwrap 0.4 has no --clearenv), and
+    # only the limit variables are injected with --setenv.
+    #
+    # CPU, address-space, file-size and process limits are applied by the
+    # in-sandbox harness: setting RLIMIT_NPROC on the bwrap process itself
+    # makes user-namespace creation fail with EAGAIN.
     class Bubblewrap < Base
       BWRAP = "/usr/bin/bwrap"
       WORK_MOUNT = "/tmp/work"
+
+      # Directories holding the shared objects the interpreter links against.
+      LIBRARY_PATHS = %w[/lib /lib64 /usr/lib /usr/lib64].freeze
 
       def self.available?
         File.executable?(BWRAP) && userns_enabled?
@@ -28,12 +37,34 @@ module CodeExecution
         false
       end
 
+      # Only the interpreter's own prefix is exposed, never its parent dirs.
+      def self.ruby_prefix
+        RbConfig::CONFIG.fetch("prefix")
+      end
+
       def run(script_name)
-        command = [
-          BWRAP,
-          "--ro-bind", "/", "/",
-          "--dev", "/dev",
+        spawn_with_timeout(
+          command(script_name),
+          env: {},
+          # The wall-clock budget sits above the CPU limit so that a sleeping
+          # (not spinning) process is still reaped.
+          timeout_seconds: limits.cpu_seconds + limits.wall_margin_seconds
+        )
+      end
+
+      private
+
+      def command(script_name)
+        argv = [ BWRAP ]
+
+        argv += [ "--ro-bind", self.class.ruby_prefix, self.class.ruby_prefix ]
+        LIBRARY_PATHS.each do |path|
+          argv += [ "--ro-bind-try", path, path ]
+        end
+
+        argv += [
           "--proc", "/proc",
+          "--dev", "/dev",
           "--tmpfs", "/tmp",
           "--bind", workdir.to_s, WORK_MOUNT,
           "--chdir", WORK_MOUNT,
@@ -42,31 +73,16 @@ module CodeExecution
           "--new-session",
           "--setenv", "HOME", WORK_MOUNT,
           "--setenv", "TMPDIR", WORK_MOUNT,
+          "--setenv", "SBX_CPU", limits.cpu_seconds.to_s,
+          "--setenv", "SBX_AS", limits.address_space_bytes.to_s,
+          "--setenv", "SBX_FSIZE", limits.file_size_bytes.to_s,
+          "--setenv", "SBX_NPROC", limits.max_processes.to_s,
           RbConfig.ruby,
           "--disable-gems",
           File.join(WORK_MOUNT, Harness::FILENAME),
           script_name
         ]
-
-        spawn_with_timeout(
-          command,
-          env: harness_env,
-          # Wall-clock budget sits above the CPU limit so a sleeping process is
-          # still reaped, with a small margin for interpreter startup.
-          timeout_seconds: (limits.cpu_seconds + limits.wall_margin_seconds)
-        )
-      end
-
-      private
-
-      def harness_env
-        {
-          "SBX_CPU" => limits.cpu_seconds.to_s,
-          "SBX_AS" => limits.address_space_bytes.to_s,
-          "SBX_FSIZE" => limits.file_size_bytes.to_s,
-          "SBX_NPROC" => limits.max_processes.to_s,
-          "RUBYOPT" => ""
-        }
+        argv
       end
     end
   end

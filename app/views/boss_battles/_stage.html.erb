@@ -1,0 +1,36 @@
+<% spec = attempt.current_stage_spec %>
+<% if spec.nil? %>
+  <section class="card"><p class="mb-0">No further stages.</p></section>
+<% else %>
+  <section class="card" id="boss-stage-form">
+    <div class="row row--between mb-2">
+      <h2 class="mb-0">Stage <%= attempt.current_stage + 1 %>: <%= spec["label"] %></h2>
+      <span class="badge"><%= spec["kind"] == "choice" ? "Choose" : "Explain" %></span>
+    </div>
+
+    <p class="text-sm mb-3"><strong><%= spec["prompt"] %></strong></p>
+
+    <%= form_with url: boss_battle_stage_path(boss_battle_id: boss_battle.slug),
+                  method: :patch, data: { turbo_stream: true } do |form| %>
+      <% if spec["kind"] == "choice" %>
+        <div class="choice-list">
+          <% Array(spec["options"]).each_with_index do |option, index| %>
+            <label class="choice" style="cursor: pointer;">
+              <%= form.radio_button :answer, index, checked: false,
+                                    style: "accent-color: var(--accent);" %>
+              <span><%= option %></span>
+            </label>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="field">
+          <%= form.label :answer, "Your diagnosis" %>
+          <%= form.text_area :answer, class: "textarea", rows: 5,
+                             placeholder: "Explain the mechanism, not just the symptom." %>
+        </div>
+      <% end %>
+
+      <%= form.submit "Submit stage", class: "btn btn--primary mt-2" %>
+    <% end %>
+  </section>
+<% end %>

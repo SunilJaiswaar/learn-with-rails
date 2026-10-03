@@ -1,0 +1,25 @@
+<%# The explanation is withheld until the learner commits to an answer. %>
+<div id="<%= dom_id(block, :prediction) %>">
+  <div class="prose text-sm">
+    <% if block.payload["question"].to_s.include?("\n") %>
+      <pre class="code" style="background: var(--bg-sunken); border-radius: var(--radius-sm); padding: 0.7rem 0.9rem;"><code><%= block.payload["question"] %></code></pre>
+    <% else %>
+      <p><strong><%= block.payload["question"] %></strong></p>
+    <% end %>
+  </div>
+
+  <div class="choice-list">
+    <% Array(block.payload["options"]).each_with_index do |option, index| %>
+      <%= button_to topic_predict_path(topic_id: topic.slug, block_id: block.id),
+                    params: { choice: index },
+                    class: "choice",
+                    form: { data: { turbo_stream: true } } do %>
+        <span class="choice__key" aria-hidden="true"><%= ("A".ord + index).chr %></span>
+        <span><%= option %></span>
+      <% end %>
+    <% end %>
+  </div>
+  <p class="text-xs text-faint mt-2">
+    Commit to an answer to unlock the explanation. Correct predictions earn XP.
+  </p>
+</div>

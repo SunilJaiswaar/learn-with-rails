@@ -1,0 +1,40 @@
+<% content_for :title, "Interview questions" %>
+<header class="row row--between mb-3">
+  <h1 class="mb-0">Interview questions</h1>
+  <%= link_to "New question", new_admin_question_path, class: "btn btn--primary" %>
+</header>
+
+<form method="get" action="<%= admin_questions_path %>" class="card mb-3"
+      data-controller="autosubmit" data-action="change->autosubmit#submit">
+  <div class="field" style="margin: 0; max-width: 240px;">
+    <label for="qtype">Type</label>
+    <select class="select" id="qtype" name="type">
+      <option value="">All types</option>
+      <% Question::QUESTION_TYPES.each do |type| %>
+        <option value="<%= type %>" <%= "selected" if params[:type] == type %>>
+          <%= type.humanize %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+</form>
+
+<section class="card card--flush">
+  <table class="table">
+    <thead>
+      <tr><th scope="col">Question</th><th scope="col">Type</th>
+          <th scope="col">Band</th><th scope="col">Follow-ups</th></tr>
+    </thead>
+    <tbody>
+      <% @questions.each do |question| %>
+        <tr>
+          <td><%= link_to question.body.truncate(90), admin_question_path(question) %></td>
+          <td><span class="badge"><%= question.question_type.humanize %></span></td>
+          <td class="text-sm"><%= question.experience_band_label %></td>
+          <td class="mono"><%= question.question_follow_ups.size %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+<div class="mt-3"><%= paginate @questions %></div>

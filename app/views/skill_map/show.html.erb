@@ -1,0 +1,74 @@
+<% content_for :title, "Skill map" %>
+<% content_for :content_class, "content--wide" %>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-0">Skill map</h1>
+    <p class="text-muted text-sm mb-0">
+      A skill unlocks when every prerequisite reaches at least
+      <strong>developing</strong> mastery — measured from what you do, not what
+      you open.
+    </p>
+  </div>
+  <% if @next_topic %>
+    <%= link_to "Continue: #{@next_topic.name}", topic_path(@next_topic.slug),
+                class: "btn btn--primary" %>
+  <% end %>
+</header>
+
+<div class="row mb-3 text-xs">
+  <% [["available", "Unlocked", "border-color: var(--border-strong)"],
+      ["in_progress", "In progress", "border-left: 3px solid var(--warning)"],
+      ["complete", "Developing or better", "border-left: 3px solid var(--success)"],
+      ["locked", "Locked", "border-style: dashed; opacity: 0.55"]].each do |_state, label, style| %>
+    <span class="badge" style="<%= style %>"><%= label %></span>
+  <% end %>
+</div>
+
+<div class="tree">
+  <% @nodes_by_world.each do |world, nodes| %>
+    <section class="tree__world" aria-labelledby="world-<%= world&.id || 'none' %>">
+      <div class="tree__world-head">
+        <span class="tree__world-dot" aria-hidden="true"
+              style="background: <%= world&.accent_color || 'var(--accent)' %>"></span>
+        <h2 class="mb-0" id="world-<%= world&.id || 'none' %>">
+          <%= world&.name || "Unsorted" %>
+        </h2>
+        <span class="text-xs text-faint"><%= world&.tagline %></span>
+      </div>
+
+      <div class="tree__tiers">
+        <% nodes.group_by { |node| node.skill.tier }.sort_by(&:first).each do |tier, tier_nodes| %>
+          <div class="tree__tier">
+            <span class="tree__tier-label">Tier <%= tier %></span>
+            <% tier_nodes.each do |node| %>
+              <% if node.unlocked? %>
+                <%= link_to skill_path(node.skill.slug),
+                            class: "skill-node skill-node--#{node.state}" do %>
+                  <span class="skill-node__name"><%= node.skill.name %></span>
+                  <span class="skill-node__meta"><%= node.skill.summary %></span>
+                  <div class="meter meter--sm">
+                    <div class="meter__fill" style="width: <%= node.composite %>%"></div>
+                  </div>
+                  <span class="skill-node__meta">
+                    <%= node.mastery_level.humanize %> · <%= node.composite %>%
+                  </span>
+                <% end %>
+              <% else %>
+                <div class="skill-node skill-node--locked"
+                     aria-label="<%= node.skill.name %>, locked">
+                  <span class="skill-node__name"><%= node.skill.name %></span>
+                  <span class="skill-node__meta"><%= node.skill.summary %></span>
+                  <span class="skill-node__lock">
+                    <span aria-hidden="true">🔒</span>
+                    Needs <%= node.prerequisite_names.to_sentence %>
+                  </span>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+</div>

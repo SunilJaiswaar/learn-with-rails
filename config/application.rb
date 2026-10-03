@@ -26,7 +26,17 @@ module LearnWithRails
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w[assets tasks])
+    # lib/sandbox holds a standalone script that is copied into the code
+    # execution sandbox and run by a separate interpreter. It must never be
+    # autoloaded or eager loaded into the Rails process.
+    config.autoload_lib(ignore: %w[assets tasks sandbox])
+
+    # Background jobs run on Sidekiq in every environment except test, where
+    # running them inline keeps specs deterministic.
+    config.active_job.queue_adapter = Rails.env.test? ? :test : :sidekiq
+
+    # Rate limiting sits in front of the app (spec 73).
+    config.middleware.use Rack::Attack
 
     # Configuration for the application, engines, and railties goes here.
     #

@@ -1,0 +1,70 @@
+<% content_for :title, @topic.name %>
+
+<nav class="text-xs text-faint mb-2"><%= link_to "Missions", admin_topics_path %></nav>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-0"><%= @topic.name %></h1>
+    <p class="text-sm text-muted mb-0"><%= @topic.hook %></p>
+  </div>
+  <div class="row">
+    <%= link_to "View as learner", topic_path(@topic.slug), class: "btn btn--sm" %>
+    <%= link_to "Edit", edit_admin_topic_path(@topic), class: "btn btn--sm btn--primary" %>
+  </div>
+</header>
+
+<div class="grid grid--2">
+  <%# The definition of done is the content quality gate (spec 80). %>
+  <section class="card">
+    <h2>Definition of done</h2>
+    <p class="text-xs text-muted">
+      A mission is not complete until every element of the learning loop exists.
+    </p>
+    <div class="dod">
+      <% @definition_of_done.each do |requirement, satisfied| %>
+        <div class="dod__row dod__row--<%= satisfied ? "yes" : "no" %>">
+          <span class="dod__mark" aria-hidden="true"><%= satisfied ? "✓" : "✗" %></span>
+          <span><%= requirement %></span>
+          <span class="visually-hidden"><%= satisfied ? "present" : "missing" %></span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>Composition</h2>
+    <dl class="text-sm" style="margin: 0;">
+      <% { "Lesson blocks" => @topic.lesson_blocks.count,
+           "Challenges" => @topic.challenges.count,
+           "Questions" => @topic.questions.count,
+           "Estimated minutes" => @topic.estimated_minutes,
+           "XP award" => @topic.xp_award,
+           "Difficulty" => @topic.difficulty_label,
+           "Skill" => @topic.skill&.name,
+           "Technology version" => @topic.technology_version&.label || "—" }.each do |label, value| %>
+        <div class="row row--between" style="border-bottom: 1px solid var(--border); padding: 0.35rem 0;">
+          <dt class="text-muted"><%= label %></dt>
+          <dd class="mono" style="margin: 0;"><%= value %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </section>
+</div>
+
+<section class="card card--flush mt-3">
+  <div class="card__header"><h2>Block sequence</h2></div>
+  <div class="card__body">
+    <table class="table">
+      <thead><tr><th scope="col">#</th><th scope="col">Type</th><th scope="col">Heading</th></tr></thead>
+      <tbody>
+        <% @topic.lesson_blocks.includes(:lesson).order("lessons.position, lesson_blocks.position").each_with_index do |block, index| %>
+          <tr>
+            <td class="mono"><%= index + 1 %></td>
+            <td><span class="badge"><%= block.block_type.humanize %></span></td>
+            <td class="text-sm"><%= block.heading %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</section>

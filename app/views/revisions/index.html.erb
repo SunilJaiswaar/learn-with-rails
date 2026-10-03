@@ -1,0 +1,75 @@
+<% content_for :title, "Revision" %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Revision</h1>
+  <p class="text-muted text-sm mb-0">
+    Things you got wrong come back automatically, on an expanding schedule:
+    today, tomorrow, 3 days, 7, 14, 30, 60. A miss sends an item back down.
+  </p>
+</header>
+
+<% if @due.any? %>
+  <section class="card card--flush mb-3">
+    <div class="card__header">
+      <h2>Due now</h2>
+      <span class="badge badge--warning" style="margin-left: auto;"><%= @due_count %></span>
+    </div>
+    <div class="card__body stack stack--tight">
+      <% @due.each do |schedule| %>
+        <% target = schedule.reviewable %>
+        <% next if target.nil? %>
+        <%= link_to revision_path(schedule), class: "card",
+                    style: "display: block; padding: 0.7rem 0.9rem; text-decoration: none;" do %>
+          <div class="row row--between">
+            <div style="min-width: 0;">
+              <strong><%= target.try(:title) || target.try(:name) || target.try(:body)&.truncate(70) %></strong>
+              <div class="text-xs text-muted">
+                <%= target.class.name.humanize %>
+                <% if schedule.skill %> · <%= schedule.skill.name %><% end %>
+                <% if schedule.lapses.positive? %>
+                  · missed <%= pluralize(schedule.lapses, "time") %>
+                <% end %>
+              </div>
+            </div>
+            <span class="badge badge--warning">Due</span>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+<% else %>
+  <div class="empty mb-3">
+    <div class="empty__icon" aria-hidden="true">✓</div>
+    <h2>Nothing due today</h2>
+    <p class="mb-0 text-muted">
+      Items appear here when you get something wrong, then return on a widening
+      schedule.
+    </p>
+  </div>
+<% end %>
+
+<% if @upcoming.any? %>
+  <section class="card card--flush">
+    <div class="card__header"><h2>Coming up</h2></div>
+    <div class="card__body">
+      <table class="table">
+        <thead><tr><th scope="col">Item</th><th scope="col">Skill</th>
+                   <th scope="col">Interval</th><th scope="col">Due</th></tr></thead>
+        <tbody>
+          <% @upcoming.each do |schedule| %>
+            <% target = schedule.reviewable %>
+            <% next if target.nil? %>
+            <tr>
+              <td class="text-sm">
+                <%= target.try(:title) || target.try(:name) || target.try(:body)&.truncate(50) %>
+              </td>
+              <td class="text-sm text-muted"><%= schedule.skill&.name %></td>
+              <td class="mono text-xs"><%= schedule.interval_days %>d</td>
+              <td class="text-xs text-faint"><%= schedule.due_on.to_fs(:long) %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% end %>

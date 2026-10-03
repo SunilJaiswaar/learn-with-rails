@@ -1,0 +1,16 @@
+<div class="prose text-sm">
+  <p><%= block.payload["situation"] %></p>
+  <p><strong><%= block.payload["question"] %></strong></p>
+</div>
+
+<div data-controller="reveal">
+  <button type="button" class="btn btn--sm mt-1"
+          data-reveal-target="trigger" data-action="reveal#show"
+          aria-controls="<%= dom_id(block, :answer) %>">
+    Show how an engineer would answer
+  </button>
+  <div id="<%= dom_id(block, :answer) %>" data-reveal-target="panel" hidden
+       class="verdict verdict--correct" style="display: block;">
+    <%= block.payload["answer"] %>
+  </div>
+</div>

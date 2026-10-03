@@ -1,28 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en"
+      <%= tag.attributes(data: { theme: (theme_preference unless theme_preference == "system"),
+                                 reduced_motion: reduced_motion?.to_s }) %>>
   <head>
-    <title><%= content_for(:title) || "Learn With Rails" %></title>
+    <title><%= content_for(:title) ? "#{content_for(:title)} · #{product_name}" : product_name %></title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="application-name" content="Learn With Rails">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="<%= AppSetting['tagline'] %>">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
-
     <%= yield :head %>
 
-    <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
-    <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
-
-    <link rel="icon" href="/icon.png" type="image/png">
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="/icon.png">
-
-    <%# Includes all stylesheet files in app/assets/stylesheets %>
-    <%= stylesheet_link_tag :app, "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "components", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
   </head>
 
   <body>
-    <%= yield %>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <div class="app-shell">
+      <%= render "shared/sidebar" %>
+
+      <div class="main">
+        <%= render "shared/topbar" %>
+
+        <main id="main-content" class="content <%= yield(:content_class) %>" tabindex="-1">
+          <%= render "shared/flash" %>
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+
+    <%# XP and achievement notifications are appended here by Turbo Streams. %>
+    <div class="toast-stack" id="toasts" aria-live="polite" aria-atomic="false"></div>
   </body>
 </html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en"
+      <%= tag.attributes(data: { theme: (theme_preference unless theme_preference == "system") }) %>>
+  <head>
+    <title><%= content_for(:title) ? "#{content_for(:title)} · Admin" : "Admin" %> · <%= product_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "application", "components", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
+
+    <div class="app-shell">
+      <nav class="sidebar" aria-label="Admin navigation">
+        <%= link_to admin_root_path, class: "sidebar__brand" do %>
+          <span class="sidebar__mark" aria-hidden="true">A</span>
+          <span>Admin</span>
+        <% end %>
+
+        <div class="sidebar__nav">
+          <% [["Overview", admin_root_path, "▣"],
+              ["Learners", admin_users_path, "◉"],
+              ["Missions", admin_topics_path, "◆"],
+              ["Challenges", admin_challenges_path, "⬢"],
+              ["Questions", admin_questions_path, "?"],
+              ["Versions", admin_technology_versions_path, "⌥"],
+              ["Settings", admin_settings_path, "⚙"],
+              ["Audit log", admin_audit_logs_path, "☰"]].each do |label, path, icon| %>
+            <%= link_to path, class: "nav-item",
+                        aria: { current: ("page" if current_page?(path)) } do %>
+              <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+              <span><%= label %></span>
+            <% end %>
+          <% end %>
+
+          <div class="sidebar__section">Learner view</div>
+          <%= link_to dashboard_path, class: "nav-item" do %>
+            <span class="nav-item__icon" aria-hidden="true">←</span>
+            <span>Back to <%= product_name %></span>
+          <% end %>
+        </div>
+      </nav>
+
+      <div class="main">
+        <header class="topbar">
+          <strong><%= content_for(:title) || "Admin" %></strong>
+          <div class="topbar__spacer"></div>
+          <span class="text-sm text-muted"><%= current_user.email %></span>
+          <span class="badge badge--accent"><%= current_user.role %></span>
+        </header>
+
+        <main id="main-content" class="content content--wide" tabindex="-1">
+          <%= render "shared/flash" %>
+          <%= yield %>
+        </main>
+      </div>
+    </div>
+  </body>
+</html>

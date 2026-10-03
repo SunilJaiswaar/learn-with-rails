@@ -1,0 +1,52 @@
+<% content_for :title, @boss_battle.title %>
+
+<nav class="text-xs text-faint mb-2"><%= link_to "Boss battles", boss_battles_path %></nav>
+
+<section class="boss mb-3">
+  <span class="boss__name"><%= @boss_battle.boss_name %></span>
+  <h1 class="mb-2"><%= @boss_battle.title %></h1>
+  <div class="prose text-sm"><%= simple_format @boss_battle.scenario %></div>
+
+  <% if @attempt %>
+    <div class="stage-rail" role="img"
+         aria-label="Stage <%= @attempt.current_stage + 1 %> of <%= @boss_battle.stage_count %>">
+      <% @boss_battle.stage_count.times do |index| %>
+        <span class="stage-rail__pip <%= index < @attempt.current_stage ? "stage-rail__pip--done" : index == @attempt.current_stage ? "stage-rail__pip--current" : "" %>"></span>
+      <% end %>
+    </div>
+    <p class="text-xs text-faint mb-0">
+      Stage <%= @attempt.current_stage + 1 %> of <%= @boss_battle.stage_count %>
+    </p>
+  <% end %>
+</section>
+
+<div id="boss-stage">
+  <% if @last_won && @attempt.nil? %>
+    <section class="card" style="border-color: var(--success);">
+      <h2 style="color: var(--success);">Defeated</h2>
+      <p class="text-sm">
+        You beat this boss with a score of <strong><%= @last_won.score %>%</strong>.
+      </p>
+      <% if @boss_battle.debrief.present? %>
+        <div class="verdict verdict--correct" style="display: block;">
+          <%= @boss_battle.debrief %>
+        </div>
+      <% end %>
+      <%= button_to "Fight again", start_boss_battle_path(@boss_battle.slug),
+                    class: "btn mt-2" %>
+    </section>
+  <% elsif @attempt.nil? %>
+    <section class="card">
+      <h2>Ready?</h2>
+      <p class="text-sm text-muted">
+        <%= @boss_battle.stage_count %> stages. A failed stage can be retried —
+        you will not lose progress.
+      </p>
+      <%= button_to "Begin", start_boss_battle_path(@boss_battle.slug),
+                    class: "btn btn--primary" %>
+    </section>
+  <% else %>
+    <%= render "boss_battles/stage", boss_battle: @boss_battle, attempt: @attempt,
+               outcome: nil %>
+  <% end %>
+</div>

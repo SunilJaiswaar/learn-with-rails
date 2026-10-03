@@ -1,0 +1,31 @@
+<% content_for :title, "Boss battles" %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Boss battles</h1>
+  <p class="text-muted text-sm mb-0">
+    Multi-stage fights that mix diagnosis, decision and justification. One
+    memorised trick is not enough.
+  </p>
+</header>
+
+<div class="grid grid--2">
+  <% @boss_battles.each do |boss| %>
+    <section class="boss">
+      <div class="row row--between">
+        <span class="boss__name"><%= boss.boss_name %></span>
+        <% if @beaten_ids.include?(boss.id) %>
+          <span class="badge badge--success">Defeated</span>
+        <% end %>
+      </div>
+      <h2 class="mb-1"><%= boss.title %></h2>
+      <p class="text-sm text-muted"><%= boss.scenario.lines.first %></p>
+      <div class="row mb-2 text-xs">
+        <span class="badge"><%= boss.stage_count %> stages</span>
+        <span class="badge"><%= boss.difficulty_label %></span>
+        <span class="badge badge--accent">+<%= boss.xp_reward %> XP</span>
+      </div>
+      <%= link_to @beaten_ids.include?(boss.id) ? "Fight again" : "Enter the fight",
+                  boss_battle_path(boss.slug), class: "btn btn--primary" %>
+    </section>
+  <% end %>
+</div>

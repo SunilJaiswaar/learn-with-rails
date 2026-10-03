@@ -36,9 +36,9 @@ class Topic < ApplicationRecord
 
   # Spec 80: a topic is not complete until every element of the loop exists.
   def definition_of_done
-    block_types = lesson_blocks.pluck(:block_type).map { |t| LessonBlock.block_types.key(t) }.to_set
-    challenge_types = challenges.pluck(:challenge_type)
-                                .map { |t| Challenge.challenge_types.key(t) }.to_set
+    # `pluck` already casts an enum column to its string name.
+    block_types = lesson_blocks.pluck(:block_type).to_set
+    challenge_types = challenges.pluck(:challenge_type).to_set
 
     {
       "Explanation" => block_types.include?("prose"),

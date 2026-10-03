@@ -1,0 +1,66 @@
+<% content_for :title, "Interview question" %>
+
+<header class="mb-3">
+  <div class="row mb-2">
+    <span class="badge"><%= @question.question_type.humanize %></span>
+    <span class="badge"><%= @question.experience_band_label %></span>
+    <% if @question.company_type.present? %>
+      <span class="badge"><%= @question.company_type.humanize %> pattern</span>
+    <% end %>
+    <% if @question.skill %>
+      <%= link_to @question.skill.name, skill_path(@question.skill.slug), class: "badge badge--accent" %>
+    <% end %>
+  </div>
+  <h1 style="font-size: 1.3rem; max-width: 60ch;"><%= @question.body %></h1>
+</header>
+
+<div id="question-answer">
+  <% if @question.mcq? %>
+    <section class="card">
+      <%= form_with url: answer_question_path(@question), method: :post,
+                    data: { turbo_stream: true } do |form| %>
+        <div class="choice-list">
+          <% @question.choices.each_with_index do |choice, index| %>
+            <label class="choice" style="cursor: pointer;">
+              <%= form.radio_button :body, index, style: "accent-color: var(--accent);" %>
+              <span><%= choice %></span>
+            </label>
+          <% end %>
+        </div>
+        <%= form.submit "Submit answer", class: "btn btn--primary mt-2" %>
+      <% end %>
+    </section>
+  <% else %>
+    <section class="card">
+      <%= form_with url: answer_question_path(@question), method: :post,
+                    data: { turbo_stream: true } do |form| %>
+        <div class="field">
+          <%= form.label :body, "Your answer" %>
+          <%= form.text_area :body, class: "textarea", rows: 6, autofocus: true,
+                             placeholder: "Explain your reasoning and name the trade-off." %>
+          <span class="field__hint">
+            Graded on the concepts your answer contains — you will see exactly
+            which were recognised.
+          </span>
+        </div>
+        <%= form.submit "Submit answer", class: "btn btn--primary" %>
+      <% end %>
+    </section>
+  <% end %>
+</div>
+
+<% if @attempts.any? %>
+  <section class="card mt-3">
+    <h2>Your previous attempts</h2>
+    <div class="stack stack--tight">
+      <% @attempts.each do |attempt| %>
+        <div class="row row--between text-sm">
+          <span class="text-muted"><%= attempt.response.to_s.truncate(70) %></span>
+          <span class="badge badge--<%= attempt.correct ? "success" : "danger" %>">
+            <%= attempt.score %>%
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>

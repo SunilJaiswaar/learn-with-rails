@@ -1,0 +1,9 @@
+<% content_for :title, "Edit #{@challenge.title}" %>
+<h1>Edit challenge</h1>
+<section class="card"><%= render "form", challenge: @challenge %></section>
+<section class="card mt-3" style="border-color: var(--danger);">
+  <h2>Delete</h2>
+  <%= button_to "Delete challenge", admin_challenge_path(@challenge), method: :delete,
+                class: "btn btn--danger",
+                form: { data: { turbo_confirm: "Delete #{@challenge.title}? Attempts will be removed too." } } %>
+</section>

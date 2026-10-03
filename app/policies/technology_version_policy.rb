@@ -1,0 +1,2 @@
+class TechnologyVersionPolicy < ApplicationPolicy
+end

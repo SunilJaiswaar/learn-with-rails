@@ -1,0 +1,45 @@
+<% content_for :title, "Technology versions" %>
+<h1>Technology versions</h1>
+<p class="text-muted text-sm mb-3">
+  Status drives whether a mission warns that its content is no longer current.
+  Deprecated and end-of-life versions stay available for interview preparation.
+</p>
+
+<% @technologies.each do |technology| %>
+  <section class="card card--flush mb-3">
+    <div class="card__header"><h2><%= technology.name %></h2></div>
+    <div class="card__body">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Version</th><th scope="col">Released</th>
+              <th scope="col">Status</th><th scope="col"></th></tr>
+        </thead>
+        <tbody>
+          <% technology.technology_versions.newest_first.each do |version| %>
+            <tr>
+              <td class="mono"><%= version.number %></td>
+              <td class="text-xs text-faint"><%= version.released_on&.to_fs(:long) || "—" %></td>
+              <td>
+                <span class="badge badge--<%= version.current_status? ? "success" : version.maintained_status? ? "info" : "danger" %>">
+                  <%= version.status %>
+                </span>
+              </td>
+              <td>
+                <%= form_with url: admin_technology_version_path(version), method: :patch,
+                              class: "row", style: "gap: 0.4rem;" do |form| %>
+                  <%= form.fields_for :technology_version, version do |fields| %>
+                    <%= fields.hidden_field :number, value: version.number %>
+                    <%= fields.select :status,
+                                      TechnologyVersion.statuses.keys.map { |s| [s.humanize, s] },
+                                      {}, class: "select", style: "width: auto;" %>
+                  <% end %>
+                  <%= form.submit "Update", class: "btn btn--sm" %>
+                <% end %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% end %>

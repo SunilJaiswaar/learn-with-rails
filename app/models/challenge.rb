@@ -2,6 +2,8 @@ class Challenge < ApplicationRecord
   include Sluggable
   include DifficultyScale
 
+  slug_from :title
+
   belongs_to :topic, optional: true
   belongs_to :skill, optional: true
 
@@ -17,7 +19,9 @@ class Challenge < ApplicationRecord
     production: 7
   }.freeze
 
-  enum :challenge_type, CHALLENGE_TYPES, validate: true
+  # Suffixed because an unsuffixed `explain` value would generate a
+  # Challenge.explain scope and shadow ActiveRecord::Relation#explain.
+  enum :challenge_type, CHALLENGE_TYPES, suffix: :challenge, validate: true
   enum :language, { ruby: 0, sql: 1 }, suffix: :language, validate: true
 
   has_many :challenge_tests, -> { order(:position) }, dependent: :destroy

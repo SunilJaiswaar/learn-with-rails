@@ -1,0 +1,9 @@
+<%= turbo_stream.replace "hint-panel" do %>
+  <section class="card card--flush" id="hint-panel">
+    <div class="card__header"><h3 class="mb-0">Hints</h3></div>
+    <div class="card__body">
+      <%= render "challenges/hints", challenge: @challenge, ladder: @ladder,
+                 revealed: @ladder.revealed.ordered %>
+    </div>
+  </section>
+<% end %>

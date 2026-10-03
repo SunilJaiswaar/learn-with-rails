@@ -1,0 +1,106 @@
+<% if block.payload["prompt"].present? %>
+  <p class="text-sm mb-2"><strong><%= block.payload["prompt"] %></strong></p>
+<% end %>
+
+<% case block.payload["kind"] %>
+<% when "pair_matching" %>
+  <div class="grid grid--2">
+    <% Array(block.payload["left"]).each_with_index do |left, index| %>
+      <div class="row" style="flex-wrap: nowrap;">
+        <span class="chip" style="flex: 1;"><%= left %></span>
+        <span class="flow__arrow" aria-hidden="true">→</span>
+        <span class="chip chip--active" style="flex: 1;">
+          <%= Array(block.payload["right"])[index] %>
+        </span>
+      </div>
+    <% end %>
+  </div>
+
+<% when "trace_table" %>
+  <% steps = Array(block.payload["steps"]) %>
+  <% keys = (steps.first&.keys.to_a - ["line"]) %>
+  <div style="overflow-x: auto;">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th scope="col">Line</th>
+          <% keys.each do |key| %><th scope="col" class="mono"><%= key %></th><% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% steps.each do |step| %>
+          <tr>
+            <th scope="row" class="mono"><%= step["line"] %></th>
+            <% keys.each do |key| %><td class="mono"><%= step[key] %></td><% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+<% when "risk_spotter" %>
+  <%# Each case hides its reasoning until the learner has formed an opinion. %>
+  <div class="stack stack--tight" data-controller="reveal">
+    <% Array(block.payload["cases"]).each_with_index do |item, index| %>
+      <div class="card" style="padding: 0.7rem 0.9rem;">
+        <div class="row row--between" style="flex-wrap: nowrap; gap: 0.6rem;">
+          <span class="mono text-sm" style="flex: 1;"><%= item["sql"] %></span>
+          <span class="badge <%= item["risk"] ? "badge--warning" : "badge--success" %>">
+            <%= item["risk"] ? "Watch out" : "Safe" %>
+          </span>
+        </div>
+        <div data-reveal-target="panel" hidden class="text-sm text-muted mt-1">
+          <%= item["why"] %>
+        </div>
+      </div>
+    <% end %>
+    <button type="button" class="btn btn--sm" data-action="reveal#toggle">
+      Toggle reasoning
+    </button>
+  </div>
+
+<% when "query_builder" %>
+  <div data-controller="reveal">
+    <button type="button" class="btn btn--sm" data-reveal-target="trigger"
+            data-action="reveal#show">Show the approach</button>
+    <div data-reveal-target="panel" hidden class="verdict verdict--correct mt-1"
+         style="display: block;">
+      <div class="mono"><%= block.payload["answer"] %></div>
+    </div>
+  </div>
+
+<% when "algorithm_visualizer" %>
+  <%# Links to the full visualiser rather than embedding a second copy. %>
+  <% algorithm = Algorithm.find_by(slug: block.payload["algorithm_slug"]) %>
+  <% if algorithm %>
+    <%= link_to algorithm_path(algorithm.slug), class: "card",
+                style: "display: flex; align-items: center; gap: 0.8rem; text-decoration: none;" do %>
+      <span style="font-size: 1.4rem;" aria-hidden="true">⇅</span>
+      <span>
+        <strong><%= algorithm.name %> — step through it</strong>
+        <span class="text-sm text-muted" style="display: block;">
+          <%= algorithm.time_average %> average · <%= algorithm.space_complexity %> space
+        </span>
+      </span>
+    <% end %>
+  <% end %>
+
+<% when "complexity_slider" %>
+  <%= link_to (block.payload["link"].presence || complexity_path), class: "card",
+              style: "display: flex; align-items: center; gap: 0.8rem; text-decoration: none;" do %>
+    <span style="font-size: 1.4rem;" aria-hidden="true">∿</span>
+    <span>
+      <strong>Open the Big-O lab</strong>
+      <span class="text-sm text-muted" style="display: block;">
+        Move the input size and watch the operation counts.
+      </span>
+    </span>
+  <% end %>
+
+<% else %>
+  <p class="text-muted text-sm mb-0">Interactive element unavailable.</p>
+<% end %>
+
+<% if block.payload["note"].present? %>
+  <p class="text-xs text-faint mt-2 mb-0"><%= block.payload["note"] %></p>
+<% end %>

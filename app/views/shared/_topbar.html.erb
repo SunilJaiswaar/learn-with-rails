@@ -1,0 +1,38 @@
+<header class="topbar">
+  <form action="<%= search_path %>" method="get" role="search"
+        style="flex: 1; max-width: 420px;"
+        data-controller="autosubmit" data-action="input->autosubmit#submit">
+    <label class="visually-hidden" for="global-search">Search lessons, challenges and questions</label>
+    <input class="input" type="search" id="global-search" name="q"
+           value="<%= params[:q] %>" placeholder="Search anything — try &quot;join&quot; or &quot;binary search&quot;"
+           autocomplete="off">
+  </form>
+
+  <div class="topbar__spacer"></div>
+
+  <% streak = current_user.streak %>
+  <% if streak&.active? %>
+    <span class="streak-flame" title="<%= streak.current_length %> day streak">
+      <span aria-hidden="true">🔥</span>
+      <span><%= streak.current_length %></span>
+      <span class="visually-hidden">day streak</span>
+    </span>
+  <% end %>
+
+  <span class="badge badge--accent" title="Total experience points">
+    <%= number_with_delimiter current_user.xp_total %> XP
+  </span>
+
+  <button type="button" class="btn btn--ghost btn--sm"
+          data-controller="theme"
+          data-theme-url-value="<%= settings_path %>"
+          data-action="theme#toggle"
+          aria-label="Switch between dark and light theme">
+    <span aria-hidden="true">◐</span>
+  </button>
+
+  <%= button_to logout_path, method: :delete, class: "btn btn--ghost btn--sm",
+                form: { style: "display:inline" } do %>
+    Sign out
+  <% end %>
+</header>

@@ -1,0 +1,78 @@
+<% content_for :title, "Interview arena" %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Interview arena</h1>
+  <p class="text-muted text-sm mb-0" style="max-width: 70ch;">
+    The interviewer probes. Say "Redis is faster" and you will be asked why,
+    what happens when it goes down, and how you would invalidate the cache.
+    Tracks are interview <em>pattern</em> categories, not any company's real
+    questions.
+  </p>
+</header>
+
+<div class="grid grid--2">
+  <% @templates.each do |template| %>
+    <section class="card">
+      <div class="row row--between mb-1">
+        <h2 class="mb-0" style="font-size: 1.05rem;"><%= template.name %></h2>
+        <span class="badge"><%= template.experience_band_label %></span>
+      </div>
+      <p class="text-sm text-muted"><%= template.summary %></p>
+
+      <div class="row text-xs mb-2">
+        <% template.rounds.each do |round| %>
+          <span class="chip"><%= round["name"] %></span>
+        <% end %>
+      </div>
+
+      <%= form_with url: interviews_path, method: :post do |form| %>
+        <%= form.hidden_field :interview_template_id, value: template.id %>
+        <div class="row">
+          <div class="field" style="flex: 1; margin: 0;">
+            <%= form.label :pressure_mode, "Pressure", for: "mode-#{template.id}" %>
+            <%= form.select :pressure_mode,
+                            @pressure_modes.map { |m| [m.to_s.humanize, m] }, {},
+                            class: "select", id: "mode-#{template.id}" %>
+          </div>
+          <div class="field" style="flex: 1; margin: 0;">
+            <%= form.label :company_type, "Company pattern", for: "company-#{template.id}" %>
+            <%= form.select :company_type,
+                            @company_types.map { |t| [t.humanize, t] },
+                            { include_blank: "Any" },
+                            class: "select", id: "company-#{template.id}" %>
+          </div>
+        </div>
+        <%= form.submit "Start interview", class: "btn btn--primary btn--block mt-2" %>
+      <% end %>
+    </section>
+  <% end %>
+</div>
+
+<% if @interviews.any? %>
+  <section class="card card--flush mt-3">
+    <div class="card__header"><h2>Your interviews</h2></div>
+    <div class="card__body">
+      <table class="table">
+        <thead>
+          <tr><th scope="col">Track</th><th scope="col">Mode</th><th scope="col">Status</th>
+              <th scope="col">Score</th><th scope="col">When</th></tr>
+        </thead>
+        <tbody>
+          <% @interviews.each do |interview| %>
+            <tr>
+              <td><%= link_to interview.interview_template&.name || "Practice",
+                              interview_path(interview) %></td>
+              <td class="text-sm"><%= interview.pressure_mode.humanize %></td>
+              <td><span class="badge badge--<%= interview.completed_interview? ? "success" : "warning" %>">
+                <%= interview.status.humanize %></span></td>
+              <td class="mono">
+                <%= interview.completed_interview? ? "#{interview.overall_score}%" : "—" %>
+              </td>
+              <td class="text-xs text-faint"><%= time_ago_in_words(interview.created_at) %> ago</td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+<% end %>

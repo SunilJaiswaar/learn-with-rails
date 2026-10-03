@@ -1,0 +1,2 @@
+class InterviewTemplatePolicy < ApplicationPolicy
+end

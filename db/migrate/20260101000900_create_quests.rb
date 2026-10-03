@@ -8,7 +8,7 @@ class CreateQuests < ActiveRecord::Migration[8.1]
       t.integer :xp_reward, null: false, default: 350
       t.integer :difficulty, null: false, default: 1
       t.references :skill, foreign_key: true
-      t.jsonb  :step_specs, null: false, default: []
+      t.jsonb :step_specs, null: false, default: []
       t.boolean :active, null: false, default: true
       t.timestamps
     end
@@ -17,7 +17,7 @@ class CreateQuests < ActiveRecord::Migration[8.1]
     create_table :quests do |t|
       t.references :user, null: false, foreign_key: { on_delete: :cascade }
       t.references :quest_template, null: false, foreign_key: true
-      t.date   :scheduled_on, null: false
+      t.date :scheduled_on, null: false
       t.integer :status, null: false, default: 0   # 0 open 1 completed 2 expired
       t.integer :xp_awarded, null: false, default: 0
       t.datetime :completed_at

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+  <head>
+    <title><%= content_for(:title) ? "#{content_for(:title)} · #{product_name}" : product_name %></title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="description" content="<%= AppSetting['tagline'] %>">
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <%= stylesheet_link_tag "application", "components", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body>
+    <main id="main-content" class="content" style="max-width: 1100px; margin: 0 auto;">
+      <%= render "shared/flash" %>
+      <%= yield %>
+    </main>
+  </body>
+</html>

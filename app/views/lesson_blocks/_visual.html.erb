@@ -1,0 +1,118 @@
+<%# Visuals are driven by a `kind` discriminator so new diagram types can be
+    added without touching the lesson player. %>
+<% case block.payload["kind"] %>
+<% when "tables" %>
+  <div class="grid grid--2">
+    <% Array(block.payload["tables"]).each do |table| %>
+      <div class="code-panel">
+        <div class="code-panel__bar"><%= table["name"] %></div>
+        <table class="table" style="font-size: 0.8rem;">
+          <thead>
+            <tr><% Array(table["columns"]).each do |col| %><th scope="col"><%= col %></th><% end %></tr>
+          </thead>
+          <tbody>
+            <% Array(table["rows"]).each do |row| %>
+              <tr><% Array(row).each do |cell| %><td class="mono"><%= cell.nil? ? "NULL" : cell %></td><% end %></tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% end %>
+  </div>
+
+<% when "join_result" %>
+  <% result = block.payload["result"] || {} %>
+  <div class="code-panel">
+    <div class="code-panel__bar">result</div>
+    <table class="table" style="font-size: 0.8rem;">
+      <thead>
+        <tr><% Array(result["columns"]).each do |col| %><th scope="col"><%= col %></th><% end %></tr>
+      </thead>
+      <tbody>
+        <% Array(result["rows"]).each do |row| %>
+          <tr>
+            <% Array(row).each do |cell| %>
+              <td class="mono <%= "text-faint" if cell.nil? %>"><%= cell.nil? ? "NULL" : cell %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+  <% dropped = Array(block.payload["dropped"]) %>
+  <% if dropped.any? %>
+    <div class="verdict verdict--wrong mt-2" style="display: block;">
+      <strong>Dropped by the join:</strong>
+      <ul style="margin: 0.3rem 0 0; padding-left: 1.1rem;">
+        <% dropped.each do |item| %><li><%= item %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+<% when "fan_out" %>
+  <div class="row" style="align-items: center; gap: 1rem; flex-wrap: nowrap; overflow-x: auto;">
+    <span class="flow__node"><%= block.payload["left"] %></span>
+    <span class="flow__arrow" aria-hidden="true">→</span>
+    <div class="stack stack--tight">
+      <% Array(block.payload["right"]).each do |item| %>
+        <span class="flow__node"><%= item %></span>
+      <% end %>
+    </div>
+    <span class="flow__arrow" aria-hidden="true">=</span>
+    <span class="badge badge--danger"><%= Array(block.payload["right"]).size %> rows</span>
+  </div>
+
+<% when "reference_diagram" %>
+  <div class="grid grid--2">
+    <div class="stack stack--tight">
+      <% Array(block.payload["nodes"]).each do |node| %>
+        <div class="row" style="flex-wrap: nowrap;">
+          <span class="chip"><%= node["label"] %></span>
+          <span class="flow__arrow" aria-hidden="true">→</span>
+          <span class="text-sm text-muted"><%= node["points_to"] %></span>
+        </div>
+      <% end %>
+    </div>
+    <div class="stack stack--tight">
+      <% Array(block.payload["objects"]).each do |object| %>
+        <div class="card" style="padding: 0.6rem 0.8rem;">
+          <span class="text-xs text-faint"><%= object["id"] %></span>
+          <div class="mono text-sm"><%= object["value"] %></div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+<% when "growth_table" %>
+  <div style="overflow-x: auto;">
+    <table class="compare">
+      <thead>
+        <tr>
+          <th scope="col">Complexity</th>
+          <% Array(block.payload["sizes"]).each do |size| %>
+            <th scope="col">n = <%= size.is_a?(Numeric) ? number_with_delimiter(size) : size %></th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% Array(block.payload["rows"]).each do |row| %>
+          <tr>
+            <th scope="row" class="mono"><%= row["label"] %></th>
+            <% Array(row["values"]).each do |value| %>
+              <td class="mono"><%= value %></td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+<% else %>
+  <p class="text-muted text-sm mb-0">
+    <%= block.payload["caption"].presence || "Diagram unavailable." %>
+  </p>
+<% end %>
+
+<% if block.payload["caption"].present? && block.payload["kind"] != "none" %>
+  <p class="text-xs text-faint mt-2 mb-0"><%= block.payload["caption"] %></p>
+<% end %>

@@ -11,9 +11,9 @@ class Streak < ApplicationRecord
 
     self.current_length = if last_active_on == today - 1
                             current_length + 1
-                          else
+    else
                             1
-                          end
+    end
     self.longest_length = [ longest_length, current_length ].max
     self.last_active_on = today
     save!

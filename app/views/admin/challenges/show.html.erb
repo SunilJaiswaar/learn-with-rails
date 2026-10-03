@@ -1,0 +1,81 @@
+<% content_for :title, @challenge.title %>
+<nav class="text-xs text-faint mb-2"><%= link_to "Challenges", admin_challenges_path %></nav>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-0"><%= @challenge.title %></h1>
+    <div class="row text-xs text-faint mt-1">
+      <span><%= @challenge.challenge_type.humanize %></span>
+      <span aria-hidden="true">·</span>
+      <span>proves <%= @challenge.mastery_dimension.to_s.humanize.downcase %></span>
+    </div>
+  </div>
+  <div class="row">
+    <%= link_to "View as learner", challenge_path(@challenge.slug), class: "btn btn--sm" %>
+    <%= link_to "Edit", edit_admin_challenge_path(@challenge), class: "btn btn--sm btn--primary" %>
+  </div>
+</header>
+
+<div class="grid grid--4 mb-3">
+  <div class="card"><div class="stat">
+    <span class="stat__value"><%= @stats[:attempts] %></span>
+    <span class="stat__label">Attempts</span></div></div>
+  <div class="card"><div class="stat">
+    <span class="stat__value"><%= @stats[:passes] %></span>
+    <span class="stat__label">Passes</span></div></div>
+  <div class="card"><div class="stat">
+    <span class="stat__value">
+      <%= @stats[:attempts].zero? ? "—" : "#{((@stats[:passes].to_f / @stats[:attempts]) * 100).round}%" %>
+    </span>
+    <span class="stat__label">Pass rate</span></div></div>
+  <div class="card"><div class="stat">
+    <span class="stat__value"><%= @hints.size %></span>
+    <span class="stat__label">Hints</span></div></div>
+</div>
+
+<div class="grid grid--2">
+  <section class="card card--flush">
+    <div class="card__header"><h2>Assertions</h2></div>
+    <div class="card__body">
+      <table class="table">
+        <thead><tr><th scope="col">Name</th><th scope="col">Expression</th>
+                   <th scope="col">Expected</th><th scope="col">Hidden</th></tr></thead>
+        <tbody>
+          <% @tests.each do |test| %>
+            <tr>
+              <td class="text-sm"><%= test.name %></td>
+              <td><code class="text-xs"><%= test.call_expression&.truncate(70) %></code></td>
+              <td><code class="text-xs"><%= test.expected %></code></td>
+              <td><%= test.hidden ? "Yes" : "No" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="card card--flush">
+    <div class="card__header"><h2>Hint ladder</h2></div>
+    <div class="card__body">
+      <div class="stack stack--tight">
+        <% @hints.each do |hint| %>
+          <div class="card" style="padding: 0.6rem 0.8rem;">
+            <div class="row row--between">
+              <span class="badge"><%= hint.level.humanize %></span>
+              <span class="text-xs text-faint">−<%= hint.xp_penalty %> XP</span>
+            </div>
+            <p class="text-sm mt-1 mb-0"><%= hint.body %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+</div>
+
+<section class="card mt-3">
+  <h2>Reference solution</h2>
+  <p class="text-xs text-muted">
+    Validated by <code>rails content:validate_solutions</code>.
+  </p>
+  <div class="code-panel"><pre class="code"><code><%= @challenge.reference_solution %></code></pre></div>
+</section>

@@ -1,0 +1,43 @@
+<% content_for :title, "Missions" %>
+
+<header class="row row--between mb-3">
+  <h1 class="mb-0">Missions</h1>
+  <%= link_to "New mission", new_admin_topic_path, class: "btn btn--primary" %>
+</header>
+
+<section class="card card--flush">
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">Mission</th><th scope="col">Skill</th>
+        <th scope="col">Minutes</th><th scope="col">Loop complete</th><th scope="col">Published</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @topics.each do |topic| %>
+        <tr>
+          <td>
+            <%= link_to topic.name, admin_topic_path(topic) %>
+            <div class="text-xs text-faint"><%= topic.curriculum_module.name %></div>
+          </td>
+          <td class="text-sm"><%= topic.skill&.name %></td>
+          <td class="mono"><%= topic.estimated_minutes %></td>
+          <td>
+            <% if topic.complete_content? %>
+              <span class="badge badge--success">Complete</span>
+            <% else %>
+              <span class="badge badge--warning">
+                <%= topic.definition_of_done.count { |_k, v| !v } %> missing
+              </span>
+            <% end %>
+          </td>
+          <td><span class="badge <%= topic.published ? "badge--success" : "" %>">
+            <%= topic.published ? "Live" : "Draft" %>
+          </span></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+
+<div class="mt-3"><%= paginate @topics %></div>

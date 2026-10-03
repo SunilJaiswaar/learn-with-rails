@@ -1,0 +1,2 @@
+class BossBattlePolicy < ApplicationPolicy
+end

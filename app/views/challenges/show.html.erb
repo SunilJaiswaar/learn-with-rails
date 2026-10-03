@@ -1,0 +1,151 @@
+<% content_for :title, @challenge.title %>
+<% content_for :content_class, "content--wide" %>
+
+<nav aria-label="Breadcrumb" class="text-xs text-faint mb-2">
+  <%= link_to "Challenges", challenges_path %>
+  <% if @challenge.skill %>
+    <span aria-hidden="true">/</span>
+    <%= link_to @challenge.skill.name, skill_path(@challenge.skill.slug) %>
+  <% end %>
+</nav>
+
+<header class="row row--between mb-3">
+  <div>
+    <div class="row" style="gap: 0.4rem;">
+      <h1 class="mb-0"><%= @challenge.title %></h1>
+      <% if @challenge.solved_by?(current_user) %>
+        <span class="badge badge--success">Solved</span>
+      <% end %>
+    </div>
+    <div class="row text-xs text-faint mt-1">
+      <span><%= @challenge.challenge_type.to_s.humanize %></span>
+      <span aria-hidden="true">·</span>
+      <span><%= @challenge.difficulty_label %></span>
+      <span aria-hidden="true">·</span>
+      <span>proves <%= @challenge.mastery_dimension.to_s.humanize.downcase %></span>
+    </div>
+  </div>
+  <span class="badge badge--accent">+<%= @challenge.xp_award %> XP</span>
+</header>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <section class="card">
+      <div class="prose text-sm"><%= simple_format @challenge.prompt %></div>
+    </section>
+
+    <%# The editor and the result frame. %>
+    <section class="card card--flush" data-controller="code-editor busy"
+             data-action="keydown->code-editor#submitShortcut">
+      <div class="card__header">
+        <h2>Your solution</h2>
+        <span class="text-xs text-faint mono" style="margin-left: auto;">
+          Ruby · Ctrl+Enter to run
+        </span>
+      </div>
+
+      <%= form_with url: challenge_attempts_path(challenge_id: @challenge.slug),
+                    method: :post,
+                    data: { turbo_stream: true, action: "submit->busy#start" } do |form| %>
+        <div class="editor">
+          <div class="editor__gutter" aria-hidden="true" data-code-editor-target="gutter"></div>
+          <%= form.text_area :code, value: @code, class: "editor__area",
+                             spellcheck: false, autocapitalize: "off",
+                             autocorrect: "off", wrap: "off",
+                             "aria-label": "Solution code editor",
+                             data: { code_editor_target: "area",
+                                     action: "input->code-editor#input " \
+                                             "keydown->code-editor#keydown " \
+                                             "scroll->code-editor#syncScroll" } %>
+        </div>
+
+        <div class="card__footer row row--between">
+          <span class="text-xs text-faint" data-code-editor-target="status" role="status">
+            Press Escape then Tab to leave the editor.
+          </span>
+          <div class="row">
+            <% unless @sandbox_available %>
+              <span class="badge badge--danger">Sandbox unavailable</span>
+            <% end %>
+            <%= form.submit "Run tests", class: "btn btn--primary",
+                            disabled: !@sandbox_available,
+                            data: { busy_target: "button" } %>
+          </div>
+        </div>
+      <% end %>
+    </section>
+
+    <div id="challenge-result">
+      <% if @best %>
+        <%= render "challenges/result", attempt: @best, result: nil, xp: nil,
+                   challenge: @challenge, heading: "Your best attempt so far" %>
+      <% end %>
+    </div>
+  </div>
+
+  <aside class="stack">
+    <section class="card card--flush">
+      <div class="card__header"><h3 class="mb-0">Visible tests</h3></div>
+      <div class="card__body">
+        <% if @visible_tests.any? %>
+          <div class="stack stack--tight">
+            <% @visible_tests.each do |test| %>
+              <div>
+                <div class="text-sm"><%= test.name %></div>
+                <% if test.call_expression.present? %>
+                  <code class="text-xs text-faint" style="word-break: break-all;">
+                    <%= test.call_expression.truncate(120) %>
+                  </code>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+        <% hidden_count = @challenge.challenge_tests.size - @visible_tests.size %>
+        <% if hidden_count.positive? %>
+          <p class="text-xs text-faint mt-2 mb-0">
+            Plus <%= hidden_count %> hidden test<%= "s" unless hidden_count == 1 %>
+            — usually edge cases.
+          </p>
+        <% end %>
+      </div>
+    </section>
+
+    <%# Progressive hints, each one costing XP (spec 55). %>
+    <section class="card card--flush" id="hint-panel">
+      <div class="card__header"><h3 class="mb-0">Hints</h3></div>
+      <div class="card__body">
+        <%= render "challenges/hints", challenge: @challenge, ladder: @ladder,
+                   revealed: @revealed_hints %>
+      </div>
+    </section>
+
+    <section class="card">
+      <h3>Limits</h3>
+      <ul class="text-xs text-muted" style="padding-left: 1.1rem; margin: 0;">
+        <li><%= @challenge.time_limit_ms %>ms CPU</li>
+        <li><%= @challenge.memory_limit_mb %>MB memory</li>
+        <li>No network, read-only filesystem</li>
+      </ul>
+    </section>
+
+    <% if @attempts.any? %>
+      <section class="card card--flush">
+        <div class="card__header"><h3 class="mb-0">Recent attempts</h3></div>
+        <div class="card__body stack stack--tight">
+          <% @attempts.each do |attempt| %>
+            <div class="row row--between text-xs">
+              <span class="badge badge--<%= attempt.passed? ? "success" : "danger" %>">
+                <%= attempt.status.humanize %>
+              </span>
+              <span class="text-faint">
+                <%= attempt.tests_passed %>/<%= attempt.tests_total %> ·
+                <%= time_ago_in_words(attempt.created_at) %> ago
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </aside>
+</div>

@@ -1,0 +1,28 @@
+<% content_for :title, "Challenges" %>
+<header class="row row--between mb-3">
+  <h1 class="mb-0">Challenges</h1>
+  <%= link_to "New challenge", new_admin_challenge_path, class: "btn btn--primary" %>
+</header>
+
+<section class="card card--flush">
+  <table class="table">
+    <thead>
+      <tr><th scope="col">Challenge</th><th scope="col">Shape</th><th scope="col">Skill</th>
+          <th scope="col">Tests</th><th scope="col">XP</th><th scope="col">Published</th></tr>
+    </thead>
+    <tbody>
+      <% @challenges.each do |challenge| %>
+        <tr>
+          <td><%= link_to challenge.title, admin_challenge_path(challenge) %></td>
+          <td><span class="badge"><%= challenge.challenge_type.humanize %></span></td>
+          <td class="text-sm"><%= challenge.skill&.name %></td>
+          <td class="mono"><%= challenge.challenge_tests.size %></td>
+          <td class="mono"><%= challenge.xp_award %></td>
+          <td><span class="badge <%= challenge.published ? "badge--success" : "" %>">
+            <%= challenge.published ? "Live" : "Draft" %></span></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+<div class="mt-3"><%= paginate @challenges %></div>

@@ -1,0 +1,25 @@
+# Recurring jobs (sidekiq-cron). Loaded by the Sidekiq initializer in
+# environments where a scheduler should run.
+generate_daily_quests:
+  cron: "5 0 * * *"
+  class: "GenerateDailyQuestsJob"
+  queue: low
+  description: "Build each active learner's mission for the new day"
+
+expire_stale_quests:
+  cron: "10 0 * * *"
+  class: "ExpireStaleQuestsJob"
+  queue: low
+  description: "Close out yesterday's unfinished quests"
+
+prune_expired_sessions:
+  cron: "30 3 * * *"
+  class: "PruneExpiredSessionsJob"
+  queue: low
+  description: "Delete session rows that have already expired"
+
+recalculate_xp_totals:
+  cron: "0 4 * * 0"
+  class: "RecalculateXpTotalsJob"
+  queue: low
+  description: "Repair any drift between the XP ledger and the cached totals"

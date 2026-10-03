@@ -46,7 +46,7 @@ class CreateChallenges < ActiveRecord::Migration[8.1]
       t.references :challenge, null: false, foreign_key: true
       t.integer :level, null: false, default: 0     # 0 nudge .. 5 full solution
       t.integer :position, null: false, default: 0
-      t.text   :body, null: false
+      t.text :body, null: false
       t.integer :xp_penalty, null: false, default: 2
       t.timestamps
     end
@@ -56,7 +56,7 @@ class CreateChallenges < ActiveRecord::Migration[8.1]
     create_table :challenge_attempts do |t|
       t.references :user, null: false, foreign_key: { on_delete: :cascade }
       t.references :challenge, null: false, foreign_key: true
-      t.text   :submitted_code, null: false
+      t.text :submitted_code, null: false
       t.integer :status, null: false, default: 0    # 0 pending 1 passed 2 failed 3 error 4 timeout 5 rejected
       t.integer :tests_passed, null: false, default: 0
       t.integer :tests_total, null: false, default: 0

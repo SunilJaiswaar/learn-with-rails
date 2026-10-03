@@ -1,0 +1,92 @@
+<%= form_with model: challenge,
+              url: challenge.persisted? ? admin_challenge_path(challenge) : admin_challenges_path do |form| %>
+  <% if challenge.errors.any? %>
+    <div class="form-errors" role="alert">
+      <ul>
+        <% challenge.errors.full_messages.each do |message| %><li><%= message %></li><% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div class="grid grid--2">
+    <div>
+      <div class="field">
+        <%= form.label :title %>
+        <%= form.text_field :title, class: "input", required: true %>
+      </div>
+      <div class="field">
+        <%= form.label :prompt, "Prompt (Markdown-ish plain text)" %>
+        <%= form.text_area :prompt, class: "textarea", rows: 8, required: true %>
+      </div>
+      <div class="field">
+        <%= form.label :starter_code %>
+        <%= form.text_area :starter_code, class: "textarea", rows: 6 %>
+      </div>
+      <div class="field">
+        <%= form.label :reference_solution %>
+        <%= form.text_area :reference_solution, class: "textarea", rows: 6 %>
+        <span class="field__hint">
+          Must pass every assertion — the validate_solutions task enforces this.
+        </span>
+      </div>
+      <div class="field">
+        <%= form.label :explanation, "Why the solution works" %>
+        <%= form.text_area :explanation, class: "textarea", rows: 4 %>
+      </div>
+    </div>
+
+    <div>
+      <div class="field">
+        <%= form.label :challenge_type, "Shape" %>
+        <%= form.select :challenge_type,
+                        Challenge::CHALLENGE_TYPES.keys.map { |t| [t.to_s.humanize, t] },
+                        {}, class: "select" %>
+        <span class="field__hint">The shape decides which mastery dimension it proves.</span>
+      </div>
+      <div class="field">
+        <%= form.label :language %>
+        <%= form.select :language, Challenge.languages.keys.map { |l| [l.humanize, l] },
+                        {}, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :difficulty %>
+        <%= form.select :difficulty,
+                        DifficultyScale::LEVELS.keys.map { |l| [l.to_s.humanize, l] },
+                        {}, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :skill_id, "Skill" %>
+        <%= form.collection_select :skill_id, Skill.ordered, :id, :name,
+                                   { include_blank: true }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :topic_id, "Mission" %>
+        <%= form.collection_select :topic_id, Topic.ordered, :id, :name,
+                                   { include_blank: true }, class: "select" %>
+      </div>
+      <div class="row">
+        <div class="field" style="flex: 1;">
+          <%= form.label :xp_award, "XP" %>
+          <%= form.number_field :xp_award, class: "input", min: 0 %>
+        </div>
+        <div class="field" style="flex: 1;">
+          <%= form.label :time_limit_ms, "CPU ms" %>
+          <%= form.number_field :time_limit_ms, class: "input", min: 100, max: 30_000 %>
+        </div>
+        <div class="field" style="flex: 1;">
+          <%= form.label :memory_limit_mb, "Memory MB" %>
+          <%= form.number_field :memory_limit_mb, class: "input", min: 64, max: 2048 %>
+        </div>
+      </div>
+      <label class="checkbox">
+        <%= form.check_box :published %><span>Published</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="row row--end mt-3">
+    <%= link_to "Cancel", admin_challenges_path, class: "btn" %>
+    <%= form.submit challenge.persisted? ? "Save challenge" : "Create challenge",
+                    class: "btn btn--primary" %>
+  </div>
+<% end %>

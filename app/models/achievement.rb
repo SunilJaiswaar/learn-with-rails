@@ -10,7 +10,7 @@ class Achievement < ApplicationRecord
 
   validates :name, presence: true
   validates :description, presence: true
-  validates :rule_key, presence: true, inclusion: { in: -> (_) { Gamification::AchievementRules.keys } }
+  validates :rule_key, presence: true, inclusion: { in: ->(_) { Gamification::AchievementRules.keys } }
   validates :threshold, numericality: { greater_than: 0 }
 
   scope :visible, -> { where(hidden: false) }

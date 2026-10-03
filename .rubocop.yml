@@ -1,0 +1,31 @@
+inherit_gem:
+  rubocop-rails-omakase: rubocop.yml
+
+AllCops:
+  TargetRubyVersion: 3.4
+  NewCops: enable
+  Exclude:
+    - "bin/**/*"
+    - "db/schema.rb"
+    - "node_modules/**/*"
+    - "vendor/**/*"
+    - "tmp/**/*"
+    # Runs in a separate interpreter inside the sandbox, not under app rules.
+    - "lib/sandbox/harness.rb"
+
+# Seed content is long prose by nature.
+Layout/LineLength:
+  Max: 100
+  Exclude:
+    - "db/seeds/**/*"
+    - "spec/**/*"
+
+Metrics:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+# Seeds legitimately define long sequential blocks of content.
+Metrics/BlockLength:
+  Enabled: false

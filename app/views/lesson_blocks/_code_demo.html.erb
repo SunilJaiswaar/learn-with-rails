@@ -1,0 +1,20 @@
+<div class="code-panel">
+  <div class="code-panel__bar">
+    <span class="code-panel__dots" aria-hidden="true">
+      <span class="code-panel__dot"></span>
+      <span class="code-panel__dot"></span>
+      <span class="code-panel__dot"></span>
+    </span>
+    <span><%= block.payload.fetch("language", "ruby") %></span>
+  </div>
+  <pre class="code"><code><%= block.payload["code"] %></code></pre>
+</div>
+
+<% annotations = Array(block.payload["annotations"]) %>
+<% if annotations.any? %>
+  <ul class="stack stack--tight text-sm text-muted mt-2" style="padding-left: 1.1rem;">
+    <% annotations.each do |note| %>
+      <li><%= note %></li>
+    <% end %>
+  </ul>
+<% end %>

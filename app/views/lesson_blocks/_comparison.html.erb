@@ -1,0 +1,28 @@
+<%
+  rows = Array(block.payload["rows"])
+  columns = block.payload.fetch("columns", {})
+  # The first key of a row is the row label; the rest are the compared columns.
+  value_keys = columns.keys.presence || (rows.first&.keys.to_a - ["aspect"])
+%>
+<div style="overflow-x: auto;">
+  <table class="compare">
+    <thead>
+      <tr>
+        <th scope="col"><%= rows.first&.key?("aspect") ? "Aspect" : "" %></th>
+        <% value_keys.each do |key| %>
+          <th scope="col"><%= columns.fetch(key, key.to_s.humanize) %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% rows.each do |row| %>
+        <tr>
+          <th scope="row"><%= row["aspect"] %></th>
+          <% value_keys.each do |key| %>
+            <td><%= row[key] %></td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

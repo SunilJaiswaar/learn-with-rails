@@ -1,0 +1,73 @@
+<%= form_with model: question,
+              url: question.persisted? ? admin_question_path(question) : admin_questions_path do |form| %>
+  <% if question.errors.any? %>
+    <div class="form-errors" role="alert">
+      <ul><% question.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+    </div>
+  <% end %>
+
+  <div class="field">
+    <%= form.label :body, "Question" %>
+    <%= form.text_area :body, class: "textarea", rows: 3, required: true %>
+  </div>
+
+  <div class="grid grid--2">
+    <div>
+      <div class="field">
+        <%= form.label :model_answer, "Model answer" %>
+        <%= form.text_area :model_answer, class: "textarea", rows: 4 %>
+      </div>
+      <div class="field">
+        <%= form.label :explanation %>
+        <%= form.text_area :explanation, class: "textarea", rows: 3 %>
+      </div>
+      <div class="field">
+        <%= form.label :common_mistakes %>
+        <%= form.text_area :common_mistakes, class: "textarea", rows: 3 %>
+      </div>
+    </div>
+    <div>
+      <div class="field">
+        <%= form.label :question_type, "Type" %>
+        <%= form.select :question_type,
+                        Question::QUESTION_TYPES.map { |t| [t.humanize, t] }, {}, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :experience_band, "Experience band" %>
+        <%= form.select :experience_band,
+                        ExperienceBanded::BANDS.keys.map { |b| [ExperienceBanded::BAND_LABELS[b.to_s], b] },
+                        {}, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :difficulty %>
+        <%= form.select :difficulty,
+                        DifficultyScale::LEVELS.keys.map { |l| [l.to_s.humanize, l] }, {}, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :company_type, "Company pattern category" %>
+        <%= form.select :company_type,
+                        Question::COMPANY_TYPES.map { |t| [t.humanize, t] },
+                        { include_blank: "Any" }, class: "select" %>
+        <span class="field__hint">
+          A pattern category, never a specific company's real questions.
+        </span>
+      </div>
+      <div class="field">
+        <%= form.label :skill_id, "Skill" %>
+        <%= form.collection_select :skill_id, Skill.ordered, :id, :name,
+                                   { include_blank: true }, class: "select" %>
+      </div>
+      <div class="field">
+        <%= form.label :xp_award, "XP" %>
+        <%= form.number_field :xp_award, class: "input", min: 0 %>
+      </div>
+      <label class="checkbox"><%= form.check_box :published %><span>Published</span></label>
+    </div>
+  </div>
+
+  <div class="row row--end mt-3">
+    <%= link_to "Cancel", admin_questions_path, class: "btn" %>
+    <%= form.submit question.persisted? ? "Save question" : "Create question",
+                    class: "btn btn--primary" %>
+  </div>
+<% end %>

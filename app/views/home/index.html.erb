@@ -1,0 +1,66 @@
+<% content_for :title, "Learn software engineering by solving" %>
+
+<section style="padding: 3rem 0 2rem; text-align: center;">
+  <span class="badge badge--accent mb-2">Working title: <%= product_name %></span>
+  <h1 style="font-size: clamp(2rem, 5vw, 3rem); max-width: 22ch; margin: 0.5rem auto 1rem;">
+    Stop reading about software. Start solving it.
+  </h1>
+  <p class="text-muted" style="max-width: 56ch; margin: 0 auto 2rem; font-size: 1.05rem;">
+    <%= AppSetting["tagline"] %>
+    Every concept arrives as a problem, a visual, a prediction and a challenge —
+    then comes back as a production incident and an interview question.
+  </p>
+  <div class="row" style="justify-content: center;">
+    <%= link_to "Start your first mission", signup_path, class: "btn btn--primary btn--lg" %>
+    <%= link_to "Sign in", login_path, class: "btn btn--lg" %>
+  </div>
+</section>
+
+<section class="grid grid--4 mt-3">
+  <% [["Worlds", @world_count], ["Missions", @topic_count],
+      ["Challenges", @challenge_count], ["Sandboxed", "100%"]].each do |label, value| %>
+    <div class="card text-center">
+      <div class="stat">
+        <span class="stat__value"><%= value %></span>
+        <span class="stat__label"><%= label %></span>
+      </div>
+    </div>
+  <% end %>
+</section>
+
+<section class="mt-3">
+  <h2>The loop, not the lecture</h2>
+  <div class="card">
+    <div class="flow" style="flex-direction: row; flex-wrap: wrap; gap: 0.4rem; align-items: center;">
+      <% ["Problem", "Visual", "Predict", "Code", "Fail", "Debug", "Explain",
+          "Production", "Interview", "Boss", "Revision"].each_with_index do |step, i| %>
+        <% if i.positive? %><span class="flow__arrow" aria-hidden="true">→</span><% end %>
+        <span class="flow__node"><%= step %></span>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<section class="grid grid--3 mt-3">
+  <div class="card">
+    <h3>Mastery is earned, not read</h3>
+    <p class="text-muted text-sm mb-0">
+      A topic is only mastered when you can predict it, build it, debug it and
+      explain it. Reading a lesson moves one of six dimensions.
+    </p>
+  </div>
+  <div class="card">
+    <h3>Your code runs in a real sandbox</h3>
+    <p class="text-muted text-sm mb-0">
+      Submissions execute in an isolated namespace with no network, a read-only
+      filesystem and hard CPU and memory limits.
+    </p>
+  </div>
+  <div class="card">
+    <h3>Interviewers ask "why?"</h3>
+    <p class="text-muted text-sm mb-0">
+      Answer "Redis is faster" and you will be asked why, what happens when it
+      goes down, and how you would invalidate the cache.
+    </p>
+  </div>
+</section>

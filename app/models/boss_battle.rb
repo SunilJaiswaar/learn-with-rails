@@ -4,6 +4,8 @@ class BossBattle < ApplicationRecord
   include Sluggable
   include DifficultyScale
 
+  slug_from :title
+
   belongs_to :skill, optional: true
   belongs_to :world, optional: true
 
@@ -15,10 +17,6 @@ class BossBattle < ApplicationRecord
   validate :stages_present
 
   scope :published, -> { where(published: true) }
-
-  def self.slug_source
-    :title
-  end
 
   def stage_list
     Array(stages)

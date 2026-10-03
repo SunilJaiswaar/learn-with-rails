@@ -1,0 +1,33 @@
+<% content_for :title, "Algorithm visualisers" %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Algorithm Arena</h1>
+  <p class="text-muted text-sm mb-0">
+    Every trace below is computed by running the real algorithm, then stepped
+    through one operation at a time.
+  </p>
+</header>
+
+<% @algorithms.each do |category, algorithms| %>
+  <section class="mb-3">
+    <h2><%= category.to_s.humanize %></h2>
+    <div class="grid grid--3">
+      <% algorithms.each do |algorithm| %>
+        <%= link_to algorithm_path(algorithm.slug), class: "card",
+                    style: "text-decoration: none; display: block;" do %>
+          <strong><%= algorithm.name %></strong>
+          <p class="text-sm text-muted mt-1 mb-2"><%= algorithm.idea %></p>
+          <div class="row text-xs">
+            <span class="badge"><%= algorithm.time_average %></span>
+            <span class="badge"><%= algorithm.space_complexity %></span>
+            <% unless algorithm.stable.nil? %>
+              <span class="badge badge--<%= algorithm.stable ? "success" : "warning" %>">
+                <%= algorithm.stable ? "stable" : "unstable" %>
+              </span>
+            <% end %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </section>
+<% end %>

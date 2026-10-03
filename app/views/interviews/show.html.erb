@@ -1,0 +1,116 @@
+<% content_for :title, "Interview" %>
+
+<nav class="text-xs text-faint mb-2"><%= link_to "Interview arena", interviews_path %></nav>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-0"><%= @interview.interview_template&.name || "Practice interview" %></h1>
+    <div class="row text-xs text-faint mt-1">
+      <span><%= @interview.experience_band_label %></span>
+      <span aria-hidden="true">·</span>
+      <span><%= @interview.pressure_mode.humanize %> mode</span>
+      <% if @interview.company_type.present? %>
+        <span aria-hidden="true">·</span>
+        <span><%= @interview.company_type.humanize %> pattern</span>
+      <% end %>
+    </div>
+  </div>
+  <div style="min-width: 180px;">
+    <div class="meter">
+      <div class="meter__fill" style="width: <%= @interview.progress_percent %>%"></div>
+    </div>
+    <span class="text-xs text-faint">
+      <%= @interview.answered_count %>/<%= @interview.total_count %> answered
+    </span>
+  </div>
+</header>
+
+<div class="interview">
+  <%# Already-answered questions, with the grading made explicit. %>
+  <% @answered.each do |interview_question| %>
+    <div class="qa">
+      <div class="qa__question <%= "qa__followup" if interview_question.follow_up? %>">
+        <div class="qa__meta">
+          <span class="badge"><%= interview_question.question.question_type.humanize %></span>
+          <% if interview_question.interview_round %>
+            <span class="badge"><%= interview_question.interview_round.name %></span>
+          <% end %>
+        </div>
+        <p class="mb-0"><strong><%= interview_question.prompt %></strong></p>
+      </div>
+
+      <% answer = interview_question.interview_answer %>
+      <div class="qa__answer">
+        <p class="text-sm" style="white-space: pre-wrap;"><%= answer.body.presence || "(no answer)" %></p>
+        <div class="row row--between mt-2">
+          <div class="row">
+            <span class="badge badge--<%= answer.score >= 60 ? "success" : answer.score >= 35 ? "warning" : "danger" %>">
+              <%= answer.verdict.humanize %> · <%= answer.score %>%
+            </span>
+          </div>
+        </div>
+        <% if answer.matched_keywords.any? %>
+          <div class="row mt-2 text-xs">
+            <span class="text-faint">Recognised:</span>
+            <% answer.matched_keywords.each do |keyword| %>
+              <span class="chip chip--active"><%= keyword %></span>
+            <% end %>
+          </div>
+        <% end %>
+        <% if answer.missed_keywords.any? %>
+          <div class="row mt-1 text-xs">
+            <span class="text-faint">Not mentioned:</span>
+            <% answer.missed_keywords.each do |keyword| %>
+              <span class="chip"><%= keyword %></span>
+            <% end %>
+          </div>
+        <% end %>
+        <% if answer.evaluation["notes"].present? %>
+          <p class="text-xs text-muted mt-2 mb-0"><%= answer.evaluation["notes"] %></p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# The live question. %>
+  <% if @current %>
+    <div class="qa" id="current-question">
+      <div class="qa__question <%= "qa__followup" if @current.follow_up? %>">
+        <div class="qa__meta">
+          <span class="badge badge--accent">
+            Question <%= @current.position + 1 %>
+          </span>
+          <% if @current.interview_round %>
+            <span class="badge"><%= @current.interview_round.name %></span>
+          <% end %>
+          <% if @current.time_limit_seconds %>
+            <span class="timer" data-controller="countdown"
+                  data-countdown-seconds-value="<%= @current.time_limit_seconds %>"
+                  data-countdown-target="display" role="timer">
+              <%= Time.at(@current.time_limit_seconds).utc.strftime("%-M:%S") %>
+            </span>
+          <% end %>
+        </div>
+        <p class="mb-0"><strong><%= @current.prompt %></strong></p>
+      </div>
+
+      <%= form_with url: interview_answers_path(interview_id: @interview.id),
+                    method: :post, class: "card" do |form| %>
+        <%= form.hidden_field :interview_question_id, value: @current.id %>
+        <div class="field">
+          <%= form.label :body, "Your answer" %>
+          <%= form.text_area :body, class: "textarea", rows: 6, autofocus: true,
+                             placeholder: "Explain your reasoning, not just the conclusion. " \
+                                          "Name the trade-off.",
+                             data: { controller: "countdown" } %>
+          <span class="field__hint">
+            Short answers read as uncertainty. Say why, and what the consequence is.
+          </span>
+        </div>
+        <%= form.submit "Submit answer", class: "btn btn--primary" %>
+      <% end %>
+    </div>
+  <% elsif @interview.completed_interview? %>
+    <%= render "interviews/report", interview: @interview %>
+  <% end %>
+</div>

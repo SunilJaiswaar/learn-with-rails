@@ -1,0 +1,29 @@
+<%# Replaces the prediction block in place with the verdict and explanation. %>
+<%= turbo_stream.replace dom_id(@block, :prediction) do %>
+  <div id="<%= dom_id(@block, :prediction) %>">
+    <div class="verdict verdict--<%= @outcome[:correct] ? "correct" : "wrong" %>"
+         role="status" style="display: block;">
+      <strong>
+        <%= @outcome[:correct] ? "Correct" : "Not this time" %>
+        <% if @outcome[:xp].to_i.positive? %>
+          — +<%= @outcome[:xp] %> XP
+        <% end %>
+      </strong>
+      <% if @outcome[:explanation].present? %>
+        <p class="mb-0 mt-1" style="color: var(--text);"><%= @outcome[:explanation] %></p>
+      <% end %>
+    </div>
+    <p class="text-xs text-faint mt-2 mb-0">
+      Either way this is recorded as prediction evidence for the skill.
+    </p>
+  </div>
+<% end %>
+
+<% if @outcome[:xp].to_i.positive? %>
+  <%= turbo_stream.append "toasts" do %>
+    <div class="toast" data-controller="toast" role="status">
+      <div class="toast__title">+<%= @outcome[:xp] %> XP</div>
+      <div class="text-sm text-muted">Correct prediction</div>
+    </div>
+  <% end %>
+<% end %>

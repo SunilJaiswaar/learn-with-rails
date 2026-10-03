@@ -1,0 +1,49 @@
+<%= turbo_stream.replace "challenge-result" do %>
+  <div id="challenge-result">
+    <%= render "challenges/result", attempt: @attempt, result: @result, xp: @xp,
+               challenge: @challenge, heading: "Result" %>
+  </div>
+<% end %>
+
+<%# Hints may now be exhausted or the penalty changed, so refresh the panel. %>
+<%= turbo_stream.replace "hint-panel" do %>
+  <section class="card card--flush" id="hint-panel">
+    <div class="card__header"><h3 class="mb-0">Hints</h3></div>
+    <div class="card__body">
+      <%= render "challenges/hints", challenge: @challenge, ladder: @ladder,
+                 revealed: @ladder.revealed.ordered %>
+    </div>
+  </section>
+<% end %>
+
+<% if @xp.to_i.positive? %>
+  <%= turbo_stream.append "toasts" do %>
+    <div class="toast" data-controller="toast" role="status">
+      <div class="toast__title">+<%= @xp %> XP</div>
+      <div class="text-sm text-muted">Challenge solved: <%= @challenge.title %></div>
+    </div>
+  <% end %>
+<% end %>
+
+<% if @award&.levelled_up? %>
+  <%= turbo_stream.append "toasts" do %>
+    <div class="toast" data-controller="toast" data-toast-timeout-value="9000" role="status">
+      <div class="toast__title">Level <%= @award.new_level %></div>
+      <div class="text-sm text-muted">
+        <%= Gamification::LevelCurve.title_for(@award.new_level) %>
+      </div>
+    </div>
+  <% end %>
+<% end %>
+
+<% Array(@award&.achievements).each do |achievement| %>
+  <%= turbo_stream.append "toasts" do %>
+    <div class="toast toast--achievement" data-controller="toast"
+         data-toast-timeout-value="9000" role="status">
+      <div class="toast__title">
+        <%= achievement.icon %> <%= achievement.name %>
+      </div>
+      <div class="text-sm text-muted"><%= achievement.description %></div>
+    </div>
+  <% end %>
+<% end %>

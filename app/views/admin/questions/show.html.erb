@@ -1,0 +1,82 @@
+<% content_for :title, "Question" %>
+<nav class="text-xs text-faint mb-2"><%= link_to "Questions", admin_questions_path %></nav>
+
+<header class="row row--between mb-3">
+  <h1 class="mb-0" style="font-size: 1.25rem; max-width: 60ch;"><%= @question.body %></h1>
+  <%= link_to "Edit", edit_admin_question_path(@question), class: "btn btn--sm btn--primary" %>
+</header>
+
+<div class="grid grid--2">
+  <section class="card">
+    <h2>Grading</h2>
+    <dl class="text-sm" style="margin: 0;">
+      <dt class="text-xs text-faint">Expected concepts</dt>
+      <dd style="margin: 0 0 0.6rem;">
+        <% @question.expected_keywords.each do |keyword| %>
+          <span class="chip"><%= keyword %></span>
+        <% end %>
+      </dd>
+      <dt class="text-xs text-faint">Required (caps the score if missing)</dt>
+      <dd style="margin: 0 0 0.6rem;">
+        <% if @question.required_keywords.any? %>
+          <% @question.required_keywords.each do |keyword| %>
+            <span class="chip chip--active"><%= keyword %></span>
+          <% end %>
+        <% else %>
+          <span class="text-faint">none</span>
+        <% end %>
+      </dd>
+      <dt class="text-xs text-faint">Model answer</dt>
+      <dd style="margin: 0;"><%= @question.model_answer %></dd>
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Metadata</h2>
+    <dl class="text-sm" style="margin: 0;">
+      <% { "Type" => @question.question_type.humanize,
+           "Experience band" => @question.experience_band_label,
+           "Difficulty" => @question.difficulty_label,
+           "Company pattern" => @question.company_type || "any",
+           "Skill" => @question.skill&.name,
+           "XP" => @question.xp_award }.each do |label, value| %>
+        <div class="row row--between" style="border-bottom: 1px solid var(--border); padding: 0.35rem 0;">
+          <dt class="text-muted"><%= label %></dt>
+          <dd style="margin: 0;"><%= value %></dd>
+        </div>
+      <% end %>
+    </dl>
+  </section>
+</div>
+
+<%# The probe tree is what makes the interview resist memorised answers. %>
+<section class="card mt-3">
+  <h2>Follow-up probes</h2>
+  <p class="text-xs text-muted">
+    Each probe fires based on what the candidate actually said.
+  </p>
+  <% if @follow_ups.any? %>
+    <div class="stack stack--tight">
+      <% @follow_ups.each do |follow_up| %>
+        <div class="card" style="padding: 0.7rem 0.9rem; margin-left: <%= (follow_up.depth - 1) * 1.5 %>rem;">
+          <div class="row" style="gap: 0.4rem;">
+            <span class="badge badge--<%= follow_up.trigger_kind == "always" ? "info" : follow_up.trigger_kind == "keyword" ? "accent" : "warning" %>">
+              <%= follow_up.trigger_kind.humanize %>
+            </span>
+            <% follow_up.keywords.each do |keyword| %>
+              <span class="chip"><%= keyword %></span>
+            <% end %>
+          </div>
+          <p class="text-sm mt-1 mb-0"><%= follow_up.body %></p>
+          <% if follow_up.model_answer.present? %>
+            <p class="text-xs text-faint mb-0 mt-1"><%= follow_up.model_answer %></p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p class="text-sm text-muted mb-0">
+      No probes. A question without follow-ups can be answered from memory.
+    </p>
+  <% end %>
+</section>

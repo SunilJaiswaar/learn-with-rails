@@ -1,0 +1,42 @@
+<%= turbo_stream.replace "boss-stage" do %>
+  <div id="boss-stage">
+    <% if @outcome.won %>
+      <section class="card" style="border-color: var(--success);">
+        <h2 style="color: var(--success);">Boss defeated</h2>
+        <p class="text-sm">
+          Final score <strong><%= @outcome.score %>%</strong> ·
+          <span class="badge badge--accent">+<%= @outcome.xp %> XP</span>
+        </p>
+        <% if @outcome.feedback.present? %>
+          <div class="verdict verdict--correct" style="display: block;">
+            <%= @outcome.feedback %>
+          </div>
+        <% end %>
+        <%= link_to "Back to boss battles", boss_battles_path, class: "btn mt-2" %>
+      </section>
+    <% else %>
+      <div class="stack">
+        <div class="verdict verdict--<%= @outcome.correct ? "correct" : "wrong" %>"
+             role="status" style="display: block;">
+          <strong>
+            <%= @outcome.correct ? "Stage cleared (#{@outcome.score}%)" : "Not yet (#{@outcome.score}%)" %>
+          </strong>
+          <% if @outcome.feedback.present? %>
+            <p class="mb-0 mt-1" style="color: var(--text);"><%= @outcome.feedback %></p>
+          <% end %>
+        </div>
+        <%= render "boss_battles/stage", boss_battle: @boss_battle,
+                   attempt: @attempt.reload, outcome: @outcome %>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<% if @outcome.xp.to_i.positive? %>
+  <%= turbo_stream.append "toasts" do %>
+    <div class="toast" data-controller="toast" role="status">
+      <div class="toast__title">+<%= @outcome.xp %> XP</div>
+      <div class="text-sm text-muted">Boss defeated</div>
+    </div>
+  <% end %>
+<% end %>

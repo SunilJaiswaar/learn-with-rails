@@ -1,0 +1,64 @@
+<% content_for :title, "Big-O lab" %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Big-O lab</h1>
+  <p class="text-muted text-sm mb-0">
+    Move the input size and watch the real operation counts. The time estimates
+    assume roughly <%= number_to_human(@ops_per_second) %> simple operations per
+    second — useful for intuition, not a benchmark.
+  </p>
+</header>
+
+<section class="card bigo" data-controller="complexity"
+         data-complexity-ops-per-second-value="<%= @ops_per_second %>">
+  <div class="field">
+    <label for="size-slider">
+      Input size: <strong class="mono" data-complexity-target="size">1,000</strong> records
+    </label>
+    <input type="range" class="slider" id="size-slider" data-complexity-slider
+           min="0" max="<%= @sizes.length - 1 %>" step="1" value="2"
+           data-action="input->complexity#update"
+           aria-describedby="size-help">
+    <span class="field__hint" id="size-help">
+      Steps through <%= @sizes.map { |s| number_with_delimiter(s) }.join(", ") %>.
+    </span>
+  </div>
+
+  <div class="stack stack--tight mt-3">
+    <% [["O(1)", "constant"], ["O(log n)", "log"], ["O(n)", "linear"],
+        ["O(n log n)", "linearithmic"], ["O(n^2)", "quadratic"],
+        ["O(2^n)", "exponential"]].each do |label, curve| %>
+      <div class="bigo__row" data-complexity-target="row" data-curve="<%= curve %>">
+        <span class="bigo__label"><%= label %></span>
+        <div class="bigo__track">
+          <div class="bigo__fill" data-fill style="width: 1%"></div>
+        </div>
+        <span class="bigo__value" data-value></span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="verdict verdict--correct mt-3" style="display: block;">
+    <strong data-complexity-target="verdict"></strong>
+  </div>
+
+  <p class="text-xs text-faint mt-2 mb-0">
+    Bars use a logarithmic scale — on a linear scale every curve except the
+    worst would be invisible.
+  </p>
+</section>
+
+<section class="card mt-3">
+  <h2>Why this matters</h2>
+  <div class="prose text-sm">
+    <p>
+      Big-O describes how work grows, not how fast something is now. An O(n)
+      loop that makes a network call per element can be far slower than an
+      O(n²) loop over integers in memory.
+    </p>
+    <p class="mb-0">
+      Use it to answer one question: <strong>will this still work when the data
+      is ten times bigger?</strong> Then measure.
+    </p>
+  </div>
+</section>

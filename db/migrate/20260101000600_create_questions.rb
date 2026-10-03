@@ -28,7 +28,7 @@ class CreateQuestions < ActiveRecord::Migration[8.1]
     create_table :question_follow_ups do |t|
       t.references :question, null: false, foreign_key: true
       t.references :parent, foreign_key: { to_table: :question_follow_ups }
-      t.text   :body, null: false
+      t.text :body, null: false
       t.integer :depth, null: false, default: 1
       t.integer :position, null: false, default: 0
       t.string  :trigger_kind, null: false, default: "always"  # always | keyword | missing_keyword

@@ -1,0 +1,9 @@
+<% content_for :title, "Edit question" %>
+<h1>Edit question</h1>
+<section class="card"><%= render "form", question: @question %></section>
+<section class="card mt-3" style="border-color: var(--danger);">
+  <h2>Delete</h2>
+  <%= button_to "Delete question", admin_question_path(@question), method: :delete,
+                class: "btn btn--danger",
+                form: { data: { turbo_confirm: "Delete this question and its follow-ups?" } } %>
+</section>

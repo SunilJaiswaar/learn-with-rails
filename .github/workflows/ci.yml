@@ -1,0 +1,88 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  quality:
+    name: Lint and security
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      - name: Lint (RuboCop)
+        run: bin/rubocop --format github
+
+      - name: Security scan (Brakeman)
+        run: bin/brakeman --no-pager -i config/brakeman.ignore
+
+      - name: Audit dependencies for known CVEs
+        run: |
+          gem install bundler-audit --no-document
+          bundle-audit check --update
+
+  test:
+    name: Specs
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd="pg_isready" --health-interval=10s
+          --health-timeout=5s --health-retries=5
+      redis:
+        image: redis:7
+        ports: ["6379:6379"]
+        options: >-
+          --health-cmd="redis-cli ping" --health-interval=10s
+          --health-timeout=5s --health-retries=5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_HOST: 127.0.0.1
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://localhost:6379/0
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: true
+
+      # The code runner needs bubblewrap and unprivileged user namespaces.
+      # Without it the sandbox specs skip rather than silently pass.
+      - name: Install bubblewrap
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+          bwrap --version
+
+      - name: Prepare the database
+        run: bin/rails db:test:prepare
+
+      - name: Specs
+        run: bundle exec rspec
+
+      - name: Seed and validate content
+        run: |
+          bin/rails db:seed
+          bin/rails content:definition_of_done
+          bin/rails content:validate_solutions
+          bin/rails content:validate_debug_starters
+        env:
+          RAILS_ENV: test

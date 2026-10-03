@@ -1,0 +1,29 @@
+<% if revealed.any? %>
+  <div class="stack stack--tight mb-2">
+    <% revealed.each do |hint| %>
+      <div class="verdict" style="display: block; background: var(--info-bg); color: var(--text);">
+        <span class="text-xs" style="color: var(--info); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 700;">
+          <%= hint.level.to_s.humanize %>
+        </span>
+        <p class="text-sm mb-0 mt-1"><%= hint.body %></p>
+      </div>
+    <% end %>
+  </div>
+<% end %>
+
+<% if ladder.exhausted? %>
+  <p class="text-xs text-faint mb-0">
+    <%= revealed.any? ? "Every hint is revealed." : "This challenge has no hints." %>
+  </p>
+<% else %>
+  <% next_hint = ladder.next_hint %>
+  <%= button_to challenge_hint_path(challenge_id: challenge.slug),
+                class: "btn btn--sm btn--block",
+                form: { data: { turbo_stream: true } } do %>
+    Reveal <%= next_hint.level.to_s.humanize.downcase %>
+    (−<%= next_hint.xp_penalty %> XP)
+  <% end %>
+  <p class="text-xs text-faint mt-2 mb-0">
+    Hints get more specific. Struggling first is what makes the answer stick.
+  </p>
+<% end %>

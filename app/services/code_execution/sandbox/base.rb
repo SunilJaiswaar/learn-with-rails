@@ -3,8 +3,8 @@ module CodeExecution
     # A sandbox strategy receives a prepared working directory and runs the
     # harness inside it under isolation and resource limits.
     class Base
-      Outcome = Struct.new(:stdout, :stderr, :exit_status, :timed_out, :runtime_ms,
-                           keyword_init: true)
+      Outcome = Struct.new(:stdout, :stderr, :exit_status, :term_signal,
+                           :timed_out, :runtime_ms, keyword_init: true)
 
       def self.available?
         false
@@ -30,9 +30,12 @@ module CodeExecution
         out_r, out_w = IO.pipe
         err_r, err_w = IO.pipe
 
+        # unsetenv_others wipes the server's environment (DATABASE_URL, secrets)
+        # before the sandbox starts; only `env` survives.
         pid = Process.spawn(env, *command,
                             out: out_w, err: err_w, in: :close,
-                            pgroup: true, close_others: true)
+                            pgroup: true, close_others: true,
+                            unsetenv_others: true)
         out_w.close
         err_w.close
 
@@ -40,7 +43,8 @@ module CodeExecution
         runtime_ms = ((Process.clock_gettime(Process::CLOCK_MONOTONIC) - started) * 1000).round
 
         Outcome.new(stdout: stdout, stderr: stderr, exit_status: @exit_status,
-                    timed_out: timed_out, runtime_ms: runtime_ms)
+                    term_signal: @term_signal, timed_out: timed_out,
+                    runtime_ms: runtime_ms)
       end
 
       def collect(pid, out_r, err_r, timeout_seconds)
@@ -82,6 +86,8 @@ module CodeExecution
           [ nil, nil ]
         end
         @exit_status = status&.exitstatus
+        # A signalled exit is how RLIMIT_CPU and the OOM path terminate.
+        @term_signal = status&.termsig
 
         streams.each { |io| io.close unless io.closed? }
         [ out_r, err_r ].each { |io| io.close unless io.closed? }

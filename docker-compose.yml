@@ -1,0 +1,65 @@
+# Local stack: web, worker, PostgreSQL and Redis.
+#
+#   docker compose up --build
+#   docker compose exec web bin/rails db:prepare db:seed
+#
+# The web and worker services get seccomp=unconfined because the code sandbox
+# needs unprivileged user namespaces. Nothing here runs as root.
+services:
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: codequest_development
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      retries: 5
+
+  redis:
+    image: redis:7
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      retries: 5
+
+  web:
+    build: .
+    command: ./bin/rails server -b 0.0.0.0 -p 3000
+    environment:
+      RAILS_ENV: development
+      DATABASE_HOST: db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+    security_opt:
+      - seccomp=unconfined
+    ports:
+      - "3000:3000"
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+  worker:
+    build: .
+    command: bundle exec sidekiq -C config/sidekiq.yml
+    environment:
+      RAILS_ENV: development
+      DATABASE_HOST: db
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+      REDIS_URL: redis://redis:6379/0
+    security_opt:
+      - seccomp=unconfined
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+
+volumes:
+  postgres:
+  redis:

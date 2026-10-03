@@ -1,0 +1,39 @@
+<% content_for :title, "Settings" %>
+<h1>Settings</h1>
+<p class="text-muted text-sm mb-3">
+  Branding is configurable, so the working name can be replaced without a deploy.
+</p>
+
+<section class="card" style="max-width: 560px;">
+  <%= form_with url: admin_settings_path, method: :patch do %>
+    <div class="field">
+      <label for="product_name">Product name</label>
+      <input class="input" type="text" id="product_name" name="settings[product_name]"
+             value="<%= @settings["product_name"] %>" required>
+      <span class="field__hint">Appears in the sidebar, page titles and emails.</span>
+    </div>
+    <div class="field">
+      <label for="tagline">Tagline</label>
+      <input class="input" type="text" id="tagline" name="settings[tagline]"
+             value="<%= @settings["tagline"] %>">
+    </div>
+    <div class="field">
+      <label for="accent_color">Accent colour</label>
+      <input class="input" type="text" id="accent_color" name="settings[accent_color]"
+             value="<%= @settings["accent_color"] %>" pattern="#[0-9a-fA-F]{6}">
+      <span class="field__hint">Hex, for example #6366f1.</span>
+    </div>
+    <div class="field">
+      <label for="support_email">Support email</label>
+      <input class="input" type="email" id="support_email" name="settings[support_email]"
+             value="<%= @settings["support_email"] %>">
+    </div>
+    <label class="checkbox mb-3">
+      <input type="hidden" name="settings[registration_open]" value="0">
+      <input type="checkbox" name="settings[registration_open]" value="1"
+             <%= "checked" if @settings["registration_open"] %>>
+      <span>Registration open to new learners</span>
+    </label>
+    <button type="submit" class="btn btn--primary">Save settings</button>
+  <% end %>
+</section>

@@ -1,0 +1,40 @@
+<% content_for :title, "Audit log" %>
+<h1>Audit log</h1>
+
+<form method="get" action="<%= admin_audit_logs_path %>" class="card mb-3"
+      data-controller="autosubmit" data-action="change->autosubmit#submit">
+  <div class="field" style="margin: 0; max-width: 280px;">
+    <label for="action-filter">Action</label>
+    <select class="select" id="action-filter" name="action_name">
+      <option value="">All actions</option>
+      <% @actions.each do |action| %>
+        <option value="<%= action %>" <%= "selected" if params[:action_name] == action %>>
+          <%= action %>
+        </option>
+      <% end %>
+    </select>
+  </div>
+</form>
+
+<section class="card card--flush">
+  <table class="table">
+    <thead>
+      <tr><th scope="col">When</th><th scope="col">Actor</th><th scope="col">Action</th>
+          <th scope="col">Target</th><th scope="col">IP</th></tr>
+    </thead>
+    <tbody>
+      <% @logs.each do |log| %>
+        <tr>
+          <td class="text-xs text-faint nowrap"><%= log.created_at.to_fs(:short) %></td>
+          <td class="text-sm"><%= log.actor&.email || "system" %></td>
+          <td><code class="text-xs"><%= log.action %></code></td>
+          <td class="text-xs text-faint">
+            <%= "#{log.auditable_type}##{log.auditable_id}" if log.auditable_type %>
+          </td>
+          <td class="text-xs text-faint mono"><%= log.ip_address %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</section>
+<div class="mt-3"><%= paginate @logs %></div>

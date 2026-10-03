@@ -1,0 +1,75 @@
+<%
+  due_reviews = Learning::SpacedRepetition.new(user: current_user).due_count
+  primary = [
+    ["Dashboard",  dashboard_path,     "▣"],
+    ["Skill map",  skill_map_path,     "✦"],
+    ["Challenges", challenges_path,    "⬢"],
+    ["Algorithms", algorithms_path,    "⇅"],
+    ["Big-O lab",  complexity_path,    "∿"]
+  ]
+  arena = [
+    ["Boss battles", boss_battles_path, "☠"],
+    ["Interviews",   interviews_path,   "◎"],
+    ["Revision",     revisions_path,    "↻"]
+  ]
+  you = [
+    ["Progress",     progress_path,     "▤"],
+    ["Achievements", achievements_path, "★"],
+    ["Settings",     settings_path,     "⚙"]
+  ]
+%>
+<nav class="sidebar" aria-label="Main navigation">
+  <%= link_to dashboard_path, class: "sidebar__brand" do %>
+    <span class="sidebar__mark" aria-hidden="true"><%= product_name.first.upcase %></span>
+    <span><%= product_name %></span>
+  <% end %>
+
+  <div class="sidebar__nav">
+    <% primary.each do |label, path, icon| %>
+      <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
+        <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+        <span><%= label %></span>
+      <% end %>
+    <% end %>
+
+    <div class="sidebar__section">Arena</div>
+    <% arena.each do |label, path, icon| %>
+      <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
+        <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+        <span><%= label %></span>
+        <% if label == "Revision" && due_reviews.positive? %>
+          <span class="nav-item__badge"><%= due_reviews %></span>
+        <% end %>
+      <% end %>
+    <% end %>
+
+    <div class="sidebar__section">You</div>
+    <% you.each do |label, path, icon| %>
+      <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
+        <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+        <span><%= label %></span>
+      <% end %>
+    <% end %>
+
+    <% if current_user.staff? %>
+      <div class="sidebar__section">Staff</div>
+      <%= link_to admin_root_path, class: "nav-item" do %>
+        <span class="nav-item__icon" aria-hidden="true">⚑</span>
+        <span>Admin panel</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="sidebar__footer">
+    <div class="row row--between" style="margin-bottom: 0.5rem;">
+      <div class="stack stack--tight" style="gap: 0;">
+        <strong class="text-sm"><%= current_user.name %></strong>
+        <span class="text-xs text-faint">Level <%= current_user.level %> · <%= number_with_delimiter current_user.xp_total %> XP</span>
+      </div>
+    </div>
+    <div class="meter meter--sm" role="img"
+         aria-label="<%= current_user.level_progress_percent %>% toward level <%= current_user.level + 1 %>">
+      <div class="meter__fill" style="width: <%= current_user.level_progress_percent %>%"></div>
+    </div>
+  </div>
+</nav>

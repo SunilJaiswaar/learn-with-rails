@@ -1,0 +1,177 @@
+<% content_for :title, @topic.name %>
+
+<nav aria-label="Breadcrumb" class="text-xs text-faint mb-2">
+  <%= link_to @topic.world.name, skill_map_path %>
+  <span aria-hidden="true">/</span>
+  <%= @topic.curriculum_module.name %>
+  <% if @topic.skill %>
+    <span aria-hidden="true">/</span>
+    <%= link_to @topic.skill.name, skill_path(@topic.skill.slug) %>
+  <% end %>
+</nav>
+
+<header class="mission mb-3">
+  <div class="row row--between">
+    <div style="flex: 1; min-width: 0;">
+      <span class="mission__alert">Mission <%= @topic.position %></span>
+      <h1 class="mission__title"><%= @topic.name %></h1>
+      <p class="mission__brief"><%= @topic.hook %></p>
+    </div>
+    <div class="stack stack--tight text-center" style="flex: 0 0 auto;">
+      <span class="badge"><%= @topic.estimated_minutes %> min</span>
+      <span class="badge badge--accent">+<%= @topic.xp_award %> XP</span>
+      <span class="badge"><%= @topic.difficulty_label %></span>
+    </div>
+  </div>
+
+  <% if @topic.technology_version && !@topic.technology_version.teachable_as_current? %>
+    <%# Never present an obsolete API as current knowledge (spec 60). %>
+    <div class="verdict verdict--wrong mt-2" style="display: block;">
+      This mission documents <%= @topic.technology_version.label %>, which is
+      <strong><%= @topic.technology_version.status %></strong>. It is kept for
+      interview preparation — do not use it as current guidance.
+    </div>
+  <% end %>
+</header>
+
+<div class="grid grid--sidebar">
+  <div class="lesson">
+    <% @blocks.each_with_index do |block, index| %>
+      <section class="block block--<%= block.block_type %>"
+               id="<%= dom_id(block) %>"
+               aria-labelledby="<%= dom_id(block, :heading) %>">
+        <div class="block__head">
+          <span class="block__kind"><%= block.block_type.to_s.humanize %></span>
+          <h2 class="block__heading" id="<%= dom_id(block, :heading) %>">
+            <%= block.heading.presence || block.block_type.to_s.humanize %>
+          </h2>
+        </div>
+        <div class="block__body">
+          <%= render block.renderer_partial, block: block, topic: @topic %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @challenges.any? %>
+      <section class="card">
+        <h2>Now prove it</h2>
+        <p class="text-muted text-sm">
+          Reading is one of six mastery dimensions. These are the others.
+        </p>
+        <div class="stack stack--tight mt-2">
+          <% @challenges.each do |challenge| %>
+            <%= link_to challenge_path(challenge.slug), class: "card",
+                        style: "display: block; padding: 0.7rem 0.9rem; text-decoration: none;" do %>
+              <div class="row row--between">
+                <div>
+                  <strong><%= challenge.title %></strong>
+                  <div class="text-xs text-muted">
+                    <%= challenge.challenge_type.to_s.humanize %> ·
+                    <%= challenge.difficulty_label %> ·
+                    +<%= challenge.xp_award %> XP
+                  </div>
+                </div>
+                <% if @solved_challenge_ids.include?(challenge.id) %>
+                  <span class="badge badge--success">Solved</span>
+                <% else %>
+                  <span class="badge">Attempt</span>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @questions.any? %>
+      <section class="card">
+        <h2>How an interviewer asks this</h2>
+        <div class="stack stack--tight mt-2">
+          <% @questions.each do |question| %>
+            <%= link_to question_path(question), class: "card",
+                        style: "display: block; padding: 0.7rem 0.9rem; text-decoration: none;" do %>
+              <div class="text-sm"><%= question.body %></div>
+              <div class="text-xs text-muted mt-1">
+                <%= question.experience_band_label %> ·
+                <%= question.question_follow_ups.size %> follow-up<%= "s" unless question.question_follow_ups.size == 1 %>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <section class="card">
+      <div class="row row--between">
+        <div>
+          <h2 class="mb-0">Finished this mission?</h2>
+          <p class="text-muted text-sm mb-0">
+            Marking it complete records understanding — not mastery.
+          </p>
+        </div>
+        <% if @topic.completed_by?(current_user) %>
+          <span class="badge badge--success">Completed</span>
+        <% else %>
+          <%= button_to "Mark complete (+#{@topic.xp_award} XP)",
+                        complete_topic_path(@topic.slug),
+                        class: "btn btn--primary" %>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+  <aside class="stack">
+    <div class="card">
+      <h3>This mission proves</h3>
+      <% if @topic.skill %>
+        <% progress = @topic.skill.progress_for(current_user) %>
+        <p class="text-sm mb-1">
+          <%= link_to @topic.skill.name, skill_path(@topic.skill.slug) %>
+        </p>
+        <% if progress %>
+          <div class="stack stack--tight">
+            <% progress.dimension_scores.each do |dimension, score| %>
+              <div>
+                <div class="row row--between text-xs">
+                  <span class="text-muted"><%= dimension.to_s.humanize %></span>
+                  <span class="mono"><%= score %>%</span>
+                </div>
+                <div class="meter meter--sm">
+                  <div class="meter__fill" style="width: <%= score %>%"></div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+          <p class="text-xs text-faint mt-2 mb-0">
+            Mastery: <strong><%= progress.mastery_level.humanize %></strong>
+          </p>
+        <% else %>
+          <p class="text-xs text-faint mb-0">
+            No evidence recorded yet. Solve a challenge to start measuring.
+          </p>
+        <% end %>
+      <% end %>
+    </div>
+
+    <div class="card">
+      <h3>Mission contents</h3>
+      <ol class="stack stack--tight text-sm" style="padding-left: 1.1rem; margin: 0;">
+        <% @blocks.each do |block| %>
+          <li>
+            <a href="#<%= dom_id(block) %>">
+              <%= block.heading.presence || block.block_type.to_s.humanize %>
+            </a>
+          </li>
+        <% end %>
+      </ol>
+    </div>
+
+    <% if @next_topic %>
+      <div class="card">
+        <h3>Next mission</h3>
+        <p class="text-sm text-muted"><%= @next_topic.name %></p>
+        <%= link_to "Continue", topic_path(@next_topic.slug), class: "btn btn--block" %>
+      </div>
+    <% end %>
+  </aside>
+</div>

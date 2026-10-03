@@ -1,0 +1,136 @@
+<% content_for :title, "Overview" %>
+
+<div class="grid grid--4 mb-3">
+  <% @counts.each do |label, count| %>
+    <div class="card">
+      <div class="stat">
+        <span class="stat__value"><%= number_with_delimiter count %></span>
+        <span class="stat__label"><%= label %></span>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="grid grid--2">
+  <%# Content analytics (spec 61): which content is actually hurting learners. %>
+  <section class="card card--flush">
+    <div class="card__header"><h2>Hardest challenges</h2></div>
+    <div class="card__body">
+      <% if @analytics[:hardest_challenges].any? %>
+        <table class="table">
+          <thead>
+            <tr><th scope="col">Challenge</th><th scope="col">Attempts</th><th scope="col">Pass rate</th></tr>
+          </thead>
+          <tbody>
+            <% @analytics[:hardest_challenges].each do |row| %>
+              <tr>
+                <td><%= link_to row[:challenge]&.title, admin_challenge_path(row[:challenge]) if row[:challenge] %></td>
+                <td class="mono"><%= row[:attempts] %></td>
+                <td>
+                  <span class="badge badge--<%= row[:pass_rate] < 30 ? "danger" : row[:pass_rate] < 60 ? "warning" : "success" %>">
+                    <%= row[:pass_rate] %>%
+                  </span>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-sm text-muted mb-0">
+          Not enough attempts yet. A challenge needs three before it is ranked.
+        </p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="card card--flush">
+    <div class="card__header"><h2>Most-used hints</h2></div>
+    <div class="card__body">
+      <% if @analytics[:most_hinted].any? %>
+        <table class="table">
+          <thead><tr><th scope="col">Challenge</th><th scope="col">Reveals</th></tr></thead>
+          <tbody>
+            <% @analytics[:most_hinted].each do |row| %>
+              <tr><td><%= row[:title] %></td><td class="mono"><%= row[:reveals] %></td></tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-sm text-muted mb-0">No hints revealed yet.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="card card--flush">
+    <div class="card__header"><h2>Drop-off points</h2></div>
+    <div class="card__body">
+      <% if @analytics[:drop_off_topics].any? %>
+        <table class="table">
+          <thead><tr><th scope="col">Mission</th><th scope="col">Started</th><th scope="col">Abandoned</th></tr></thead>
+          <tbody>
+            <% @analytics[:drop_off_topics].each do |row| %>
+              <tr>
+                <td><%= row[:topic]&.name %></td>
+                <td class="mono"><%= row[:started] %></td>
+                <td><span class="badge badge--warning"><%= row[:abandon_rate] %>%</span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="text-sm text-muted mb-0">No abandoned missions recorded.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <section class="card card--flush">
+    <div class="card__header">
+      <h2>Missions missing part of the loop</h2>
+      <span class="text-xs text-faint" style="margin-left: auto;">Definition of done</span>
+    </div>
+    <div class="card__body">
+      <% if @incomplete_topics.any? %>
+        <div class="stack stack--tight">
+          <% @incomplete_topics.each do |topic| %>
+            <div>
+              <%= link_to topic.name, admin_topic_path(topic), class: "text-sm" %>
+              <div class="text-xs text-danger">
+                Missing: <%= topic.definition_of_done.reject { |_k, v| v }.keys.join(", ") %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="text-sm mb-0" style="color: var(--success);">
+          Every mission carries the full learning loop.
+        </p>
+      <% end %>
+    </div>
+  </section>
+</div>
+
+<section class="card card--flush mt-3">
+  <div class="card__header">
+    <h2>Recent admin activity</h2>
+    <%= link_to "Full audit log", admin_audit_logs_path, class: "text-xs",
+                style: "margin-left: auto;" %>
+  </div>
+  <div class="card__body">
+    <% if @recent_audits.any? %>
+      <table class="table">
+        <thead><tr><th scope="col">When</th><th scope="col">Actor</th><th scope="col">Action</th></tr></thead>
+        <tbody>
+          <% @recent_audits.each do |log| %>
+            <tr>
+              <td class="text-xs text-faint"><%= time_ago_in_words(log.created_at) %> ago</td>
+              <td class="text-sm"><%= log.actor&.email || "system" %></td>
+              <td><code class="text-xs"><%= log.action %></code></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    <% else %>
+      <p class="text-sm text-muted mb-0">Nothing recorded yet.</p>
+    <% end %>
+  </div>
+</section>

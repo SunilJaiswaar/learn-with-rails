@@ -1,0 +1,61 @@
+<% content_for :title, "Create your account" %>
+
+<div style="max-width: 460px; margin: 2.5rem auto;">
+  <h1 class="text-center">Start at level 1</h1>
+  <p class="text-muted text-center text-sm mb-3">
+    No prior experience needed. The path adapts to what you demonstrate.
+  </p>
+
+  <div class="card card--raised">
+    <%= form_with model: @user, url: signup_path, method: :post do |form| %>
+      <% if @user.errors.any? %>
+        <div class="form-errors" role="alert">
+          <strong>Please fix the following:</strong>
+          <ul>
+            <% @user.errors.full_messages.each do |message| %>
+              <li><%= message %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <div class="field">
+        <%= form.label :name, "Your name" %>
+        <%= form.text_field :name, class: "input", required: true, autofocus: true %>
+      </div>
+
+      <div class="field">
+        <%= form.label :email, "Email" %>
+        <%= form.email_field :email, class: "input", required: true, autocomplete: "email" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :password, "Password" %>
+        <%= form.password_field :password, class: "input", required: true,
+                                autocomplete: "new-password", minlength: 10 %>
+        <span class="field__hint">At least 10 characters.</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :password_confirmation, "Confirm password" %>
+        <%= form.password_field :password_confirmation, class: "input", required: true,
+                                autocomplete: "new-password" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :experience_band, "Years of experience" %>
+        <%= form.select :experience_band,
+                        ExperienceBanded::BANDS.keys.map { |b| [ExperienceBanded::BAND_LABELS[b.to_s], b] },
+                        {}, class: "select" %>
+        <span class="field__hint">Sets how deep interview questions start. You can change it later.</span>
+      </div>
+
+      <%= form.hidden_field :timezone, value: "UTC" %>
+      <%= form.submit "Create account", class: "btn btn--primary btn--block" %>
+    <% end %>
+  </div>
+
+  <p class="text-center text-sm mt-2">
+    Already have an account? <%= link_to "Sign in", login_path %>
+  </p>
+</div>

@@ -1,0 +1,169 @@
+<% content_for :title, @skill.name %>
+
+<nav aria-label="Breadcrumb" class="text-xs text-faint mb-2">
+  <%= link_to "Skill map", skill_map_path %>
+  <% if @skill.world %>
+    <span aria-hidden="true">/</span><%= @skill.world.name %>
+  <% end %>
+</nav>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-1"><%= @skill.name %></h1>
+    <p class="text-muted mb-0" style="max-width: 60ch;"><%= @skill.summary %></p>
+  </div>
+  <% if @skill.technology %>
+    <span class="badge"><%= @skill.technology.name %></span>
+  <% end %>
+</header>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <% if @topics.any? %>
+      <section class="card card--flush">
+        <div class="card__header"><h2>Missions</h2></div>
+        <div class="card__body stack stack--tight">
+          <% @topics.each do |topic| %>
+            <%= link_to topic_path(topic.slug), class: "card",
+                        style: "display: block; padding: 0.7rem 0.9rem; text-decoration: none;" do %>
+              <div class="row row--between">
+                <div style="min-width: 0;">
+                  <strong><%= topic.name %></strong>
+                  <div class="text-xs text-muted"><%= topic.hook.truncate(110) %></div>
+                </div>
+                <div class="row" style="flex: 0 0 auto;">
+                  <span class="badge"><%= topic.estimated_minutes %>m</span>
+                  <% if @completed_topic_ids.include?(topic.id) %>
+                    <span class="badge badge--success">Done</span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @challenges.any? %>
+      <section class="card card--flush">
+        <div class="card__header"><h2>Challenges</h2></div>
+        <div class="card__body stack stack--tight">
+          <% @challenges.each do |challenge| %>
+            <%= link_to challenge_path(challenge.slug), class: "card",
+                        style: "display: block; padding: 0.7rem 0.9rem; text-decoration: none;" do %>
+              <div class="row row--between">
+                <div>
+                  <strong><%= challenge.title %></strong>
+                  <div class="text-xs text-muted">
+                    <%= challenge.challenge_type.to_s.humanize %> ·
+                    proves <%= challenge.mastery_dimension.to_s.humanize.downcase %>
+                  </div>
+                </div>
+                <div class="row" style="flex: 0 0 auto;">
+                  <span class="badge"><%= challenge.difficulty_label %></span>
+                  <% if @solved_challenge_ids.include?(challenge.id) %>
+                    <span class="badge badge--success">Solved</span>
+                  <% end %>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @algorithms.any? %>
+      <section class="card card--flush">
+        <div class="card__header"><h2>Visualisers</h2></div>
+        <div class="card__body stack stack--tight">
+          <% @algorithms.each do |algorithm| %>
+            <%= link_to algorithm.name, algorithm_path(algorithm.slug), class: "btn btn--block" %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @boss_battles.any? %>
+      <section class="boss">
+        <span class="boss__name">Boss</span>
+        <% @boss_battles.each do |boss| %>
+          <h2 class="mb-1"><%= boss.title %></h2>
+          <p class="text-sm text-muted"><%= boss.scenario.lines.first %></p>
+          <%= link_to boss.beaten_by?(current_user) ? "Replay" : "Enter the fight",
+                      boss_battle_path(boss.slug), class: "btn btn--primary" %>
+        <% end %>
+      </section>
+    <% end %>
+  </div>
+
+  <aside class="stack">
+    <section class="card">
+      <h3>Your mastery</h3>
+      <% if @progress %>
+        <div class="stack stack--tight">
+          <% @progress.dimension_scores.each do |dimension, score| %>
+            <div>
+              <div class="row row--between text-xs">
+                <span class="text-muted"><%= dimension.to_s.humanize %></span>
+                <span class="mono"><%= score %>%</span>
+              </div>
+              <div class="meter meter--sm">
+                <div class="meter__fill" style="width: <%= score %>%"></div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <hr style="border: 0; border-top: 1px solid var(--border); margin: 0.9rem 0;">
+        <div class="row row--between">
+          <span class="text-sm text-muted">Overall</span>
+          <span class="badge badge--accent"><%= @progress.composite_score %>%</span>
+        </div>
+        <div class="row row--between mt-1">
+          <span class="text-sm text-muted">Mastery</span>
+          <strong class="text-sm"><%= @progress.mastery_level.humanize %></strong>
+        </div>
+        <p class="text-xs text-faint mt-2 mb-0">
+          Every dimension must clear its bar before a skill counts as mastered.
+          Your weakest is
+          <strong><%= @progress.weakest_dimension.to_s.humanize.downcase %></strong>.
+        </p>
+      <% else %>
+        <p class="text-sm text-muted mb-0">
+          Nothing measured yet. Finish a mission and solve a challenge to start.
+        </p>
+      <% end %>
+    </section>
+
+    <% if @skill.prerequisites.any? %>
+      <section class="card">
+        <h3>Prerequisites</h3>
+        <div class="stack stack--tight">
+          <% @skill.prerequisites.each do |prerequisite| %>
+            <%= link_to prerequisite.name, skill_path(prerequisite.slug), class: "text-sm" %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @skill.unlocks.any? %>
+      <section class="card">
+        <h3>Unlocks</h3>
+        <div class="stack stack--tight">
+          <% @skill.unlocks.each do |unlocked| %>
+            <%= link_to unlocked.name, skill_path(unlocked.slug), class: "text-sm" %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @questions_count.positive? %>
+      <section class="card">
+        <h3>Interview questions</h3>
+        <p class="text-sm text-muted mb-0">
+          <%= @questions_count %> question<%= "s" unless @questions_count == 1 %>
+          target this skill, with follow-up probes.
+        </p>
+      </section>
+    <% end %>
+  </aside>
+</div>

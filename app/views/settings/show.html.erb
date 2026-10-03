@@ -1,0 +1,90 @@
+<% content_for :title, "Settings" %>
+
+<h1>Settings</h1>
+
+<div class="grid grid--sidebar">
+  <section class="card">
+    <h2>Preferences</h2>
+    <%= form_with model: current_user, url: settings_path, method: :patch do |form| %>
+      <% if @user.errors.any? %>
+        <div class="form-errors" role="alert">
+          <ul><% @user.errors.full_messages.each do |m| %><li><%= m %></li><% end %></ul>
+        </div>
+      <% end %>
+
+      <div class="field">
+        <%= form.label :name %>
+        <%= form.text_field :name, class: "input" %>
+      </div>
+
+      <div class="field">
+        <%= form.label :theme %>
+        <%= form.select :theme, User.themes.keys.map { |t| [t.humanize, t] }, {},
+                        class: "select" %>
+        <span class="field__hint">"System" follows your operating system setting.</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :experience_band, "Years of experience" %>
+        <%= form.select :experience_band,
+                        ExperienceBanded::BANDS.keys.map { |b| [ExperienceBanded::BAND_LABELS[b.to_s], b] },
+                        {}, class: "select" %>
+        <span class="field__hint">Sets how deep interview questions start.</span>
+      </div>
+
+      <div class="field">
+        <%= form.label :timezone, "Timezone" %>
+        <%= form.select :timezone,
+                        ActiveSupport::TimeZone.all.map { |z| [z.to_s, z.name] },
+                        {}, class: "select" %>
+        <span class="field__hint">
+          Streaks and daily missions are evaluated in your timezone.
+        </span>
+      </div>
+
+      <label class="checkbox mb-3">
+        <%= form.check_box :reduced_motion %>
+        <span>Reduce motion in visualisers and animations</span>
+      </label>
+
+      <%= form.submit "Save preferences", class: "btn btn--primary" %>
+    <% end %>
+  </section>
+
+  <aside class="stack">
+    <section class="card">
+      <h3>Account</h3>
+      <dl class="text-sm" style="margin: 0;">
+        <dt class="text-xs text-faint">Email</dt>
+        <dd style="margin: 0 0 0.5rem;"><%= current_user.email %></dd>
+        <dt class="text-xs text-faint">Level</dt>
+        <dd style="margin: 0 0 0.5rem;">
+          <%= current_user.level %> — <%= current_user.rank_title %>
+        </dd>
+        <dt class="text-xs text-faint">Total XP</dt>
+        <dd style="margin: 0;"><%= number_with_delimiter current_user.xp_total %></dd>
+      </dl>
+    </section>
+
+    <%# Sessions are listed so a learner can see where they are signed in. %>
+    <section class="card">
+      <h3>Active sessions</h3>
+      <div class="stack stack--tight">
+        <% @sessions.each do |session| %>
+          <div class="text-xs">
+            <strong class="mono"><%= session.ip_address || "unknown IP" %></strong>
+            <div class="text-faint">
+              <%= session.user_agent.to_s.truncate(48).presence || "unknown device" %>
+            </div>
+            <div class="text-faint">
+              last used
+              <%= session.last_used_at ? "#{time_ago_in_words(session.last_used_at)} ago" : "—" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+      <%= button_to "Sign out everywhere", logout_path, method: :delete,
+                    class: "btn btn--sm btn--block mt-2" %>
+    </section>
+  </aside>
+</div>

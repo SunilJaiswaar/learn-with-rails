@@ -1,0 +1,86 @@
+<%= turbo_stream.replace "question-answer" do %>
+  <div id="question-answer">
+    <section class="card">
+      <div class="row row--between mb-2">
+        <h2 class="mb-0">
+          <%= @evaluation.verdict.humanize %> — <%= @evaluation.score %>%
+        </h2>
+        <% if @attempt.xp_awarded.positive? %>
+          <span class="badge badge--accent">+<%= @attempt.xp_awarded %> XP</span>
+        <% end %>
+      </div>
+
+      <div class="meter <%= @evaluation.correct ? "meter--success" : "meter--danger" %> mb-2">
+        <div class="meter__fill" style="width: <%= @evaluation.score %>%"></div>
+      </div>
+
+      <% if @evaluation.matched.any? %>
+        <div class="row mb-1 text-xs">
+          <span class="text-faint">Recognised:</span>
+          <% @evaluation.matched.each do |keyword| %>
+            <span class="chip chip--active"><%= keyword %></span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @evaluation.missed.any? %>
+        <div class="row mb-2 text-xs">
+          <span class="text-faint">Not mentioned:</span>
+          <% @evaluation.missed.each do |keyword| %>
+            <span class="chip"><%= keyword %></span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @evaluation.notes.present? %>
+        <p class="text-sm text-muted"><%= @evaluation.notes %></p>
+      <% end %>
+
+      <% if @question.model_answer.present? %>
+        <h3 class="text-sm mt-3">A strong answer</h3>
+        <div class="qa__answer"><%= @question.model_answer %></div>
+      <% end %>
+
+      <% if @question.common_mistakes.present? %>
+        <h3 class="text-sm mt-3">Common mistakes</h3>
+        <p class="text-sm text-muted"><%= @question.common_mistakes %></p>
+      <% end %>
+
+      <%# The probes that your specific answer invites (spec 43). %>
+      <% if @follow_ups.any? %>
+        <h3 class="text-sm mt-3">An interviewer would now ask</h3>
+        <div class="stack stack--tight">
+          <% @follow_ups.each do |follow_up| %>
+            <div class="qa__question qa__followup">
+              <p class="mb-0 text-sm"><strong><%= follow_up.body %></strong></p>
+              <% if follow_up.model_answer.present? %>
+                <div data-controller="reveal" class="mt-2">
+                  <button type="button" class="btn btn--sm" data-reveal-target="trigger"
+                          data-action="reveal#show">Show a strong answer</button>
+                  <div data-reveal-target="panel" hidden class="text-sm text-muted mt-1">
+                    <%= follow_up.model_answer %>
+                  </div>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div class="row mt-3">
+        <%= link_to "Try another", @question.skill ? skill_path(@question.skill.slug) : dashboard_path,
+                    class: "btn" %>
+        <%= link_to "Full interview simulation", interviews_path, class: "btn btn--primary" %>
+      </div>
+    </section>
+  </div>
+<% end %>
+
+<% if @attempt.xp_awarded.positive? %>
+  <%= turbo_stream.append "toasts" do %>
+    <div class="toast" data-controller="toast" role="status">
+      <div class="toast__title">+<%= @attempt.xp_awarded %> XP</div>
+      <div class="text-sm text-muted">Interview question answered</div>
+    </div>
+  <% end %>
+<% end %>

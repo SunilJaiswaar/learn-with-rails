@@ -1,0 +1,2 @@
+class ChallengePolicy < ApplicationPolicy
+end

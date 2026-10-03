@@ -1,0 +1,144 @@
+<% content_for :title, "Progress" %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Progress</h1>
+  <p class="text-muted text-sm mb-0">
+    Reading 100 lessons is not mastery. Everything here comes from demonstrated
+    performance.
+  </p>
+</header>
+
+<div class="grid grid--4 mb-3">
+  <% [["Challenges solved", @totals[:challenges_solved]],
+      ["Missions finished", @totals[:topics_completed]],
+      ["Interviews", @totals[:interviews]],
+      ["Bosses beaten", @totals[:bosses]]].each do |label, value| %>
+    <div class="card">
+      <div class="stat">
+        <span class="stat__value"><%= number_with_delimiter value %></span>
+        <span class="stat__label"><%= label %></span>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<%# Interview readiness by category, with an explicit "not tested" state (spec 63). %>
+<section class="card mb-3">
+  <h2>Interview readiness</h2>
+  <p class="text-xs text-muted">
+    Deliberately not a single score. An untested category is reported as such
+    rather than being guessed at.
+  </p>
+  <div class="readiness mt-2">
+    <% @readiness.each do |row| %>
+      <div class="readiness__row">
+        <div>
+          <strong class="text-sm"><%= row[:category] %></strong>
+          <div class="text-xs text-faint">
+            <%= row[:tested_skills] %> of <%= row[:total_skills] %> skills tested
+          </div>
+        </div>
+        <div class="row" style="flex: 0 0 auto;">
+          <% if row[:score] %>
+            <span class="mono text-sm"><%= row[:score] %>%</span>
+          <% end %>
+          <span class="badge badge--<%= { "Strong" => "success", "Developing" => "warning",
+                                          "Weak" => "danger" }.fetch(row[:standing], "") %>">
+            <%= row[:standing] %>
+          </span>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<%# XP over the last 30 days, drawn with CSS rather than a charting library. %>
+<section class="card mb-3">
+  <h2>XP earned, last 30 days</h2>
+  <% max_xp = [@xp_history.map { |d| d[:amount] }.max, 1].max %>
+  <div class="sparkline mt-2" role="img"
+       aria-label="Daily XP for the last 30 days, peaking at <%= max_xp %>">
+    <% @xp_history.each do |day| %>
+      <div class="sparkline__bar <%= "sparkline__bar--empty" if day[:amount].zero? %>"
+           style="height: <%= [(day[:amount].to_f / max_xp * 100).round, 3].max %>%"
+           title="<%= day[:date].to_fs(:long) %>: <%= day[:amount] %> XP"></div>
+    <% end %>
+  </div>
+  <div class="row row--between text-xs text-faint mt-1">
+    <span><%= @xp_history.first[:date].to_fs(:short) %></span>
+    <span>Peak <%= max_xp %> XP</span>
+    <span><%= @xp_history.last[:date].to_fs(:short) %></span>
+  </div>
+</section>
+
+<% if @accuracy_history.any? %>
+  <section class="card mb-3">
+    <h2>Challenge accuracy by week</h2>
+    <p class="text-xs text-muted">
+      The pass rate of your submissions. Going down is normal when you move to
+      harder material.
+    </p>
+    <div class="stack stack--tight mt-2">
+      <% @accuracy_history.each do |week| %>
+        <div class="row" style="flex-wrap: nowrap; gap: 0.7rem;">
+          <span class="text-xs text-faint" style="flex: 0 0 5rem;">
+            <%= week[:week].to_fs(:short) %>
+          </span>
+          <div class="meter" style="flex: 1;">
+            <div class="meter__fill" style="width: <%= week[:accuracy] %>%"></div>
+          </div>
+          <span class="mono text-xs" style="flex: 0 0 5.5rem; text-align: right;">
+            <%= week[:accuracy] %>% of <%= week[:attempts] %>
+          </span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<section class="card card--flush">
+  <div class="card__header"><h2>Every measured skill</h2></div>
+  <div class="card__body">
+    <% if @skill_progresses.any? %>
+      <div style="overflow-x: auto;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th scope="col">Skill</th>
+              <% SkillProgress::DIMENSIONS.each do |dimension| %>
+                <th scope="col" title="<%= dimension.to_s.humanize %>">
+                  <%= dimension.to_s.first(4).capitalize %>
+                </th>
+              <% end %>
+              <th scope="col">Overall</th><th scope="col">Mastery</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @skill_progresses.each do |progress| %>
+              <tr>
+                <td><%= link_to progress.skill.name, skill_path(progress.skill.slug) %></td>
+                <% progress.dimension_scores.each do |dimension, score| %>
+                  <td class="mono <%= "text-faint" if score.zero? %>"
+                      style="<%= "color: var(--danger);" if dimension == progress.weakest_dimension && score.positive? %>">
+                    <%= score %>
+                  </td>
+                <% end %>
+                <td class="mono"><strong><%= progress.composite_score %></strong></td>
+                <td><span class="badge"><%= progress.mastery_level.humanize %></span></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+      <p class="text-xs text-faint mt-2 mb-0">
+        The red figure in each row is that skill's weakest dimension — what the
+        adaptive engine will target next.
+      </p>
+    <% else %>
+      <div class="empty">
+        <p class="mb-2">Nothing measured yet.</p>
+        <%= link_to "Start a mission", skill_map_path, class: "btn btn--primary" %>
+      </div>
+    <% end %>
+  </div>
+</section>

@@ -1,0 +1,234 @@
+<% content_for :title, "Dashboard" %>
+
+<header class="row row--between mb-3">
+  <div>
+    <p class="text-muted text-sm mb-0"><%= Time.current.hour < 12 ? "Good morning" : Time.current.hour < 18 ? "Good afternoon" : "Good evening" %>, <%= current_user.name.split.first %></p>
+    <div class="hero-level">
+      <span class="hero-level__number">Lv <%= current_user.level %></span>
+      <span class="hero-level__title"><%= current_user.rank_title %></span>
+    </div>
+  </div>
+
+  <div class="stack stack--tight" style="min-width: 220px;">
+    <div class="row row--between text-xs">
+      <span class="text-muted">
+        <%= number_with_delimiter current_user.xp_into_current_level %> /
+        <%= number_with_delimiter current_user.xp_needed_for_current_level %> XP
+      </span>
+      <span class="text-faint">to Lv <%= current_user.level + 1 %></span>
+    </div>
+    <div class="meter" role="img"
+         aria-label="<%= current_user.level_progress_percent %> percent to the next level">
+      <div class="meter__fill" style="width: <%= current_user.level_progress_percent %>%"></div>
+    </div>
+    <% if @streak.active? %>
+      <span class="streak-flame text-sm">
+        <span aria-hidden="true">🔥</span> <%= @streak.current_length %> day streak
+      </span>
+    <% else %>
+      <span class="text-xs text-faint">
+        No active streak — finish anything today to start one.
+      </span>
+    <% end %>
+  </div>
+</header>
+
+<%# The daily quest is the hero: a production alert, not a lesson list (spec 51). %>
+<% if @quest %>
+  <section class="mission mb-3" aria-labelledby="quest-title">
+    <span class="mission__alert">
+      <span aria-hidden="true">🚨</span>
+      <%= @quest.quest_template.alert_label.presence || "Today's mission" %>
+    </span>
+    <h2 class="mission__title" id="quest-title"><%= @quest.quest_template.name %></h2>
+    <div class="mission__brief"><%= simple_format @quest.quest_template.briefing %></div>
+
+    <ol class="mission__steps">
+      <% @quest.quest_steps.each do |step| %>
+        <li class="mission__step <%= "mission__step--done" if step.completed %>">
+          <span class="mission__step-mark" aria-hidden="true">✓</span>
+          <span>
+            <%= step.label %>
+            <% if step.target.is_a?(Topic) %>
+              — <%= link_to "open mission", topic_path(step.target.slug) %>
+            <% elsif step.target.is_a?(Challenge) %>
+              — <%= link_to "open challenge", challenge_path(step.target.slug) %>
+            <% end %>
+          </span>
+          <span class="visually-hidden"><%= step.completed ? "complete" : "incomplete" %></span>
+        </li>
+      <% end %>
+    </ol>
+
+    <div class="row row--between">
+      <div style="flex: 1; max-width: 320px;">
+        <div class="meter meter--sm">
+          <div class="meter__fill" style="width: <%= @quest.progress_percent %>%"></div>
+        </div>
+        <span class="text-xs text-faint">
+          <%= @quest.completed_steps_count %>/<%= @quest.total_steps_count %> steps
+        </span>
+      </div>
+      <% if @quest.completed_quest? %>
+        <span class="badge badge--success">
+          Complete — <%= @quest.xp_awarded %> XP earned
+        </span>
+      <% else %>
+        <span class="badge badge--accent">
+          Reward <%= @quest.quest_template.xp_reward %> XP
+        </span>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <%# What to do next, chosen by the adaptive engine (spec 46). %>
+    <section class="card card--flush">
+      <div class="card__header">
+        <h2>Recommended next</h2>
+        <span class="text-xs text-faint" style="margin-left: auto;">
+          Chosen from your measured weak points
+        </span>
+      </div>
+      <div class="card__body">
+        <% if @recommendations.any? %>
+          <div class="stack stack--tight">
+            <% @recommendations.each do |recommendation| %>
+              <%= link_to recommendation.path, class: "card",
+                          style: "display: block; padding: 0.7rem 0.9rem; text-decoration: none;" do %>
+                <div class="row row--between">
+                  <div style="min-width: 0;">
+                    <strong><%= recommendation.title %></strong>
+                    <div class="text-xs text-muted"><%= recommendation.reason %></div>
+                  </div>
+                  <span class="badge badge--<%= recommendation.kind == :revision ? "warning" : recommendation.kind == :weakness ? "danger" : "info" %>">
+                    <%= recommendation.kind.to_s.humanize %>
+                  </span>
+                </div>
+              <% end %>
+            <% end %>
+          </div>
+        <% else %>
+          <div class="empty">
+            <div class="empty__icon" aria-hidden="true">✦</div>
+            <p class="mb-2">Nothing measured yet. Start anywhere and the path will adapt.</p>
+            <%= link_to "Open the skill map", skill_map_path, class: "btn btn--primary" %>
+          </div>
+        <% end %>
+      </div>
+    </section>
+
+    <%# Skills, with the honest reminder that these are evidence-based. %>
+    <section class="card card--flush">
+      <div class="card__header">
+        <h2>Skills</h2>
+        <%= link_to "Full progress", progress_path, class: "text-xs", style: "margin-left: auto;" %>
+      </div>
+      <div class="card__body">
+        <% if @skill_progresses.any? %>
+          <div class="stack stack--tight">
+            <% @skill_progresses.each do |progress| %>
+              <div class="row" style="flex-wrap: nowrap; gap: 0.7rem;">
+                <span class="text-sm" style="flex: 0 0 9rem; min-width: 0;">
+                  <%= link_to progress.skill.name, skill_path(progress.skill.slug) %>
+                </span>
+                <div class="meter" style="flex: 1;">
+                  <div class="meter__fill" style="width: <%= progress.composite_score %>%"></div>
+                </div>
+                <span class="mono text-xs" style="flex: 0 0 2.5rem; text-align: right;">
+                  <%= progress.composite_score %>%
+                </span>
+                <span class="badge badge--<%= progress.mastery_level == "mastered" || progress.mastery_level == "strong" ? "success" : progress.mastery_level == "developing" ? "warning" : "danger" %>"
+                      style="flex: 0 0 auto;">
+                  <%= progress.readiness_label %>
+                </span>
+              </div>
+            <% end %>
+          </div>
+        <% else %>
+          <p class="text-muted text-sm mb-0">
+            No skill has evidence yet. Mastery is measured from what you do,
+            not from what you open.
+          </p>
+        <% end %>
+      </div>
+    </section>
+  </div>
+
+  <aside class="stack">
+    <% if @weakest.any? %>
+      <section class="card" style="border-color: var(--danger);">
+        <h3 style="color: var(--danger);">Weakness detected</h3>
+        <% @weakest.each do |progress| %>
+          <div class="mb-2">
+            <strong class="text-sm"><%= progress.skill.name %></strong>
+            <p class="text-xs text-muted mb-1">
+              Weakest dimension: <%= progress.weakest_dimension.to_s.humanize.downcase %>
+              (<%= progress.public_send("#{progress.weakest_dimension}_score") %>%)
+            </p>
+            <%= link_to "Practise now", skill_path(progress.skill.slug),
+                        class: "btn btn--sm btn--block" %>
+          </div>
+        <% end %>
+      </section>
+    <% end %>
+
+    <section class="card">
+      <h3>Revision</h3>
+      <% if @due_reviews.positive? %>
+        <p class="text-sm text-muted">
+          <strong><%= @due_reviews %></strong>
+          item<%= "s" unless @due_reviews == 1 %> due today. These are things you
+          previously got wrong.
+        </p>
+        <%= link_to "Start revision", revisions_path, class: "btn btn--primary btn--block" %>
+      <% else %>
+        <p class="text-sm text-muted mb-0">Nothing due today.</p>
+      <% end %>
+    </section>
+
+    <section class="card">
+      <h3>Recent achievements</h3>
+      <% if @recent_achievements.any? %>
+        <div class="stack stack--tight">
+          <% @recent_achievements.each do |earned| %>
+            <div class="row" style="flex-wrap: nowrap;">
+              <span aria-hidden="true"><%= earned.achievement.icon %></span>
+              <div style="min-width: 0;">
+                <strong class="text-sm"><%= earned.achievement.name %></strong>
+                <div class="text-xs text-faint"><%= time_ago_in_words(earned.awarded_at) %> ago</div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+        <%= link_to "All achievements", achievements_path, class: "text-xs mt-2",
+                    style: "display: inline-block;" %>
+      <% else %>
+        <p class="text-sm text-muted mb-0">
+          None yet. The first one arrives when you solve a challenge.
+        </p>
+      <% end %>
+    </section>
+
+    <% if @recent_xp.any? %>
+      <section class="card">
+        <h3>Recent XP</h3>
+        <div class="stack stack--tight">
+          <% @recent_xp.each do |transaction| %>
+            <div class="row row--between text-xs" style="flex-wrap: nowrap;">
+              <span class="text-muted" style="min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                <%= transaction.reason %>
+              </span>
+              <span class="mono <%= transaction.amount.negative? ? "text-faint" : "" %>"
+                    style="flex: 0 0 auto;">
+                <%= transaction.amount.positive? ? "+" : "" %><%= transaction.amount %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </aside>
+</div>

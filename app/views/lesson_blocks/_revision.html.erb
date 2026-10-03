@@ -1,0 +1,12 @@
+<div data-controller="reveal">
+  <p class="mb-1"><strong><%= block.payload["prompt"] %></strong></p>
+  <button type="button" class="btn btn--sm"
+          data-reveal-target="trigger" data-action="reveal#show"
+          aria-controls="<%= dom_id(block, :recall) %>">
+    Reveal
+  </button>
+  <div id="<%= dom_id(block, :recall) %>" data-reveal-target="panel" hidden
+       class="verdict verdict--correct" style="display: block;">
+    <%= block.payload["answer"] %>
+  </div>
+</div>

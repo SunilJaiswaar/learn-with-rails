@@ -1,0 +1,161 @@
+<% content_for :title, @algorithm.name %>
+<% content_for :content_class, "content--wide" %>
+
+<nav class="text-xs text-faint mb-2">
+  <%= link_to "Algorithms", algorithms_path %>
+  <% if @algorithm.skill %>
+    <span aria-hidden="true">/</span>
+    <%= link_to @algorithm.skill.name, skill_path(@algorithm.skill.slug) %>
+  <% end %>
+</nav>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-1"><%= @algorithm.name %></h1>
+    <p class="text-muted mb-0" style="max-width: 62ch;"><%= @algorithm.idea %></p>
+  </div>
+  <div class="row">
+    <span class="badge"><%= @algorithm.time_average %> average</span>
+    <span class="badge"><%= @algorithm.space_complexity %> space</span>
+  </div>
+</header>
+
+<div class="grid grid--sidebar">
+  <div class="stack">
+    <%# The visualiser: frames come from the server-side tracer. %>
+    <section class="card card--flush viz"
+             data-controller="algorithm-visualizer"
+             data-algorithm-visualizer-frames-value="<%= @frames.to_json %>"
+             data-algorithm-visualizer-kind-value="<%= @algorithm.visualizer_kind %>"
+             data-algorithm-visualizer-reduced-motion-value="<%= reduced_motion? %>"
+             data-action="keydown->algorithm-visualizer#keydown"
+             tabindex="0"
+             role="group"
+             aria-label="<%= @algorithm.name %> step-through visualiser">
+      <div class="card__header">
+        <h2 class="mb-0">Step through it</h2>
+        <span class="viz__counter" data-algorithm-visualizer-target="counter"
+              style="margin-left: auto;" role="status"></span>
+      </div>
+
+      <div class="card__body stack">
+        <div class="viz__stage" data-algorithm-visualizer-target="stage"></div>
+
+        <p class="viz__narration" data-algorithm-visualizer-target="narration"
+           role="status" aria-live="polite"></p>
+
+        <div class="viz__aux" data-algorithm-visualizer-target="aux" hidden>
+          <span class="viz__aux-label" data-algorithm-visualizer-target="auxLabel"></span>
+          <span class="row" data-algorithm-visualizer-target="auxItems" style="gap: 0.3rem;"></span>
+        </div>
+
+        <div class="viz__controls">
+          <button type="button" class="btn btn--sm" data-action="algorithm-visualizer#first"
+                  aria-label="First step">⏮</button>
+          <button type="button" class="btn btn--sm" data-action="algorithm-visualizer#previous"
+                  aria-label="Previous step">◀</button>
+          <button type="button" class="btn btn--sm btn--primary"
+                  data-action="algorithm-visualizer#toggle"
+                  data-algorithm-visualizer-target="playButton"
+                  aria-pressed="false">Play</button>
+          <button type="button" class="btn btn--sm" data-action="algorithm-visualizer#next"
+                  aria-label="Next step">▶</button>
+          <button type="button" class="btn btn--sm" data-action="algorithm-visualizer#last"
+                  aria-label="Last step">⏭</button>
+
+          <label class="text-xs text-faint" for="viz-speed" style="margin-left: 0.6rem;">Speed</label>
+          <input type="range" id="viz-speed" class="slider" style="width: 110px;"
+                 min="120" max="1600" step="100" value="700"
+                 data-action="input->algorithm-visualizer#setSpeed">
+
+          <span class="viz__counter" data-algorithm-visualizer-target="metrics"
+                style="margin-left: auto;"></span>
+        </div>
+
+        <div>
+          <label class="visually-hidden" for="viz-scrub">Scrub through steps</label>
+          <input type="range" id="viz-scrub" class="slider" min="0" max="0" value="0"
+                 data-algorithm-visualizer-target="scrubber"
+                 data-action="input->algorithm-visualizer#scrub">
+        </div>
+
+        <p class="text-xs text-faint mb-0">
+          Click the panel, then use arrow keys to step and space to play.
+        </p>
+      </div>
+    </section>
+
+    <%# Learners can run the algorithm on their own input. %>
+    <% if @algorithm.visualizer_kind == "array" %>
+      <section class="card">
+        <h2>Try your own input</h2>
+        <%= form_with url: algorithm_path(@algorithm.slug), method: :get, class: "row" do |form| %>
+          <div class="field" style="flex: 1; margin: 0;">
+            <label for="input">Numbers, comma separated</label>
+            <%= form.text_field :input, value: @input.join(", "), class: "input",
+                                id: "input", placeholder: "8, 3, 7, 4, 2" %>
+          </div>
+          <%= form.submit "Re-trace", class: "btn btn--primary", style: "align-self: flex-end;" %>
+        <% end %>
+        <p class="text-xs text-faint mt-2 mb-0">
+          Up to <%= AlgorithmsController::MAX_INPUT_VALUES %> whole numbers.
+        </p>
+      </section>
+    <% end %>
+
+    <% if @algorithm.pseudocode.present? %>
+      <section class="card">
+        <h2>Pseudocode</h2>
+        <div class="code-panel"><pre class="code"><code><%= @algorithm.pseudocode %></code></pre></div>
+      </section>
+    <% end %>
+  </div>
+
+  <aside class="stack">
+    <section class="card">
+      <h3>Complexity</h3>
+      <dl class="text-sm" style="margin: 0;">
+        <% { "Best" => @algorithm.time_best, "Average" => @algorithm.time_average,
+             "Worst" => @algorithm.time_worst, "Space" => @algorithm.space_complexity }.each do |label, value| %>
+          <% next if value.blank? %>
+          <div class="row row--between" style="border-bottom: 1px solid var(--border); padding: 0.3rem 0;">
+            <dt class="text-muted"><%= label %></dt>
+            <dd class="mono" style="margin: 0;"><%= value %></dd>
+          </div>
+        <% end %>
+      </dl>
+      <%= link_to "Compare growth in the Big-O lab", complexity_path,
+                  class: "btn btn--sm btn--block mt-2" %>
+    </section>
+
+    <% if @algorithm.tradeoff_list.any? %>
+      <section class="card">
+        <h3>Trade-offs</h3>
+        <ul class="text-sm text-muted" style="padding-left: 1.1rem; margin: 0;">
+          <% @algorithm.tradeoff_list.each do |tradeoff| %>
+            <li class="mb-1"><%= tradeoff %></li>
+          <% end %>
+        </ul>
+      </section>
+    <% end %>
+
+    <% if @algorithm.production_note.present? %>
+      <section class="card">
+        <h3>In production</h3>
+        <p class="text-sm text-muted mb-0"><%= @algorithm.production_note %></p>
+      </section>
+    <% end %>
+
+    <% if @challenges.any? %>
+      <section class="card">
+        <h3>Prove it</h3>
+        <div class="stack stack--tight">
+          <% @challenges.each do |challenge| %>
+            <%= link_to challenge.title, challenge_path(challenge.slug),
+                        class: "btn btn--sm btn--block" %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </aside>
+</div>

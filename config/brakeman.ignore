@@ -1,0 +1,13 @@
+{
+  "ignored_warnings": [
+    {
+      "fingerprint": "12337eec85dc2dc947909124569ade5abb763c1d0a8bfb950fcdfa673ae0a44f",
+      "note": "Intentional. lib/sandbox/harness.rb is not part of the Rails process: it is copied into an isolated bubblewrap sandbox (no network, read-only allow-list mount set, CPU/memory/file-size rlimits) and run by a separate interpreter whose entire purpose is to evaluate the learner submission under test. The file is excluded from autoloading and eager loading in config/application.rb. See spec/services/code_execution/runner_spec.rb for the isolation proofs."
+    },
+    {
+      "fingerprint": "e46bb3a7d3755d93c4eb6dab9d9bd9be317269b859333fcb7d47a288dbac7944",
+      "note": "Intentional. lib/sandbox/harness.rb is not part of the Rails process: it is copied into an isolated bubblewrap sandbox (no network, read-only allow-list mount set, CPU/memory/file-size rlimits) and run by a separate interpreter whose entire purpose is to evaluate the learner submission under test. The file is excluded from autoloading and eager loading in config/application.rb. See spec/services/code_execution/runner_spec.rb for the isolation proofs."
+    }
+  ],
+  "brakeman_version": "8.0.6"
+}

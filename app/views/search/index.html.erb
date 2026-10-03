@@ -1,0 +1,66 @@
+<% content_for :title, @query.present? ? "Search: #{@query}" : "Search" %>
+
+<header class="mb-3">
+  <h1 class="mb-1">Search</h1>
+  <% if @query.present? %>
+    <p class="text-muted text-sm mb-0">
+      <%= pluralize(@total, "result") %> for "<%= @query %>"
+    </p>
+  <% end %>
+</header>
+
+<form action="<%= search_path %>" method="get" role="search" class="card mb-3">
+  <label class="visually-hidden" for="q">Search everything</label>
+  <div class="row">
+    <input class="input" type="search" id="q" name="q" value="<%= @query %>"
+           placeholder="Try &quot;join&quot;, &quot;binary search&quot; or &quot;hash&quot;"
+           autofocus style="flex: 1;">
+    <button type="submit" class="btn btn--primary">Search</button>
+  </div>
+</form>
+
+<% if @query.blank? %>
+  <div class="empty">
+    <div class="empty__icon" aria-hidden="true">🔎</div>
+    <p class="mb-0">
+      One query searches missions, challenges, algorithms, skills, interview
+      questions and boss battles.
+    </p>
+  </div>
+<% elsif @results.empty? %>
+  <div class="empty">
+    <p class="mb-0">Nothing matched "<%= @query %>".</p>
+  </div>
+<% else %>
+  <% @results.each do |label, rows| %>
+    <section class="card card--flush mb-3">
+      <div class="card__header">
+        <h2 class="mb-0"><%= label %></h2>
+        <span class="badge" style="margin-left: auto;"><%= rows.size %></span>
+      </div>
+      <div class="card__body stack stack--tight">
+        <% rows.each do |row| %>
+          <%
+            path = case row
+                   when Topic then topic_path(row.slug)
+                   when Challenge then challenge_path(row.slug)
+                   when Algorithm then algorithm_path(row.slug)
+                   when Skill then skill_path(row.slug)
+                   when Question then question_path(row)
+                   when BossBattle then boss_battle_path(row.slug)
+                   end
+            title = row.try(:title) || row.try(:name) || row.try(:body)&.truncate(90)
+            subtitle = row.try(:hook) || row.try(:summary) || row.try(:prompt) ||
+                       row.try(:idea) || row.try(:scenario)
+          %>
+          <%= link_to path, style: "text-decoration: none;" do %>
+            <strong><%= title %></strong>
+            <% if subtitle.present? %>
+              <div class="text-xs text-muted"><%= subtitle.to_s.truncate(120) %></div>
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+<% end %>
