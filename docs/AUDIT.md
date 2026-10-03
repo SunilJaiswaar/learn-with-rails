@@ -265,31 +265,27 @@ DISCOVER → SEE → UNDERSTAND → INTERACT ordering.
 
 ## 6. MISSING DEPENDENCIES
 
-### X1 — prerequisites are a soft gate, bypassable by URL (severity: medium)
+### X1 — ~~prerequisites are a soft gate, bypassable by URL~~ **Fixed**
 
-**Corrected after a closer read of `Skills::TreeBuilder`.** An earlier draft
-of this audit said prerequisites gate nothing and that `LOCKED`/`AVAILABLE` do
-not exist. Both claims were too strong.
+**Corrected once, then fixed.** An earlier draft said prerequisites gate
+nothing and that `LOCKED`/`AVAILABLE` do not exist. Both were too strong:
+`Skills::TreeBuilder#state_for` already computed `:locked` and `:available`
+from prerequisite mastery, and the skill map already rendered a locked skill
+as a dashed, non-clickable node. The real gap was enforcement.
 
-`Skills::TreeBuilder#state_for` **does** compute `:locked`, `:available`,
-`:in_progress` and `:complete` from prerequisite mastery, requiring every
-prerequisite to have reached at least `developing`. The skill map renders a
-locked skill as a dashed, non-clickable node carrying
-`aria-label="<name>, locked"`. That logic is correct and worth keeping.
+Enforced in the commit following this audit. `Skills::Availability` answers
+the question for one skill in two queries, `GatesContent` renders §50's
+"learn these first" page with a `403`, and the rule itself now lives in
+`Skills::UnlockRule` so the map and the gate cannot drift apart.
 
-What is actually missing is **enforcement and persistence**:
+Gated: skills, missions (including `#complete`), challenges (including
+submission), boss battles (including `#start`). Not gated: the engineering
+labs and the interview arena — see the concern's own comment for why.
 
-- `SkillsController#show` never consults the state, so `/skills/:slug` serves a
-  locked skill to anyone who types the URL. `TopicsController` and
-  `ChallengesController` do not check either.
-- The state is computed per request for display only. It is not stored on
-  `SkillProgress`, so nothing can answer "which skills are available to this
-  user" without rebuilding the entire tree.
-- §50's check-and-offer flow ("You need these 2 concepts first — learn them in
-  8 minutes") does not exist; a locked node is simply inert.
+Still outstanding from this finding: nothing *recommends* a path, and
+availability is still computed per request rather than queryable in bulk
+without building the tree. See X2 for why it was not denormalised.
 
-`SkillDependency` holds 40 rows and is used in three places: the prerequisite
-list on `skills/show`, cycle detection, and tree building.
 
 ### X2 — mastery state machine is 5 persisted states, not 9
 
@@ -298,10 +294,19 @@ mastered`.
 Required (§93): `LOCKED / AVAILABLE / STARTED / PRACTICING / UNDERSTOOD /
 APPLIED / VALIDATED / MASTERED / REVIEW_REQUIRED`.
 
-`LOCKED` and `AVAILABLE` exist as computed values in `TreeBuilder` (X1) but
-are not part of the persisted enum, so two separate concerns — "has this
-learner demonstrated it" and "is this learner allowed to start it" — share one
-column. That conflation is the substantive gap, not the label count.
+`LOCKED` and `AVAILABLE` exist as computed values (X1) but are not part of
+the persisted enum, so two separate concerns — "has this learner demonstrated
+it" and "is this learner allowed to start it" — share one column. That
+conflation is the substantive gap, not the label count.
+
+**Deliberately not denormalised.** An earlier version of this audit
+recommended persisting availability on `SkillProgress`. That was the wrong
+call and is withdrawn: availability is derived entirely from prerequisite
+mastery, so a stored copy goes stale the moment any prerequisite moves, and
+every dependent skill would need invalidating on every mastery change. A
+locked skill also has no `SkillProgress` row to store it on. `SkillProgress`
+keeps one job — what the learner has demonstrated — and availability is
+computed, cheaply, by `Skills::Availability`.
 
 ### X3 — no AI, RAG or agent layer
 
@@ -364,7 +369,7 @@ drag-and-drop board works, or that any page survives phone width.
 | B1 | World → Domain → Skill browse | **Fixed.** `/worlds` and `/worlds/:slug`. |
 | B2 | Choose a career/role → get a roadmap (§66–§67) | **Partly fixed.** `/roadmaps` renders the 3 paths with per-step state; `Career`/`Role` still absent, and nothing recommends a path. |
 | B3 | Skill assessment → personalised path (§68) | Absent. |
-| B4 | Blocked by prerequisite → learn missing concept (§50) | Absent; nothing blocks. |
+| B4 | Blocked by prerequisite → learn missing concept (§50) | **Fixed.** 403 with the missing prerequisites, their current mastery, a time estimate from their own missions, and a link to start. |
 | B5 | Browse technologies / versions as a learner | **Fixed.** `/technologies` shows which version is taught and flags legacy ones. |
 | B6 | Build a project (§59) | No entity, no route. |
 | B7 | AI Lab (§30–§40) | No entity, no route. |
@@ -409,11 +414,10 @@ Each step is independently shippable and reversible.
    to `concept_id`. No progress table touches it.
 3. **Promote `CurriculumModule` → `Domain`** above `Skill` (D1). This is the
    only genuinely invasive change; it is detailed below in §119 format.
-4. **Enforce the gate that is already computed** (X1, X2): have
-   `SkillsController`, `TopicsController` and `ChallengesController` consult
-   `TreeBuilder`'s state, add §50's check-and-offer page for a locked skill,
-   and separate "allowed to start" from "has demonstrated" on `SkillProgress`.
-   Smaller than it first appeared — the lock logic exists and is correct.
+4. ~~**Enforce the gate that is already computed.**~~ **Done** (X1).
+   `Skills::Availability` plus a `GatesContent` concern across skills,
+   missions, challenges and boss battles, with the shared rule extracted to
+   `Skills::UnlockRule`.
 5. **Then** vertical slices per §114.
 
 ### The one invasive change, in §119's required format
@@ -477,9 +481,9 @@ Therefore the highest-value next work, in order:
 
 1. **Route the invisible** (step 1 above) — hours, not days, and it converts
    existing unreachable content into a usable product.
-2. **Enforce the prerequisite gate** — the computation is already correct
-   (X1); it needs enforcing at the controller, persisting on `SkillProgress`,
-   and §50's "learn these two first" page.
+2. ~~**Enforce the prerequisite gate.**~~ **Done.** Enforced at the
+   controller with §50's "learn these first" page. Not persisted on
+   `SkillProgress` — see X2 for why that recommendation was withdrawn.
 3. **One excellent vertical slice, per §114.** Given C2, that slice should be
    **Rails**, not Python: it is the brief's flagship, it has zero content, and
    the platform is itself a Rails application, so every lesson can inspect

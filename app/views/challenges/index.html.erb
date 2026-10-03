@@ -47,6 +47,12 @@
           <div style="min-width: 0;">
             <div class="row" style="gap: 0.4rem;">
               <strong><%= challenge.title %></strong>
+              <% if @locked_skill_ids.include?(challenge.skill_id) %>
+                <span class="badge badge--subtle text-xs"
+                      title="Locked until <%= challenge.skill&.name %>'s prerequisites are met">
+                  🔒 Locked
+                </span>
+              <% end %>
               <% if @solved_ids.include?(challenge.id) %>
                 <span class="badge badge--success">Solved</span>
               <% end %>

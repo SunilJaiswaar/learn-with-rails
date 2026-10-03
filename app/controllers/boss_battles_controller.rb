@@ -1,4 +1,6 @@
 class BossBattlesController < ApplicationController
+  include GatesContent
+
   def index
     @boss_battles = BossBattle.published.includes(:skill, :world).order(:difficulty)
     @beaten_ids = current_user.boss_attempts.where(status: :won)
@@ -7,6 +9,8 @@ class BossBattlesController < ApplicationController
 
   def show
     @boss_battle = BossBattle.published.includes(:skill, :world).find_by_slug!(params[:id])
+    return if gated?(@boss_battle.skill)
+
     @attempt = current_user.boss_attempts
                            .where(boss_battle: @boss_battle)
                            .where(status: :in_progress)
@@ -17,6 +21,8 @@ class BossBattlesController < ApplicationController
 
   def start
     @boss_battle = BossBattle.published.find_by_slug!(params[:id])
+    return if gated?(@boss_battle.skill)
+
     attempt = current_user.boss_attempts
                           .where(boss_battle: @boss_battle, status: :in_progress).first
     attempt ||= current_user.boss_attempts.create!(

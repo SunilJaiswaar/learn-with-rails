@@ -5,7 +5,9 @@ module Skills
   # mastery, so the tree gates on demonstrated ability rather than on pages
   # viewed (spec 50, 65).
   class TreeBuilder
-    UNLOCK_LEVELS = %w[developing strong mastered].freeze
+    # Kept as an alias so existing callers and specs keep working; the rule
+    # itself now lives in UnlockRule so the gate cannot drift from the map.
+    UNLOCK_LEVELS = UnlockRule::LEVELS
 
     Node = Struct.new(:skill, :progress, :state, :prerequisite_names, keyword_init: true) do
       def unlocked?
@@ -103,15 +105,13 @@ module Skills
     def state_for(skill, progresses)
       progress = progresses[skill.id]
       return :in_progress if progress && progress.attempts_count.positive? &&
-                             !UNLOCK_LEVELS.include?(progress.mastery_level)
-      return :complete if progress && UNLOCK_LEVELS.include?(progress.mastery_level)
+                             !UnlockRule.satisfied?(progress)
+      return :complete if UnlockRule.satisfied?(progress)
 
       prerequisite_ids = skill.prerequisites.map(&:id)
       return :available if prerequisite_ids.empty?
 
-      satisfied = prerequisite_ids.all? do |id|
-        UNLOCK_LEVELS.include?(progresses[id]&.mastery_level)
-      end
+      satisfied = prerequisite_ids.all? { |id| UnlockRule.satisfied?(progresses[id]) }
       satisfied ? :available : :locked
     end
   end

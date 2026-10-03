@@ -45,9 +45,9 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 45 | Testing world (RSpec + pytest) | **partial** | `testing-rspec` at floor depth |
 | 46 | Debugging world — "one of the biggest areas", 18 named scenarios | **partial** | debug challenges exist and are proven to fail before shipping; Incidents lab; far from 18 |
 | 47 | Game system where XP represents demonstrated skill | **done** | append-only ledger, idempotency keys, no replay farming |
-| 48 | Dynamic skill tree with prerequisite unlocking | **partial** | `TreeBuilder` computes locked/available from prerequisite mastery and the map renders it; not enforced at the controller (audit X1) |
+| 48 | Dynamic skill tree with prerequisite unlocking | **done** | computed, rendered, and now enforced on skills, missions, challenges and boss battles |
 | 49 | Knowledge graph, not isolated lessons | **partial** | `SkillDependency` DAG, 40 edges, skill-level only — no concept-level graph |
-| 50 | Prerequisite engine that blocks and offers the missing concept | **partial** | lock state computed correctly; does not block a direct URL, and there is no "learn these first" offer |
+| 50 | Prerequisite engine that blocks and offers the missing concept | **done** | blocks with 403 and offers the missing concepts with a time estimate drawn from their own missions |
 | 51 | Adaptive learning on 10 signals | **partial** | `Learning::AdaptiveEngine` exists; narrower signal set |
 | 52 | Mastery requires understand+predict+implement+debug+optimize+explain+apply+interview | **done** | six weighted dimensions, gated on the weakest |
 | 53 | 8 learning modes (Learn/Practice/Challenge/Exam/Interview/Boss/Sandbox/Debug) | **partial** | challenge, interview, boss, debug present; no exam/sandbox/learn-mode toggle |
@@ -90,7 +90,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 90 | Project connection graph | **none** | |
 | 91 | Personalised learning AI | **partial** | adaptive engine + weakest-skill surfacing |
 | 92 | Strict content validation; cannot publish without full mapping | **partial** | `definition_of_done` gate; no world/domain/prereq completeness check |
-| 93 | 9-state learning state machine | **partial** | 5 persisted states; `LOCKED`/`AVAILABLE` computed but not persisted, so gating and demonstration share one column (audit X2) |
+| 93 | 9-state learning state machine | **partial** | 5 persisted states plus locked/available computed and now enforced; the remaining 4 (`STARTED`/`PRACTICING`/`APPLIED`/`VALIDATED`) are unmodelled |
 | 94 | Analytics on 12 signals | **partial** | attempts, hints, mastery, streaks recorded; no drop-off or confusion analytics |
 | 95 | Production-quality platform on the named stack | **partial** | Rails/PG/Redis/Sidekiq/Hotwire/Docker/GH Actions in use; no Elasticsearch, no AWS, no Python service |
 | 96 | Rails architecture: services, queries, policies, presenters… | **done** | 21 service namespaces, Pundit policies, no gratuitous abstraction |
@@ -117,8 +117,8 @@ and 31–40). Counted from the table itself, not asserted:
 
 | Status | Rows |
 |---|---|
-| done | 14 |
-| partial | 61 |
+| done | 16 |
+| partial | 59 |
 | none | 24 |
 
 The shape of this tally is the audit's main conclusion: **the engines are

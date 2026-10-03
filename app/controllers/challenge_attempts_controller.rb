@@ -1,5 +1,7 @@
 # Submits learner code for sandboxed evaluation.
 class ChallengeAttemptsController < ApplicationController
+  include GatesContent
+
   # Code execution is expensive and abusable, so it is rate limited per user
   # on top of the IP-level throttle in Rack::Attack.
   THROTTLE_WINDOW = 1.minute
@@ -8,9 +10,8 @@ class ChallengeAttemptsController < ApplicationController
   def create
     @challenge = Challenge.published.includes(:challenge_tests).find_by_slug!(params[:challenge_id])
 
-    if throttled?
-      return respond_throttled
-    end
+    return if gated?(@challenge.skill)
+    return respond_throttled if throttled?
 
     outcome = Challenges::Submission.new(
       user: current_user, challenge: @challenge, code: params[:code].to_s

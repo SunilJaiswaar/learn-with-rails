@@ -1,4 +1,6 @@
 class ChallengesController < ApplicationController
+  include GatesContent
+
   def index
     @challenges = Challenge.published
                            .includes(:skill, :topic)
@@ -8,12 +10,19 @@ class ChallengesController < ApplicationController
     @challenges = @challenges.where(skill_id: params[:skill_id]) if params[:skill_id].present?
     @solved_ids = current_user.challenge_attempts.successful.pluck(:challenge_id).to_set
     @skills = Skill.ordered
+    # Marked on the index so a locked challenge is visibly locked rather than
+    # a link that answers 403 when clicked (spec 70: what happens next?).
+    @locked_skill_ids = Skills::TreeBuilder.new(user: current_user)
+                                           .nodes.reject(&:unlocked?)
+                                           .map { |node| node.skill.id }.to_set
   end
 
   def show
     @challenge = Challenge.published
                           .includes(:skill, :topic, :challenge_tests)
                           .find_by_slug!(params[:id])
+    return if gated?(@challenge.skill)
+
     @visible_tests = @challenge.challenge_tests.visible.ordered
     @ladder = Tutoring::HintLadder.new(user: current_user, challenge: @challenge)
     @revealed_hints = @ladder.revealed.ordered

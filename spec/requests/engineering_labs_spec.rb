@@ -8,6 +8,7 @@ RSpec.describe "Engineering Laboratories & Interactive Simulators", type: :reque
   describe "discovering a lab from its skill" do
     it "lists the skill's laboratories on the skill page" do
       skill = skill_at("web-security", name: "Web Security")
+      unlocked!(skill)
 
       get skill_path(skill.slug)
 

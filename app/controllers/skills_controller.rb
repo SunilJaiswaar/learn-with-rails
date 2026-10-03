@@ -1,6 +1,10 @@
 class SkillsController < ApplicationController
+  include GatesContent
+
   def show
     @skill = Skill.includes(:world, :technology, :prerequisites, :unlocks).find_by_slug!(params[:id])
+    return if gated?(@skill)
+
     @progress = @skill.progress_for(current_user)
     @topics = @skill.topics.published.ordered.includes(:curriculum_module)
     @challenges = @skill.challenges.published.order(:difficulty)

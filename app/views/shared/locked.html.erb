@@ -1,0 +1,71 @@
+<% content_for :title, "Not yet: #{@availability.skill.name}" %>
+
+<%= render "shared/breadcrumb",
+           trail: [["Learn", nil], ["Skill map", skill_map_path],
+                   [@availability.skill.name, nil]] %>
+
+<div class="card card--raised" style="max-width: 44rem;">
+  <div class="row" style="align-items: center; gap: 0.6rem;">
+    <span style="font-size: 1.6rem;" aria-hidden="true">🔒</span>
+    <h1 class="mb-0"><%= @availability.skill.name %></h1>
+  </div>
+
+  <p class="text-muted text-sm" style="margin: 0.8rem 0 0;">
+    <% if @availability.missing.one? %>
+      You need one concept first.
+    <% else %>
+      You need <%= @availability.missing.size %> concepts first.
+    <% end %>
+    <% if @availability.estimated_minutes.positive? %>
+      That is about <strong><%= @availability.estimated_minutes %> minutes</strong>
+      of missions.
+    <% end %>
+  </p>
+
+  <h2 class="text-sm uppercase text-muted" style="margin: 1.4rem 0 0.6rem;">Needed</h2>
+  <div class="stack stack--tight">
+    <% @availability.missing.each do |prerequisite| %>
+      <%= link_to skill_path(prerequisite.skill.slug), class: "skill-row" do %>
+        <div class="row row--between" style="align-items: baseline; gap: 0.6rem;">
+          <strong class="text-sm"><%= prerequisite.skill.name %></strong>
+          <span class="text-xs text-faint">
+            <%= prerequisite.mastery_level.humanize %> · needs developing
+          </span>
+        </div>
+        <span class="text-xs text-muted d-block"><%= prerequisite.skill.summary %></span>
+        <div class="meter meter--sm mt-1">
+          <div class="meter__fill" style="width: <%= prerequisite.composite %>%"></div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @availability.met.any? %>
+    <h2 class="text-sm uppercase text-muted" style="margin: 1.4rem 0 0.6rem;">
+      Already done
+    </h2>
+    <div class="stack stack--tight">
+      <% @availability.met.each do |prerequisite| %>
+        <div class="row text-sm" style="gap: 0.5rem;">
+          <span class="text-success" aria-hidden="true">✓</span>
+          <%= link_to prerequisite.skill.name, skill_path(prerequisite.skill.slug) %>
+          <span class="text-xs text-faint"><%= prerequisite.mastery_level.humanize %></span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="row mt-3" style="gap: 0.6rem;">
+    <% if (next_missing = @availability.next_missing) %>
+      <%= link_to "Start #{next_missing.skill.name}",
+                  skill_path(next_missing.skill.slug), class: "btn btn--primary" %>
+    <% end %>
+    <%= link_to "Back to the skill map", skill_map_path, class: "btn" %>
+  </div>
+
+  <p class="text-xs text-faint" style="margin: 1.2rem 0 0;">
+    A skill opens once every prerequisite reaches <strong>developing</strong>
+    mastery — measured from challenges you solve and missions you finish, not
+    from pages you open.
+  </p>
+</div>
