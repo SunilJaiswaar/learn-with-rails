@@ -21,40 +21,46 @@ working end to end and covered by specs.
 |---|---|
 | Authentication, sessions, RBAC | Database-backed sessions, account lockout, role policies |
 | Dashboard, daily quest | Adaptive recommendations, production-alert framing |
-| Skill tree | 17 skills, prerequisite DAG with cycle detection, mastery-gated unlocks |
-| Lesson player | 10 typed block renderers; prose is one of ten, never the whole lesson |
+| Skill tree | 33 skills across 9 worlds, prerequisite DAG with cycle detection, mastery-gated unlocks |
+| Curriculum | 38 missions, 353 typed content blocks — every mission satisfying the definition of done |
 | Code runner | Sandboxed Ruby execution (bubblewrap + rlimits) |
-| Challenges | 34 challenges (23 Ruby, 11 SQL), 125 assertions, 106 hints, automated code review |
-| SQL playground | Real PostgreSQL execution as a read-only role against a fixture schema |
-| Interview arena | 4 tracks, pressure modes, follow-up probe engine, competency feedback |
-| Algorithm visualiser | 11 step-through visualisers driven by real traces |
+| SQL playground | Real PostgreSQL execution as a read-only role, including EXPLAIN |
+| Challenges | 89 challenges (74 Ruby, 15 SQL), 434 assertions, 267 hints, automated code review |
+| Interview arena | 5 tracks incl. a 12-round championship, pressure modes, 86 follow-up probes |
+| AI tutor | Provider seam: transparent rubric by default, Claude Messages API when configured |
+| Algorithm visualiser | 12 step-through visualisers driven by real traces |
 | Big-O lab | Live operation counts across six growth classes |
-| Boss battles | 2 multi-stage, multi-discipline fights |
+| Boss battles | 5, including three multi-discipline capstones |
+| Engineering labs | System design simulator, networking, Redis, Sidekiq, Git, CI/CD, security, CPU scheduling, Hotwire, incidents, championships |
 | XP, levels, achievements, streaks | Append-only ledger, 14 achievements, idempotent awards |
 | Mastery + spaced repetition | Six-dimension evidence model, expanding review ladder |
-| Progress reporting | Per-category interview readiness with explicit "not tested" |
-| Engineering labs | System design simulator, networking, Redis, Sidekiq, Git, CI/CD, security, CPU scheduling, Hotwire, incidents, championships |
 | Admin panel | CRUD, content analytics, version management, audit log, branding |
 
-### Phase 2 (done)
+## Curriculum coverage
 
-SQL depth, with a **second execution engine**: learner SQL runs for real against
-a fixture dataset. Added `sql-basics` and `sql-aggregation` (SELECT/WHERE,
-ORDER BY and ties, GROUP BY/HAVING, window functions) plus the SQL Boss Arena
-challenges from the plan — second-highest salary, top-N-per-group, running
-totals and gaps-and-islands. 14 missions now satisfy the definition of done.
+All nine phases of the plan (§78) have been delivered. Every skill in the tree
+has missions, and every mission satisfies the eleven-element definition of done.
 
-### Not built yet
+| Phase | Scope | Skills |
+|---|---|---|
+| 1 | Ruby fundamentals vertical slice | ruby-basics, ruby-collections, ruby-blocks |
+| 2 | SQL, algorithms, Git | sql-basics, sql-joins, sql-aggregation, algorithmic-thinking, complexity, searching, sorting, arrays-strings, hash-maps, debugging-skill, git-fundamentals |
+| 3 | PostgreSQL, Redis, jobs, testing | indexing, query-performance, redis-caching, background-jobs, testing-rspec |
+| 4 | Frontend | js-semantics, event-loop, dom-rendering |
+| 5 | Computer science, security | number-systems, memory-model, concurrency, web-security |
+| 6 | Patterns, architecture, distributed systems | oop-design, design-patterns, architecture, distributed-systems |
+| 7 | DevOps and observability | containers, ci-cd, observability |
+| 8 | AI tutor, adaptive learning | Tutoring provider seam; adaptive engine and spaced repetition |
+| 9 | Capstones and championship | 3 capstone bosses, 12-round Developer Championship |
 
-Phases 3–9 are **not** implemented as curriculum: the Rails, Hotwire and
-frontend worlds, design patterns, distributed systems, AWS and observability,
-and the capstone projects. Several labs exist as interactive simulators
-(system design, networking, Redis, Sidekiq, Git, CI/CD, security, CPU
-scheduling) but without the surrounding mission content. Skills still with no
-missions: `number-systems`, `algorithmic-thinking`, `debugging-skill`,
-`memory-model`, `sorting`, `hash-maps`, `indexing`, `query-performance`.
-The interview evaluator and code reviewer use a transparent rubric engine
-(see [Honest limitations](#honest-limitations)).
+### What the phases deliberately do not include
+
+Phases 3–7 cover each technology's **core reasoning** rather than its full API
+surface. There are no missions on, for example, Rails routing specifics,
+TypeScript generics, React hooks or AWS service configuration. The judgement
+was that one mission teaching why an N+1 is invisible in a query log is worth
+more than ten cataloguing ActiveRecord methods — but it is a narrower reading
+of those phases than the plan's technology lists imply, and worth knowing.
 
 ---
 
@@ -263,7 +269,7 @@ challenge whose starter already passes teaches nothing.
 ## Testing and quality
 
 ```bash
-bundle exec rspec        # 258 examples
+bundle exec rspec        # 291 examples (+14 content specs)
 bin/rubocop              # rubocop-rails-omakase
 bin/brakeman -i config/brakeman.ignore
 ```
@@ -295,11 +301,20 @@ examples; `spec/requests/rate_limiting_spec.rb` enables it explicitly.
 
 ### Honest limitations
 
-- **The interview evaluator is a rubric, not a model.** It grades on concept
-  coverage, answer depth and hedging, and shows the learner exactly which
-  concepts were recognised or missed. It is transparent and dependency-free, but
-  it cannot judge a well-argued answer phrased in unexpected terms.
-  `Tutoring::Provider` is the seam where a model-backed evaluator would go.
+- **The interview evaluator is a rubric by design, even when a model is
+  configured.** It grades on concept coverage, answer depth and hedging, and
+  shows the learner exactly which concepts were recognised or missed. A score a
+  learner cannot reproduce or appeal is worse than a slightly cruder one, so
+  the model explains and the rubric decides. It cannot judge a well-argued
+  answer phrased in unexpected terms.
+- **The model-backed tutor is written but unexercised here.**
+  `Tutoring::AnthropicProvider` calls the Claude Messages API and is selected when
+  `ANTHROPIC_API_KEY` is set *and* the optional `anthropic` gem is installed.
+  Neither was available in the environment this was built in, so the adapter's
+  request shape is pinned by specs against a stubbed client rather than by a
+  real call. It is deliberately not a Gemfile entry: a hard dependency that
+  cannot be exercised would break `bundle install --local` and ship untested
+  required code. Every call degrades to the rubric on failure.
 - **The code reviewer is heuristic.** Complexity is inferred from loop nesting
   depth. Findings are labelled as heuristics in the UI.
 - **`StaticGuard` is not a security boundary.** It is an early-rejection
@@ -335,7 +350,7 @@ reconciliation.
 
 ## Roadmap
 
-Phase 3 onward, in the order the plan sets out: Rails,
+Depth, now that the breadth exists: Rails,
 PostgreSQL, Redis, Sidekiq, RSpec and Hotwire worlds; the frontend universe;
 computer science and networking; design patterns and system design; DevOps and
 observability; the LLM-backed tutor and interviewer; and the capstone projects
