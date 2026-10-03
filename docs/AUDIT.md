@@ -129,7 +129,9 @@ Content was authored to pass the gate, and the gate's floor became the
 ceiling. This is §118 inverted — the build optimised for breadth of coverage
 rather than depth of mastery, because breadth is what the gate measured.
 
-### Finding C2 — Rails has zero curriculum
+### Finding C2 — Rails had zero curriculum (first slice now built)
+
+As audited:
 
 ```text
 Skills matching "rails":            0
@@ -139,9 +141,16 @@ Interview questions mentioning Rails: 2 (incidental)
 ```
 
 The brief makes Rails the flagship specialisation (§11–§14, three full
-sections). A Rails teaching platform, written in Rails, teaches no Rails.
-Rails concepts appear only *implicitly* inside labs (Sidekiq Factory, Hotwire
-Lab) and SQL/N+1 challenges.
+sections), and a Rails teaching platform written in Rails taught no Rails.
+
+**Slice 1 of the vertical slice (§114) is built**: a `Rails Citadel` world,
+`Ruby on Rails` as a technology with four versions, three chained skills
+(`rails-request-cycle` → `rails-routing` → `rails-controllers`), three
+missions at §116 depth, six challenges, three interview questions with ten
+follow-up probes, and the Rails Request Lab. Still outstanding: Active
+Record, associations, queries and N+1, caching, background jobs, security,
+testing, a boss battle, and a project — plus `Project` as an entity at all
+(X5).
 
 ### Finding C3 — technology coverage is 3 of ~57
 

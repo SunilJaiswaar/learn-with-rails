@@ -1,0 +1,21 @@
+<div class="card" style="padding: 1.5rem;">
+  <h2 class="text-base" style="margin: 0 0 0.3rem;">
+    The real middleware stack (<%= middleware.size %>)
+  </h2>
+  <p class="text-xs text-muted mb-2">
+    Read from <code>Rails.application.middleware</code> at render time — this
+    is this application's actual stack, not a diagram of a typical one. Every
+    layer runs before your router, and again in reverse on the way out.
+  </p>
+  <ol class="stack stack--tight" style="padding-left: 1.4rem; margin: 0;">
+    <% middleware.each do |entry| %>
+      <li>
+        <code class="text-xs text-accent"><%= entry.name %></code>
+        <span class="text-xs text-muted d-block"><%= entry.does %></span>
+        <% if entry.evidence %>
+          <span class="text-xs text-faint d-block">Evidence: <%= entry.evidence %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</div>

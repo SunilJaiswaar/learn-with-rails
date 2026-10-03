@@ -1,0 +1,32 @@
+<% content_for :title, "Rails Request Lab" %>
+<% content_for :content_class, "content--wide" %>
+
+<%= render "shared/breadcrumb",
+           trail: [["Learn", nil], ["Labs", nil], ["Rails Request Lab", nil]] %>
+
+<header class="mb-3">
+  <div class="row" style="align-items: center; gap: 0.6rem;">
+    <span class="badge badge--accent">Rails</span>
+    <span class="text-xs text-muted">Request lifecycle</span>
+  </div>
+  <h1 class="mb-0">Rails Request Lab</h1>
+  <p class="page-lead">
+    Rails is usually taught as a list of APIs. Here it is a machine. Send a
+    request, inject a failure, and watch which of the eight layers reacts —
+    traced through <strong>this application's real middleware stack</strong>,
+    read from <code>Rails.application.middleware</code> as the page renders.
+  </p>
+</header>
+
+<div class="grid grid--2">
+  <div class="stack stack--loose">
+    <%= render "controls", result: @result, conditions: @conditions %>
+    <%= render "pipeline", result: @result %>
+  </div>
+
+  <div class="stack stack--loose">
+    <%= render "challenges", challenges: @challenges, solved_slugs: @solved_slugs,
+               revealed_slug: nil, chosen: nil, correct: nil %>
+    <%= render "middleware", middleware: @middleware %>
+  </div>
+</div>

@@ -1,0 +1,52 @@
+<div class="card" id="rails-pipeline" style="padding: 1.5rem;">
+  <div class="row row--between" style="align-items: baseline; margin-bottom: 0.4rem;">
+    <h2 class="text-base mb-0">🚂 The request</h2>
+    <span class="badge <%= result.completed? ? 'badge--success' : 'badge--subtle' %>">
+      <%= result.status %> · <%= result.total_ms %>ms
+    </span>
+  </div>
+  <p class="mono text-xs text-accent mb-2"><%= result.verb %> <%= result.path %></p>
+
+  <% if result.because %>
+    <p class="text-xs text-danger mb-2"><%= result.because %></p>
+  <% end %>
+
+  <ol class="pipeline">
+    <% result.stages.each do |stage| %>
+      <li class="pipeline__stage pipeline__stage--<%= stage.reached? ? 'reached' : 'skipped' %>">
+        <div class="row row--between" style="align-items: baseline; gap: 0.6rem;">
+          <strong class="text-sm">
+            <span aria-hidden="true"><%= stage.reached? ? "●" : "○" %></span>
+            <%= stage.name %>
+          </strong>
+          <span class="text-xs text-faint">
+            <%= stage.reached? ? "#{stage.timing_ms}ms" : "not reached" %>
+          </span>
+        </div>
+        <p class="text-xs text-muted" style="margin: 0.3rem 0 0;"><%= stage.detail %></p>
+        <% if stage.adds.any? %>
+          <ul class="pipeline__adds">
+            <% stage.adds.each do |item| %>
+              <li class="mono text-xs"><%= item %></li>
+            <% end %>
+          </ul>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+
+  <h3 class="text-sm uppercase text-muted" style="margin: 1.4rem 0 0.4rem;">
+    params, as Rails assembles it
+  </h3>
+  <p class="text-xs text-muted mb-1">
+    Three sources merge into one hash — the router's own keys, the path
+    segments and the query string. This is why a key can appear in
+    <code>params</code> that the URL's query string never contained.
+  </p>
+  <div class="code-panel">
+    <div class="code-panel__bar">params</div>
+    <pre class="mono text-xs" style="margin: 0; padding: 0.8rem;">{
+<% result.params.each do |key, value| %>  "<%= key %>" => "<%= value %>",
+<% end %>}</pre>
+  </div>
+</div>

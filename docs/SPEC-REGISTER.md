@@ -20,7 +20,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 8 | Programming fundamentals before syntax; multi-language choice | **partial** | `Programming Forest` is Ruby-only; no language switch |
 | 9 | Per-language BEGINNER→…→INTERVIEW ladder | **none** | no language has all 7 tiers |
 | 10 | Ruby Kingdom as one of the deepest tracks | **partial** | `Ruby Kingdom` has **1** skill (`ruby-blocks`) |
-| 11–14 | Rails as flagship: fundamentals, Active Record, advanced, internals | **none** | **zero Rails curriculum** (audit C2) |
+| 11–14 | Rails as flagship: fundamentals, Active Record, advanced, internals | **partial** | first slice built: request cycle, routing, controllers at §116 depth, plus the Rails Request Lab. Active Record, caching, jobs, security and internals outstanding |
 | 15 | Hotwire Galaxy (Drive/Frames/Streams/Morph/Stimulus) | **partial** | Hotwire Lab rebuilt with 7 stream actions + 6 prediction challenges; Morph and Stimulus lifecycle not covered |
 | 16 | Python world | **none** | |
 | 17 | DSA world (18 structures, 20 algorithms) | **partial** | `Algorithm Arena` 6 skills, 12 algorithms |
@@ -106,7 +106,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 106 | Worked example — Database Index across 13 levels | **partial** | `indexing` 1/4/1 with real EXPLAIN; ~4 of 13 levels |
 | 107 | Worked example — RAG end to end | **none** | |
 | 108 | Worked example — Kafka end to end | **none** | |
-| 109 | Worked example — Rails request lifecycle, inspectable at every step | **none** | |
+| 109 | Worked example — Rails request lifecycle, inspectable at every step | **done** | `/rails-lab` traces a composed request through 8 stages and **this application's real middleware stack**, read from `Rails.application.middleware`; 5 "which layer answered?" challenges |
 | 110 | Master learning loop (16 stages) | **partial** | missing BUILD and OPTIMIZE stages |
 | 111 | Opening screen shows "here is your next mission", not a catalogue | **done** | dashboard leads with `@next_action` |
 
@@ -117,9 +117,9 @@ and 31–40). Counted from the table itself, not asserted:
 
 | Status | Rows |
 |---|---|
-| done | 16 |
-| partial | 59 |
-| none | 24 |
+| done | 17 |
+| partial | 60 |
+| none | 22 |
 
 The shape of this tally is the audit's main conclusion: **the engines are
 built and the curriculum is not.** Almost everything scored *done* is

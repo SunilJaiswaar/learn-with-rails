@@ -1,0 +1,8 @@
+<%= turbo_stream.replace "rails-challenges" do %>
+  <%= render "challenges", challenges: @challenges, solved_slugs: @solved_slugs,
+             revealed_slug: @challenge[:slug], chosen: @chosen, correct: @correct %>
+<% end %>
+
+<%= turbo_stream.replace "flash-messages" do %>
+  <%= render "shared/flash" %>
+<% end %>

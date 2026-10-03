@@ -1,0 +1,24 @@
+<div class="card" style="padding: 1.5rem;">
+  <h2 class="text-base" style="margin: 0 0 0.6rem;">Send a request</h2>
+  <%= form_with url: rails_lab_trace_path, method: :post,
+                data: { turbo_stream: true }, class: "stack stack--tight" do |f| %>
+    <div class="row" style="gap: 0.5rem; flex-wrap: wrap;">
+      <%= f.select :verb, %w[GET POST], { selected: result.verb },
+                   class: "text-sm", style: "max-width: 6rem;" %>
+      <%= f.text_field :path, value: result.path, class: "mono text-sm",
+                       style: "flex: 1; min-width: 10rem;", placeholder: "/skills/sql-joins" %>
+    </div>
+    <%= f.select :condition,
+                 options_for_select(
+                   [ [ "Nothing goes wrong", "" ] ] +
+                   conditions.map { |key, spec| [ spec[:label], key ] },
+                   result.condition.to_s
+                 ),
+                 {}, class: "text-sm" %>
+    <%= f.submit "Trace it", class: "btn btn--primary btn--sm" %>
+  <% end %>
+  <p class="text-xs text-faint" style="margin: 0.8rem 0 0;">
+    Change the path and watch <code>params</code> change. Pick a failure and
+    watch which layer stops answering — that is the part worth learning.
+  </p>
+</div>

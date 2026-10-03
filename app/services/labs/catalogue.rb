@@ -50,6 +50,11 @@ module Labs
         route: :cpu_scheduler_path, dimension: :application,
         summary: "Schedule processes and watch the waiting time change."
       },
+      "rails_lab" => {
+        name: "Rails Request Lab", icon: "🚂", skill: "rails-request-cycle",
+        route: :rails_lab_path, dimension: :understanding,
+        summary: "Trace a request through the real middleware stack."
+      },
       "hotwire_lab" => {
         name: "Hotwire Lab", icon: "⚡", skill: "dom-rendering",
         route: :hotwire_lab_path, dimension: :prediction,

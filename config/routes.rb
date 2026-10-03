@@ -63,6 +63,10 @@ Rails.application.routes.draw do
   get  "cpu-scheduler",            to: "cpu_scheduler#show",     as: :cpu_scheduler
   post "cpu-scheduler/simulate",   to: "cpu_scheduler#simulate", as: :cpu_scheduler_simulate
 
+  get  "rails-lab",                to: "rails_lab#show",  as: :rails_lab
+  post "rails-lab/trace",          to: "rails_lab#trace", as: :rails_lab_trace
+  post "rails-lab/solve",          to: "rails_lab#solve", as: :rails_lab_solve
+
   get  "hotwire-lab",              to: "hotwire_lab#show", as: :hotwire_lab
   post "hotwire-lab/predict",      to: "hotwire_lab#predict", as: :hotwire_lab_predict
   post "hotwire-lab/operate",      to: "hotwire_lab#operate", as: :hotwire_lab_operate
