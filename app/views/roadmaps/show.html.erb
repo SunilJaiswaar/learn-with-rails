@@ -1,0 +1,47 @@
+<% content_for :title, @roadmap.name %>
+
+<%= render "shared/breadcrumb",
+           trail: [["Learn", nil], ["Roadmaps", roadmaps_path], [@roadmap.name, nil]] %>
+
+<header class="mb-3">
+  <h1 class="mb-0"><%= @roadmap.name %></h1>
+  <% if @roadmap.audience.present? %>
+    <span class="badge badge--subtle text-xs"><%= @roadmap.audience %></span>
+  <% end %>
+  <p class="text-muted text-sm mb-0"><%= @roadmap.summary %></p>
+</header>
+
+<div class="row mb-3 text-xs">
+  <span class="badge"><%= @rollup.total %> steps</span>
+  <span class="badge badge--success"><%= @rollup.complete %> done</span>
+  <% if @rollup.locked.positive? %>
+    <span class="badge badge--subtle"><%= @rollup.locked %> locked</span>
+  <% end %>
+  <span class="badge"><%= @rollup.percent_complete %>%</span>
+</div>
+
+<div class="stack stack--loose">
+  <% @rows.each_with_index do |(step, node), index| %>
+    <div class="roadmap-step roadmap-step--<%= node&.state || 'available' %>">
+      <span class="roadmap-step__index" aria-hidden="true">
+        <%= node&.state == :complete ? "✓" : index + 1 %>
+      </span>
+      <div class="roadmap-step__body">
+        <% if node %>
+          <%= render "shared/skill_row", node: node %>
+        <% else %>
+          <div class="skill-row">
+            <strong class="text-sm"><%= step.skill.name %></strong>
+          </div>
+        <% end %>
+        <% if step.note.present? %>
+          <p class="text-xs text-faint" style="margin: 0.4rem 0 0;"><%= step.note %></p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<% if @rows.empty? %>
+  <p class="text-sm text-muted">This roadmap has no steps yet.</p>
+<% end %>

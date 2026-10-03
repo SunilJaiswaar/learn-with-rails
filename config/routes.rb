@@ -13,6 +13,17 @@ Rails.application.routes.draw do
   # --- Learner experience ------------------------------------------------
   get "dashboard", to: "dashboard#show", as: :dashboard
   get "map",       to: "skill_map#show", as: :skill_map
+
+  # --- Learn: the content hierarchy --------------------------------------
+  # These expose records that already existed but had no route at all:
+  # 9 worlds, 3 roadmaps and the technology registry were reachable only
+  # through admin or a direct /skills/:slug link (audit U1, B1, B2, B5).
+  get "worlds",            to: "worlds#index", as: :worlds
+  get "worlds/:id",        to: "worlds#show",  as: :world
+  get "roadmaps",          to: "roadmaps#index", as: :roadmaps
+  get "roadmaps/:id",      to: "roadmaps#show",  as: :roadmap
+  get "technologies",      to: "technologies#index", as: :technologies
+  get "technologies/:id",  to: "technologies#show",  as: :technology
   get "progress",  to: "progress#show",  as: :progress
   get "big-o",     to: "complexity#show", as: :complexity
   get "search",    to: "search#index",   as: :search

@@ -194,12 +194,17 @@ rather than a shrunken desktop (§101). No Capybara, no browser-based test,
 so no responsive or accessibility claim (§102) has ever been checked.
 ARIA/role attributes appear 9 times in the sidebar and once in the layout.
 
-### U5 — dead CSS classes (partially fixed)
+### U5 — dead CSS classes
 
 `text-success`, `text-danger` and `card--subtle` were referenced across a
-dozen lab views and never defined — all pass/fail colour-coding was inert.
-Fixed in `092b88c`. The underlying problem is that no test renders a page and
-inspects style, so this class of bug is invisible to CI.
+dozen lab views and defined in neither `application.css` nor `components.css`,
+so all pass/fail colour-coding was inert. Fixed in `092b88c`.
+`card--interactive` was the same: used by eight views, defined nowhere, so
+every card meant to read as clickable read as inert. Fixed while building the
+world pages.
+
+The underlying problem is that no test renders a page and inspects style, so
+this class of bug is invisible to CI — see X7.
 
 ---
 
@@ -356,11 +361,11 @@ drag-and-drop board works, or that any page survives phone width.
 
 | # | Flow | Status |
 |---|---|---|
-| B1 | World → Domain → Skill browse | **No route.** 9 worlds unreachable. |
-| B2 | Choose a career/role → get a roadmap (§66–§67) | **No route.** 3 `LearningPath` records unreachable; no `Career`/`Role`. |
+| B1 | World → Domain → Skill browse | **Fixed.** `/worlds` and `/worlds/:slug`. |
+| B2 | Choose a career/role → get a roadmap (§66–§67) | **Partly fixed.** `/roadmaps` renders the 3 paths with per-step state; `Career`/`Role` still absent, and nothing recommends a path. |
 | B3 | Skill assessment → personalised path (§68) | Absent. |
 | B4 | Blocked by prerequisite → learn missing concept (§50) | Absent; nothing blocks. |
-| B5 | Browse technologies / versions as a learner | Admin-only (`/admin/technology_versions`). |
+| B5 | Browse technologies / versions as a learner | **Fixed.** `/technologies` shows which version is taught and flags legacy ones. |
 | B6 | Build a project (§59) | No entity, no route. |
 | B7 | AI Lab (§30–§40) | No entity, no route. |
 | B8 | Ask the AI tutor a question with citations (§76) | Rule-based only, no retrieval, no citations. |
@@ -394,10 +399,12 @@ reference `CurriculumModule` or `Lesson`.
 
 Each step is independently shippable and reversible.
 
-1. **Route what already exists.** `/worlds`, `/worlds/:slug`, `/paths`,
-   `/paths/:slug`, `/technologies`. Zero schema change, zero content change —
-   this alone fixes B1, B2, B5 and U1, and makes 9 worlds and 3 paths
-   reachable for the first time.
+1. ~~**Route what already exists.**~~ **Done** in the commit following this
+   audit. `/worlds`, `/worlds/:slug`, `/roadmaps`, `/roadmaps/:slug`,
+   `/technologies`, `/technologies/:slug`, plus `Learn` and `Practice` nav
+   groups. Zero schema change, zero content change; 9 worlds, 3 roadmaps and
+   3 technologies became reachable. Closes B1, B2, B5, U1; U3 is closed for
+   the new pages only (breadcrumbs plus a "next in this world" card).
 2. **Collapse `Lesson`** (D2). One migration moving `lesson_blocks.lesson_id`
    to `concept_id`. No progress table touches it.
 3. **Promote `CurriculumModule` → `Domain`** above `Skill` (D1). This is the

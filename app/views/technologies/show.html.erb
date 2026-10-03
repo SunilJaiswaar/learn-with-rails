@@ -1,0 +1,65 @@
+<% content_for :title, @technology.name %>
+
+<%= render "shared/breadcrumb",
+           trail: [["Learn", nil], ["Technologies", technologies_path], [@technology.name, nil]] %>
+
+<header class="mb-3">
+  <div class="row row--between" style="align-items: baseline;">
+    <h1 class="mb-0"><%= @technology.name %></h1>
+    <% if @current_version %>
+      <span class="badge badge--success">Teaching v<%= @current_version.number %></span>
+    <% end %>
+  </div>
+  <p class="text-muted text-sm mb-0"><%= @technology.summary %></p>
+</header>
+
+<div class="grid grid--2">
+  <section>
+    <h2 class="text-base">Skills</h2>
+    <div class="stack stack--tight">
+      <% @nodes.each do |node| %>
+        <%= render "shared/skill_row", node: node %>
+      <% end %>
+      <% if @nodes.empty? %>
+        <p class="text-sm text-muted">No skills are mapped to this technology yet.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <aside>
+    <section class="card">
+      <h3>Versions</h3>
+      <p class="text-xs text-muted">
+        Status says whether a version is safe to treat as current practice.
+      </p>
+      <table class="table text-sm">
+        <thead>
+          <tr>
+            <th scope="col">Version</th>
+            <th scope="col">Status</th>
+            <th scope="col">Released</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @versions.each do |version| %>
+            <tr>
+              <td class="mono">
+                <%= version.number %>
+                <% if (docs = version.safe_docs_url) %>
+                  <%= link_to "docs", docs, class: "text-xs",
+                              rel: "noopener noreferrer", target: "_blank" %>
+                <% end %>
+              </td>
+              <td>
+                <span class="badge <%= version.teachable_as_current? ? 'badge--success' : 'badge--subtle' %> text-xs">
+                  <%= version.status.humanize %>
+                </span>
+              </td>
+              <td class="text-xs text-faint"><%= version.released_on&.year || "—" %></td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </section>
+  </aside>
+</div>

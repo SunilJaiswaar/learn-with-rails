@@ -1,0 +1,87 @@
+<% content_for :title, @world.name %>
+<% content_for :content_class, "content--wide" %>
+
+<%= render "shared/breadcrumb",
+           trail: [["Learn", nil], ["Worlds", worlds_path], [@world.name, nil]] %>
+
+<header class="mb-3">
+  <div class="row" style="align-items: center; gap: 0.6rem;">
+    <span class="world-card__dot" aria-hidden="true"
+          style="background: <%= @world.accent_color %>"></span>
+    <h1 class="mb-0"><%= @world.name %></h1>
+  </div>
+  <p class="text-muted text-sm mb-0"><%= @world.summary.presence || @world.tagline %></p>
+</header>
+
+<div class="row mb-3 text-xs">
+  <span class="badge"><%= @rollup.total %> skills</span>
+  <span class="badge"><%= @rollup.mission_count %> missions</span>
+  <span class="badge badge--success"><%= @rollup.complete %> developing or better</span>
+  <% if @rollup.in_progress.positive? %>
+    <span class="badge"><%= @rollup.in_progress %> in progress</span>
+  <% end %>
+  <% if @rollup.locked.positive? %>
+    <span class="badge badge--subtle"><%= @rollup.locked %> locked</span>
+  <% end %>
+</div>
+
+<%# Spec 70: "what happens next?" answered on the page itself. %>
+<% if (next_node = @rollup.next_node) %>
+  <div class="card card--raised mb-3">
+    <div class="row row--between" style="align-items: center; gap: 0.8rem;">
+      <div>
+        <span class="text-xs text-faint d-block">Next in this world</span>
+        <strong><%= next_node.skill.name %></strong>
+        <span class="text-xs text-muted d-block"><%= next_node.skill.summary %></span>
+      </div>
+      <%= link_to "Open", skill_path(next_node.skill.slug), class: "btn btn--primary btn--sm" %>
+    </div>
+  </div>
+<% end %>
+
+<div class="grid grid--2">
+  <section>
+    <h2 class="text-base">Skills</h2>
+    <div class="stack stack--tight">
+      <% @nodes.each do |node| %>
+        <%= render "shared/skill_row", node: node %>
+      <% end %>
+      <% if @nodes.empty? %>
+        <p class="text-sm text-muted">No skills are mapped to this world yet.</p>
+      <% end %>
+    </div>
+  </section>
+
+  <aside class="stack stack--loose">
+    <% if @domains.any? %>
+      <section class="card">
+        <h3>Modules</h3>
+        <p class="text-xs text-muted">
+          How this world's missions are grouped. The audit proposes promoting
+          these to the brief's <strong>Domain</strong> layer.
+        </p>
+        <div class="stack stack--tight">
+          <% @domains.each do |domain| %>
+            <div>
+              <strong class="text-sm"><%= domain.name %></strong>
+              <span class="text-xs text-faint">
+                <%= domain.topics.size %> mission<%= "s" unless domain.topics.size == 1 %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+
+    <% if @boss_battles.any? %>
+      <section class="card">
+        <h3>Boss battles</h3>
+        <div class="stack stack--tight">
+          <% @boss_battles.each do |boss| %>
+            <%= link_to boss.title, boss_battle_path(boss.slug), class: "text-sm" %>
+          <% end %>
+        </div>
+      </section>
+    <% end %>
+  </aside>
+</div>

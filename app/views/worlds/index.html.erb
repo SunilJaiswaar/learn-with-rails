@@ -1,0 +1,52 @@
+<% content_for :title, "Worlds" %>
+<% content_for :content_class, "content--wide" %>
+
+<%= render "shared/breadcrumb", trail: [["Learn", nil], ["Worlds", nil]] %>
+
+<header class="row row--between mb-3">
+  <div>
+    <h1 class="mb-0">Worlds</h1>
+    <p class="text-muted text-sm mb-0">
+      Nine themed regions. Progress counts skills you have carried to
+      <strong>developing</strong> mastery or better — not pages you have opened.
+    </p>
+  </div>
+  <% if @next_topic %>
+    <%= link_to "Continue: #{@next_topic.name}", topic_path(@next_topic.slug),
+                class: "btn btn--primary" %>
+  <% end %>
+</header>
+
+<div class="grid grid--3">
+  <% @worlds.each do |world| %>
+    <% rollup = @rollups[world] %>
+    <%= link_to world_path(world.slug), class: "card card--interactive world-card" do %>
+      <div class="row" style="align-items: center; gap: 0.6rem;">
+        <span class="world-card__dot" aria-hidden="true"
+              style="background: <%= world.accent_color %>"></span>
+        <h2 class="text-base mb-0"><%= world.name %></h2>
+      </div>
+      <p class="text-xs text-muted" style="margin: 0.5rem 0 0.8rem;">
+        <%= world.tagline.presence || world.summary %>
+      </p>
+
+      <div class="meter meter--sm" role="img"
+           aria-label="<%= rollup.percent_complete %>% of this world's skills at developing mastery or better">
+        <div class="meter__fill" style="width: <%= rollup.percent_complete %>%;
+                                        background: <%= world.accent_color %>"></div>
+      </div>
+
+      <div class="row row--between text-xs text-faint mt-1">
+        <span><%= rollup.total %> skill<%= "s" unless rollup.total == 1 %> ·
+              <%= rollup.mission_count %> mission<%= "s" unless rollup.mission_count == 1 %></span>
+        <span><%= rollup.percent_complete %>%</span>
+      </div>
+
+      <% if rollup.locked.positive? %>
+        <span class="text-xs text-faint d-block mt-1">
+          <%= rollup.locked %> still locked
+        </span>
+      <% end %>
+    <% end %>
+  <% end %>
+</div>

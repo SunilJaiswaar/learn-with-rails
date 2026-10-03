@@ -1,0 +1,16 @@
+<%# Spec 70: every screen should answer "where am I?". `trail` is an array of
+    [label, path] pairs; the last entry is the current page and is not a link. %>
+<nav class="breadcrumb text-xs text-faint mb-2" aria-label="Breadcrumb">
+  <ol>
+    <% trail.each_with_index do |(label, path), index| %>
+      <% last = index == trail.length - 1 %>
+      <li<%= ' aria-current="page"'.html_safe if last %>>
+        <% if path && !last %>
+          <%= link_to label, path %>
+        <% else %>
+          <span><%= label %></span>
+        <% end %>
+      </li>
+    <% end %>
+  </ol>
+</nav>

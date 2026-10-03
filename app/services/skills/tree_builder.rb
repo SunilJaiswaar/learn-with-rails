@@ -27,7 +27,7 @@ module Skills
 
     def nodes
       @nodes ||= begin
-        skills = Skill.includes(:world, :prerequisites).ordered.to_a
+        skills = Skill.includes(:world, :technology, :topics, :prerequisites).ordered.to_a
         progresses = progress_index
 
         skills.map do |skill|
@@ -44,6 +44,26 @@ module Skills
     def nodes_by_world
       nodes.group_by { |node| node.skill.world }
            .sort_by { |world, _| world&.position || 99 }
+    end
+
+    def nodes_for_world(world)
+      nodes.select { |node| node.skill.world_id == world.id }
+    end
+
+    def nodes_by_technology
+      nodes.group_by { |node| node.skill.technology }
+           .sort_by { |technology, _| technology&.position || 99 }
+    end
+
+    def nodes_for_technology(technology)
+      nodes.select { |node| node.skill.technology_id == technology.id }
+    end
+
+    # Roadmap order is the path's own step order, which is not the tree's
+    # order, so the steps drive the sequence and the tree supplies the state.
+    def nodes_for_skill_ids(skill_ids)
+      index = nodes.index_by { |node| node.skill.id }
+      skill_ids.filter_map { |id| index[id] }
     end
 
     def unlocked_skills

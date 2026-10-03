@@ -1,0 +1,39 @@
+<% content_for :title, "Technologies" %>
+
+<%= render "shared/breadcrumb", trail: [["Learn", nil], ["Technologies", nil]] %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Technologies</h1>
+  <p class="text-muted text-sm mb-0">
+    Which version of each technology the curriculum teaches. Older versions
+    stay available for interview preparation but are never presented as
+    current practice.
+  </p>
+</header>
+
+<div class="grid grid--2">
+  <% @technologies.each do |technology| %>
+    <% rollup = @rollups[technology] %>
+    <%= link_to technology_path(technology.slug), class: "card card--interactive" do %>
+      <div class="row row--between" style="align-items: baseline;">
+        <h2 class="text-base mb-0"><%= technology.name %></h2>
+        <% if (current = technology.current_version) %>
+          <span class="badge badge--success text-xs">v<%= current.number %></span>
+        <% end %>
+      </div>
+      <span class="badge badge--subtle text-xs mt-1"><%= technology.category.humanize %></span>
+      <p class="text-xs text-muted" style="margin: 0.6rem 0 0;"><%= technology.summary %></p>
+      <span class="text-xs text-faint d-block mt-1">
+        <%= rollup.total %> skill<%= "s" unless rollup.total == 1 %> ·
+        <%= technology.technology_versions.size %> version<%= "s" unless technology.technology_versions.size == 1 %>
+        <% if rollup.total.positive? %>· <%= rollup.percent_complete %>% mastered<% end %>
+      </span>
+    <% end %>
+  <% end %>
+</div>
+
+<%# Honesty, per the brief's rule against implying coverage that is not there. %>
+<p class="text-xs text-faint mt-3">
+  The brief names many more technologies than are listed here. Only the ones
+  with curriculum appear, rather than empty pages for the rest.
+</p>

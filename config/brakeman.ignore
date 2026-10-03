@@ -7,6 +7,10 @@
     {
       "fingerprint": "e46bb3a7d3755d93c4eb6dab9d9bd9be317269b859333fcb7d47a288dbac7944",
       "note": "Intentional. lib/sandbox/harness.rb is not part of the Rails process: it is copied into an isolated bubblewrap sandbox (no network, read-only allow-list mount set, CPU/memory/file-size rlimits) and run by a separate interpreter whose entire purpose is to evaluate the learner submission under test. The file is excluded from autoloading and eager loading in config/application.rb. See spec/services/code_execution/runner_spec.rb for the isolation proofs."
+    },
+    {
+      "fingerprint": "121bb9e7e35656bfcb03ec70fdc09dc88c60f99a4c2be8391f10bd55d5ccaeec",
+      "note": "Guarded, but not in a way static analysis can see through. docs_url is constrained to %r{\\Ahttps://\\S+\\z} by a validation on TechnologyVersion, and the view calls #safe_docs_url, which returns nil for anything else so the link is omitted entirely rather than rendered with an unsafe href. Brakeman reports 'Unresolved Model' because it cannot follow the method call. Both layers are proven in spec/models/technology_version_spec.rb, including a javascript: URL forced past the validation with update_column, and at the request level in spec/requests/learn_navigation_spec.rb."
     }
   ],
   "brakeman_version": "8.0.6"

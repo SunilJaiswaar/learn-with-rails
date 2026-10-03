@@ -1,8 +1,18 @@
 <%
   due_reviews = Learning::SpacedRepetition.new(user: current_user).due_count
   primary = [
-    ["Dashboard",  dashboard_path,     "▣"],
-    ["Skill map",  skill_map_path,     "✦"],
+    ["Dashboard",  dashboard_path,     "▣"]
+  ]
+  # Spec 5 groups navigation as LEARN / PRACTICE / BUILD / AI LAB / ... .
+  # BUILD and AI LAB are deliberately absent: they have no content yet, and a
+  # nav entry leading to an empty page is worse than no entry.
+  learn = [
+    ["Worlds",       worlds_path,       "🗺"],
+    ["Roadmaps",     roadmaps_path,     "🧭"],
+    ["Skill map",    skill_map_path,    "✦"],
+    ["Technologies", technologies_path, "⬡"]
+  ]
+  practice = [
     ["Challenges", challenges_path,    "⬢"],
     ["Algorithms", algorithms_path,    "⇅"],
     ["Big-O lab",  complexity_path,    "∿"]
@@ -39,6 +49,22 @@
 
   <div class="sidebar__nav">
     <% primary.each do |label, path, icon| %>
+      <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
+        <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+        <span><%= label %></span>
+      <% end %>
+    <% end %>
+
+    <div class="sidebar__section">Learn</div>
+    <% learn.each do |label, path, icon| %>
+      <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
+        <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
+        <span><%= label %></span>
+      <% end %>
+    <% end %>
+
+    <div class="sidebar__section">Practice</div>
+    <% practice.each do |label, path, icon| %>
       <%= link_to path, class: "nav-item", aria: { current: ("page" if current_page?(path)) } do %>
         <span class="nav-item__icon" aria-hidden="true"><%= icon %></span>
         <span><%= label %></span>

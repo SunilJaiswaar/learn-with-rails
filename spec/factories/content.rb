@@ -15,6 +15,24 @@ FactoryBot.define do
     status { :current }
   end
 
+  factory :learning_path do
+    sequence(:name) { |n| "Path #{n}" }
+    sequence(:slug) { |n| "path-#{n}" }
+    summary { "A route through the skill graph." }
+  end
+
+  factory :learning_path_step do
+    learning_path
+    skill
+    sequence(:position) { |n| n }
+  end
+
+  factory :skill_progress do
+    user
+    skill
+    mastery_level { :untested }
+  end
+
   factory :skill do
     sequence(:name) { |n| "Skill #{n}" }
     sequence(:slug) { |n| "skill-#{n}" }

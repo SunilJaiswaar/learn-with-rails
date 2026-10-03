@@ -1,0 +1,25 @@
+<%# One skill with its tree state. Shared by the world, roadmap and technology
+    pages so the three never drift in how they present a locked skill. %>
+<% if node.unlocked? %>
+  <%= link_to skill_path(node.skill.slug), class: "skill-row skill-row--#{node.state}" do %>
+    <div class="row row--between" style="align-items: baseline; gap: 0.6rem;">
+      <strong class="text-sm"><%= node.skill.name %></strong>
+      <span class="text-xs text-faint"><%= node.mastery_level.humanize %> · <%= node.composite %>%</span>
+    </div>
+    <span class="text-xs text-muted d-block"><%= node.skill.summary %></span>
+    <div class="meter meter--sm mt-1">
+      <div class="meter__fill" style="width: <%= node.composite %>%"></div>
+    </div>
+  <% end %>
+<% else %>
+  <div class="skill-row skill-row--locked"
+       aria-label="<%= node.skill.name %>, locked. Requires <%= node.prerequisite_names.to_sentence %>">
+    <div class="row row--between" style="align-items: baseline; gap: 0.6rem;">
+      <strong class="text-sm"><%= node.skill.name %></strong>
+      <span class="text-xs text-faint" aria-hidden="true">🔒</span>
+    </div>
+    <span class="text-xs text-muted d-block">
+      Needs <%= node.prerequisite_names.to_sentence %> at developing mastery.
+    </span>
+  </div>
+<% end %>

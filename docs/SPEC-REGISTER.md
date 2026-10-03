@@ -14,7 +14,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 2 | Hierarchy CAREER→ROLE→ROADMAP→WORLD→DOMAIN→SKILL→CONCEPT→MICRO-CONCEPT→…→MASTERY | **partial** | 3 levels of 8; `Career`/`Role`/`Domain`/`Project` absent |
 | 3 | Learning loop DISCOVER→SEE→UNDERSTAND→INTERACT→PREDICT→CODE→BREAK→DEBUG→OPTIMIZE→BUILD→EXPLAIN→INTERVIEW→MASTER | **partial** | predict/code/debug/explain/interview exist; BUILD absent |
 | 4 | Dashboard showing path, world, mission, XP, level, streak, mastery, weak skills, today's challenge, boss, interview readiness | **partial** | 9 of 12 ivars present; no world, no path, no interview-readiness |
-| 5 | Nav: HOME/LEARN/PRACTICE/BUILD/AI LAB/SYSTEM DESIGN/INTERVIEW/COMPETE/PROGRESS | **partial** | flat 4-group sidebar; LEARN landing, BUILD and AI LAB absent |
+| 5 | Nav: HOME/LEARN/PRACTICE/BUILD/AI LAB/SYSTEM DESIGN/INTERVIEW/COMPETE/PROGRESS | **partial** | `Learn` and `Practice` groups added; BUILD and AI LAB deliberately omitted until they have content |
 | 6 | World 1 — Computer Foundation + CPU/instruction simulator | **partial** | `Computer City`, 4 floor-depth skills; no CPU datapath simulator |
 | 7 | World 2 — Internet/Networking + browser-request simulator | **partial** | Network Lab exists (DNS/TCP/TLS/packets); not tied to curriculum depth |
 | 8 | Programming fundamentals before syntax; multi-language choice | **partial** | `Programming Forest` is Ruby-only; no language switch |
@@ -63,15 +63,15 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 63 | Cross-concept learning ("where will I use this?") | **partial** | labs now surface on skill pages; no general cross-concept view |
 | 64 | Technology comparison lab, 12 comparisons | **none** | |
 | 65 | FDE track | **none** | |
-| 66 | Career paths (4 named) | **partial** | 3 `LearningPath` records, **no route** |
+| 66 | Career paths (4 named) | **partial** | 3 roadmaps now routed at `/roadmaps` with per-step state; no `Career`/`Role` layer, and 1 of the 4 named paths exists |
 | 67 | Learning path builder from a stated goal | **none** | |
 | 68 | Diagnostic skill assessment | **none** | |
 | 69 | UI premium/modern/technical/playful, no walls of text | **partial** | consistent dark design system; 4 `@media` queries |
-| 70 | Every screen answers Where am I / Why / What next | **none** | partial breadcrumb only (audit U3) |
+| 70 | Every screen answers Where am I / Why / What next | **partial** | breadcrumbs and a "next in this world" card on the new Learn pages; the rest of the app still has neither |
 | 71 | 20-step concept page template | **partial** | ~11 of 20 elements enforced by `content:definition_of_done` |
 | 72 | ~35 structured content entities | **partial** | 40 tables; missing `Domain`, `Concept`/`MicroConcept` split, `Project*`, `Simulation`, `Visual`, `Source`, `DebugScenario` |
 | 73 | Dependency graph rather than hardcoded order | **done** | `SkillDependency` + cycle detection |
-| 74 | Version-aware learning, content labelled current/legacy/deprecated | **partial** | `TechnologyVersion` ×7 + admin screen; content not labelled |
+| 74 | Version-aware learning, content labelled current/legacy/deprecated | **partial** | `/technologies` now shows learners which version is taught and flags deprecated/eol; individual *content* still not labelled |
 | 75 | Source registry with URL, version, last-verified, status | **none** | |
 | 76 | RAG knowledge engine for the tutor, with citations | **none** | |
 | 77 | RAG evaluation (precision, recall, groundedness, cost…) | **none** | |
@@ -97,7 +97,7 @@ Status key: **done** · **partial** · **none** · **n/a** (not yet applicable)
 | 97 | Tests incl. system tests and progression/mastery/AI/sandbox coverage | **partial** | 420 specs; **0 model specs, 0 system specs, no Capybara** (audit X7) |
 | 98 | Brakeman, RuboCop, dependency audit, auth, rate limiting, CSRF/XSS/SQLi, audit logging | **done** | all in CI and clean |
 | 99 | Observability incl. AI logs, LLM latency/cost, agent tool calls | **partial** | app logs and audit log; no AI telemetry (no AI in the loop) |
-| 100 | UI communicating a living engineering universe | **partial** | worlds exist in data, not in the UI (audit U1) |
+| 100 | UI communicating a living engineering universe | **partial** | `/worlds` renders the 9 worlds with accent colours and progress; still a card grid rather than a map |
 | 101 | Responsive: desktop/laptop/tablet/mobile, re-designed not shrunk | **partial** | 4 `@media` queries, never browser-tested |
 | 102 | Accessibility: keyboard, screen reader, contrast, reduced motion | **partial** | `data-reduced-motion`, some ARIA; never audited |
 | 103 | Game-inspired, not childish | **done** | |
@@ -118,8 +118,8 @@ and 31–40). Counted from the table itself, not asserted:
 | Status | Rows |
 |---|---|
 | done | 14 |
-| partial | 60 |
-| none | 25 |
+| partial | 61 |
+| none | 24 |
 
 The shape of this tally is the audit's main conclusion: **the engines are
 built and the curriculum is not.** Almost everything scored *done* is

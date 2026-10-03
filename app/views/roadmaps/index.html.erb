@@ -1,0 +1,37 @@
+<% content_for :title, "Roadmaps" %>
+
+<%= render "shared/breadcrumb", trail: [["Learn", nil], ["Roadmaps", nil]] %>
+
+<header class="mb-3">
+  <h1 class="mb-0">Roadmaps</h1>
+  <p class="text-muted text-sm mb-0">
+    An ordered route through the skill graph. A roadmap does not add content —
+    it decides what order to meet it in, and the prerequisites still apply.
+  </p>
+</header>
+
+<div class="grid grid--2">
+  <% @roadmaps.each do |roadmap| %>
+    <% rollup = @rollups[roadmap] %>
+    <%= link_to roadmap_path(roadmap.slug), class: "card card--interactive" do %>
+      <h2 class="text-base mb-0"><%= roadmap.name %></h2>
+      <% if roadmap.audience.present? %>
+        <span class="badge badge--subtle text-xs mt-1"><%= roadmap.audience %></span>
+      <% end %>
+      <p class="text-xs text-muted" style="margin: 0.6rem 0 0.8rem;"><%= roadmap.summary %></p>
+
+      <div class="meter meter--sm" role="img"
+           aria-label="<%= rollup.percent_complete %>% complete">
+        <div class="meter__fill" style="width: <%= rollup.percent_complete %>%"></div>
+      </div>
+      <div class="row row--between text-xs text-faint mt-1">
+        <span><%= rollup.total %> step<%= "s" unless rollup.total == 1 %></span>
+        <span><%= rollup.complete %> of <%= rollup.total %> done</span>
+      </div>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @roadmaps.empty? %>
+  <p class="text-sm text-muted">No roadmaps are published yet.</p>
+<% end %>
