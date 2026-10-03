@@ -1,0 +1,25 @@
+<%= turbo_stream.replace "tutor-panel" do %>
+  <section class="card card--flush" id="tutor-panel">
+    <div class="card__header">
+      <h3 class="mb-0">Why this happened</h3>
+      <span class="badge <%= @explanation.source == "model" ? "badge--accent" : "" %>"
+            style="margin-left: auto;">
+        <%= @explanation.source == "model" ? "model-backed" : "rubric" %>
+      </span>
+    </div>
+    <div class="card__body">
+      <p class="text-sm"><strong><%= @explanation.headline %></strong></p>
+      <p class="text-sm text-muted"><%= @explanation.detail %></p>
+      <% if @explanation.next_step.present? %>
+        <div class="verdict verdict--correct" style="display: block;">
+          <strong>Try this next</strong>
+          <p class="mb-0 mt-1" style="color: var(--text);"><%= @explanation.next_step %></p>
+        </div>
+      <% end %>
+      <p class="text-xs text-faint mt-2 mb-0">
+        The tutor explains the failure; it will not write the fix. Hints are
+        on the right when you want more.
+      </p>
+    </div>
+  </section>
+<% end %>

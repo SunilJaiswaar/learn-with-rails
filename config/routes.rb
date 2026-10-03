@@ -86,6 +86,10 @@ Rails.application.routes.draw do
     resource :hint, only: %i[create], controller: "hints"
   end
 
+  # The AI tutor explains a specific attempt, so it hangs off the attempt.
+  post "attempts/:attempt_id/explanation", to: "explanations#create",
+       as: :attempt_explanation
+
   resources :algorithms, only: %i[index show], param: :id do
     member do
       get :trace

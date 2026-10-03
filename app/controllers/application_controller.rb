@@ -20,10 +20,15 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  # Every format must be handled, including turbo_stream: without the catch-all
+  # a missing record in a turbo_stream action answers 406 Not Acceptable rather
+  # than 404, which hides an authorisation outcome behind a content-negotiation
+  # error.
   def render_not_found
     respond_to do |format|
       format.html { render "shared/not_found", status: :not_found }
       format.json { render json: { error: "not_found" }, status: :not_found }
+      format.any { head :not_found }
     end
   end
 

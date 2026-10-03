@@ -172,3 +172,16 @@ FactoryBot.define do
     round_specs { [ { "name" => "Round 1", "count" => 1 } ] }
   end
 end
+
+FactoryBot.define do
+  # A persisted attempt whose status and results are set directly, so the
+  # explainer can be exercised without running the sandbox.
+  factory :challenge_attempt_stub_for_explainer, class: "ChallengeAttempt" do
+    user
+    challenge
+    submitted_code { "def go; 1; end" }
+    status { :failed }
+    tests_passed { 0 }
+    tests_total { 1 }
+  end
+end

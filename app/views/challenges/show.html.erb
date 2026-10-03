@@ -140,6 +140,8 @@
       </div>
     </section>
 
+    <%= render "challenges/tutor", attempt: @attempts.first %>
+
     <%# Progressive hints, each one costing XP (spec 55). %>
     <section class="card card--flush" id="hint-panel">
       <div class="card__header"><h3 class="mb-0">Hints</h3></div>

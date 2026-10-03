@@ -1,0 +1,24 @@
+<%#
+  The tutor entry point. Only offered once there is an attempt to explain,
+  because an explanation with no evidence would be guesswork.
+%>
+<section class="card card--flush" id="tutor-panel">
+  <div class="card__header"><h3 class="mb-0">Stuck?</h3></div>
+  <div class="card__body">
+    <% if attempt.nil? %>
+      <p class="text-sm text-muted mb-0">
+        Run your code first. The tutor explains what actually happened, so it
+        needs a result to read.
+      </p>
+    <% else %>
+      <p class="text-sm text-muted">
+        Get an explanation of your last run. It names the likely cause and one
+        next step — it will not write the fix.
+      </p>
+      <%= button_to "Explain my last run",
+                    attempt_explanation_path(attempt_id: attempt.id),
+                    class: "btn btn--block",
+                    form: { data: { turbo_stream: true } } %>
+    <% end %>
+  </div>
+</section>
