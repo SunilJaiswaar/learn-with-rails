@@ -8,9 +8,9 @@ on:
 jobs:
   quality:
     name: Lint and security
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ruby/setup-ruby@v1
         with:
@@ -30,7 +30,13 @@ jobs:
 
   test:
     name: Specs
-    runs-on: ubuntu-latest
+    # Pinned deliberately: the code sandbox needs
+    # kernel.apparmor_restrict_unprivileged_userns=0 to create a user
+    # namespace, and ubuntu-latest migrates to Ubuntu 26 on 2026-10-19.
+    # code_sandbox:verify below is what proves the sandbox still works, so a
+    # runner change surfaces as a failed verify rather than silently
+    # executing learner code outside the sandbox.
+    runs-on: ubuntu-24.04
 
     services:
       postgres:
@@ -57,7 +63,7 @@ jobs:
       REDIS_URL: redis://localhost:6379/0
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: ruby/setup-ruby@v1
         with:
